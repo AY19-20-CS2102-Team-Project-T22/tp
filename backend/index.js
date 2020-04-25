@@ -3,18 +3,21 @@
 const express = require('express')
 const app = express()
 const port = 3001
-const { Pool, Client } = require('pg')
 
 require('dotenv').config()
 
-// Setup connection to postgress database server.
-const client = new Client({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
-    port: process.env.DB_PORT || 5432,
+/* Testing query
+console.log('Executing a query...')
+const db = require('./db')
+const testQuery = 'select now()'
+const str = 'create table users(sid integer, name varchar(80))'
+db.query(testQuery, null, (err, res) => {
+  if (err) {
+    console.error(err)
+  }
+  db.end()
 })
+*/
 
 app.use(express.json())
 
