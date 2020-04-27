@@ -3,169 +3,293 @@ DROP TABLE IF EXISTS
 	Customers,
 	Riders,
 	Staff,
-	FDSManagers
+	FDSManagers,
+	Restaurants,
+	Foods,
+	FoodCategories,
+	DeliveryCost,
+	CreditCards,
+	DeliveryAreas,
+	Menu,
+	Orders,
+	OrdersLog
 CASCADE;
 
--- Set Timezone to UTC+8
+
+/* Set Timezone to UTC+8 */
 SET timezone=+8;
 -- SET timezone='Asia/Singapore'; -- Alternative
 
+
+/* COMMON HELPER FUNCTIONS */
+
+/*
+ * Given date (yyyy-mm-dd),
+ * return new date where dd is the last day of the month mm.
+ */
+CREATE OR REPLACE FUNCTION last_day(DATE)
+RETURNS DATE AS
+'
+	SELECT (date_trunc(''MONTH'', $1) + INTERVAL ''1 MONTH - 1 day'')::DATE;
+'
+LANGUAGE 'sql' IMMUTABLE STRICT;
+
+
+/* PARENT TABLES */
+
 CREATE TABLE Users (
 	uid 			 	SERIAL,
-	username		 	VARCHAR(30) NOT NULL,
-	password	     	VARCHAR(30) NOT NULL,
+	username		 	VARCHAR(20) NOT NULL,
+	password	     	VARCHAR(20) NOT NULL,
 	first_name         	VARCHAR(20) NOT NULL,
 	last_name       	VARCHAR(20) NOT NULL,
-	email		    	VARCHAR,
+	email		    	VARCHAR(40) NOT NULL,
 	phone_no   	 		INTEGER NOT NULL,
 	registration_date	TIMESTAMPTZ NOT NULL,
 	is_active          	BOOLEAN NOT NULL DEFAULT true,
+  	last_login			TIMESTAMPTZ NOT NULL,
 
 	PRIMARY KEY (uid),
 	UNIQUE (phone_no),
 	UNIQUE (email),
-	CHECK (phone_no >= 10000000 and phone_no <= 99999999)
+	CHECK (phone_no >= 10000000 AND phone_no <= 99999999)
 );
 
 CREATE TABLE Restaurants (
 	rid					SERIAL,
 	rname				VARCHAR(60) NOT NULL,
 	address				VARCHAR(80) NOT NULL,
-	min_order_cost		NUMERIC,
+	min_order_cost		NUMERIC NOT NULL,
   
-	primary key(rid)
+	PRIMARY KEY(rid),
+	CHECK (min_order_cost > 0.0)
 );
 
-/*
-TODO:
-Create triggers to copy value of registration_date
-to last_login as DEFAULT value.
+CREATE TABLE FoodCategories (
+	fcid				SERIAL,
+	fcname				VARCHAR(20) NOT NULL,
 
-Current (temporary) implementation expects the above to
-be done before performing INSERT operation on DB.
-*/
+	PRIMARY KEY (fcid)
+);
+
+CREATE TABLE DeliveryCost (
+	region				VARCHAR(10),
+	cost				NUMERIC NOT NULL,
+
+	PRIMARY KEY (region)
+);
+
+
+/* CHILD TABLES */
 
 CREATE TABLE Customers (
-	points				NUMERIC NOT NULL DEFAULT 0.00,
-	total_spending		NUMERIC NOT NULL DEFAULT 0.00,
+	points				NUMERIC NOT NULL DEFAULT 0.0,
+	total_spending		NUMERIC NOT NULL DEFAULT 0.0,
 	total_orders		INTEGER NOT NULL DEFAULT 0,
-	last_login			TIMESTAMPTZ NOT NULL,
+  	last_order_date		TIMESTAMPTZ,
 
-	primary key(uid)
+	PRIMARY KEY (uid),
+  	CHECK(last_order_date > registration_date),
+  	CHECK(last_login >= registration_date)
 ) INHERITS (Users);
+
+CREATE OR REPLACE FUNCTION check_customers()
+	RETURNS TRIGGER AS
+    '
+	BEGIN
+		IF NEW.last_login IS NULL THEN
+			NEW.last_login := NEW.registration_date;
+		END IF;
+		RETURN NEW;
+	END;
+    '
+LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS check_customers_trigger ON Customers;
+CREATE TRIGGER check_customers_trigger
+	BEFORE INSERT ON Customers
+	FOR EACH ROW EXECUTE PROCEDURE check_customers();
+
+CREATE TABLE CreditCards (
+	uid					INTEGER NOT NULL,
+	card_no				BIGINT NOT NULL,
+	cvv_no				VARCHAR(4) NOT NULL,
+	name_on_card		VARCHAR(60) NOT NULL,
+	card_type			VARCHAR(30) NOT NULL,
+	expiry_date			DATE NOT NULL,
+
+	PRIMARY KEY (uid, card_no),
+	FOREIGN KEY (uid) REFERENCES Customers(uid) ON DELETE CASCADE
+);
 
 CREATE TABLE Riders (
 	total_deliveries	INTEGER NOT NULL DEFAULT 0,
-	last_login			TIMESTAMPTZ NOT NULL,
 
-	primary key(uid)
+	PRIMARY KEY (uid),
+	CHECK (total_deliveries >= 0)
 ) INHERITS (Users);
+
+CREATE OR REPLACE FUNCTION check_riders()
+	RETURNS TRIGGER AS
+    '
+	BEGIN
+		IF NEW.last_login IS NULL THEN
+			NEW.last_login := NEW.registration_date;
+		END IF;
+		RETURN NEW;
+	END;
+    '
+LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS check_riders_trigger ON Riders;
+CREATE TRIGGER check_riders_trigger
+	BEFORE INSERT ON Riders
+	FOR EACH ROW EXECUTE PROCEDURE check_riders();
 
 CREATE TABLE Staff (
-	rid					SERIAL REFERENCES Restaurants(rid) ON DELETE CASCADE,
-	last_login			TIMESTAMPTZ NOT NULL,
+	rid					INTEGER REFERENCES Restaurants(rid) ON DELETE CASCADE,
 
-	primary key(uid)
+	PRIMARY KEY (uid)
 ) INHERITS (Users);
+
+CREATE OR REPLACE FUNCTION check_staff()
+	RETURNS TRIGGER AS
+    '
+	BEGIN
+		IF NEW.last_login IS NULL THEN
+			NEW.last_login := NEW.registration_date;
+		END IF;
+		RETURN NEW;
+	END;
+    '
+LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS check_staff_trigger ON Staff;
+CREATE TRIGGER check_staff_trigger
+	BEFORE INSERT ON Staff
+	FOR EACH ROW EXECUTE PROCEDURE check_staff();
 
 CREATE TABLE FDSManagers (
-	last_login			TIMESTAMPTZ NOT NULL,
-
-	primary key(uid)
+	PRIMARY KEY (uid)
 ) INHERITS (Users);
 
+CREATE OR REPLACE FUNCTION check_fdsmanager()
+	RETURNS TRIGGER AS
+    '
+	BEGIN
+		IF NEW.last_login IS NULL THEN
+			NEW.last_login := NEW.registration_date;
+		END IF;
+		RETURN NEW;
+	END;
+    '
+LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS check_fdsmanager_trigger ON FDSManagers;
+CREATE TRIGGER check_fdsmanager_trigger
+	BEFORE INSERT ON FDSManagers
+	FOR EACH ROW EXECUTE PROCEDURE check_fdsmanager();
 
+CREATE TABLE Foods (
+	fid					SERIAL,
+	fname 				VARCHAR(100) NOT NULL,
+	category			INTEGER NOT NULL REFERENCES FoodCategories(fcid) ON DELETE RESTRICT,
 
+	PRIMARY KEY (fid)
+);
 
----------------
--- CUSTOMERS --
----------------
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (1, 'rreinhard0', 'QP8a0R', 'Risa', 'Reinhard', 'rreinhard0@amazon.de', '81516087', '2009-02-24 22:06:04', '2009-02-24 22:06:04');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (2, 'aburroughes1', '5ZOpKQFCFHDI', 'Avivah', 'Burroughes', 'aburroughes1@microsoft.com', '93085090', '2003-12-24 15:58:35', '2003-12-24 15:58:35');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (3, 'tborland2', 'MFdsD4j', 'Tory', 'Borland', 'tborland2@google.co.uk', '94873663', '2009-02-24 03:02:58', '2009-02-24 03:02:58');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (4, 'fsavoury3', 'eqZgQt', 'Felicdad', 'Savoury', 'fsavoury3@usda.gov', '83075300', '2009-03-24 06:49:34', '2009-03-24 06:49:34');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (5, 'amackstead4', 'RuuoNn9', 'Andros', 'Mackstead', 'amackstead4@barnesandnoble.com', '99960851', '2011-03-24 20:50:05', '2011-03-24 20:50:05');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (6, 'mgilliam5', 'Peiwxg0gY', 'Maressa', 'Gilliam', 'mgilliam5@smugmug.com', '93125930', '2006-02-24 13:43:36', '2006-02-24 13:43:36');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (7, 'dsalmon6', 'N8N4B7ZJnxTV', 'Dario', 'Salmon', 'dsalmon6@ox.ac.uk', '94362720', '2017-12-24 13:45:00', '2017-12-24 13:45:00');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (8, 'thudspith7', 'uPn9ox0dPt', 'Tiebout', 'Hudspith', 'thudspith7@twitpic.com', '61389628', '2018-09-24 10:00:46', '2018-09-24 10:00:46');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (9, 'vlackemann8', 'a3n8M5', 'Vonny', 'Lackemann', 'vlackemann8@digg.com', '62221632', '2009-07-25 00:00:26', '2009-07-25 00:00:26');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (10, 'gsiely9', 'wSyXwEO', 'Guntar', 'Siely', 'gsiely9@princeton.edu', '96724440', '2015-06-24 14:07:25', '2015-06-24 14:07:25');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (11, 'fmacdaida', '4oDmheQkHB', 'Fara', 'MacDaid', 'fmacdaida@omniture.com', '68120626', '2007-09-24 08:37:16', '2007-09-24 08:37:16');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (12, 'saxelbeeb', 'z8xoMh', 'Starlene', 'Axelbee', 'saxelbeeb@disqus.com', '93115882', '2011-11-25 01:03:25', '2011-11-25 01:03:25');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (13, 'afranzettoinic', 'B3TXHRbXWqz', 'Aindrea', 'Franzettoini', 'afranzettoinic@dailymotion.com', '98850324', '2017-02-24 10:45:36', '2017-02-24 10:45:36');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (14, 'adeardend', '8BwRqZdp', 'Addie', 'Dearden', 'adeardend@devhub.com', '90000182', '2013-09-24 13:58:14', '2013-09-24 13:58:14');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (15, 'aarnowicze', 'aFglaqtdv', 'Aretha', 'Arnowicz', 'aarnowicze@acquirethisname.com', '96707843', '2011-03-24 14:21:40', '2011-03-24 14:21:40');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (16, 'privenzonf', 'WVS9jXY', 'Prescott', 'Rivenzon', 'privenzonf@yellowbook.com', '90382653', '2009-01-25 01:29:09', '2009-01-25 01:29:09');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (17, 'aventrisg', 'oAonxa', 'Arline', 'Ventris', 'aventrisg@usgs.gov', '94629414', '2009-11-24 13:13:54', '2009-11-24 13:13:54');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (18, 'zgroomebridgeh', '3U9fvX', 'Zebedee', 'Groomebridge', 'zgroomebridgeh@nature.com', '80346565', '2004-02-24 05:21:46', '2004-02-24 05:21:46');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (19, 'bcabrali', 'EhWlXkp68owA', 'Basilio', 'Cabral', 'bcabrali@fc2.com', '97049382', '2013-04-24 13:58:07', '2013-04-24 13:58:07');
-insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (20, 'kspyerj', 'OXp9km', 'Kasper', 'Spyer', 'kspyerj@360.cn', '94109129', '2017-10-24 13:47:22', '2017-10-24 13:47:22');
+CREATE TABLE DeliveryAreas (
+	region				VARCHAR(20) REFERENCES DeliveryCost(region) ON DELETE CASCADE,
+	postal_sector		VARCHAR(2),
 
+	PRIMARY KEY (region, postal_sector)
+);
 
+CREATE TABLE Menu (
+	fid					INTEGER REFERENCES Foods(fid) ON DELETE CASCADE,
+	rid					INTEGER REFERENCES Restaurants(rid) ON DELETE CASCADE,
+	daily_limit 		INTEGER,
+	unit_price 			NUMERIC NOT NULL,
+    is_available		BOOLEAN,
 
+	PRIMARY KEY (fid, rid),
+	CHECK (unit_price > 0.0),
+	CHECK (daily_limit >= 0)
+);
 
+CREATE OR REPLACE FUNCTION check_menu()
+	RETURNS TRIGGER AS
+    '
+	BEGIN
+		IF NEW.daily_limit IS NULL OR NEW.daily_limit > 0 THEN
+			NEW.is_available := true;
+        ELSE
+        	NEW.is_available := false;
+		END IF;
+		RETURN NEW;
+	END;
+    '
+LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS check_menu_trigger ON Menu;
+CREATE TRIGGER check_menu_trigger
+	BEFORE INSERT OR UPDATE ON Menu
+	FOR EACH ROW EXECUTE PROCEDURE check_menu();
 
------------------
--- RESTAURANTS --
------------------
-insert into Restaurants (rid, rname, address, min_order_cost) values (1, 'Reilly LLC', '4944 Rigney Terrace', 1);
-insert into Restaurants (rid, rname, address, min_order_cost) values (2, 'Pfeffer, Schamberger and Schroeder', '59 Corscot Circle', 2.5);
-insert into Restaurants (rid, rname, address, min_order_cost) values (3, 'Walter, Goldner and Nolan', '1 Cordelia Terrace', 2.5);
-insert into Restaurants (rid, rname, address, min_order_cost) values (4, 'Buckridge-Boehm', '3049 Mitchell Road', 0.5);
+CREATE TABLE Orders (
+	uid					INTEGER NOT NULL,
+	rid					INTEGER NOT NULL,
+	fid					INTEGER NOT NULL,
+	unit_price			NUMERIC NOT NULL,
+	qty					INTEGER NOT NULL,
+	delivery_cost		NUMERIC NOT NULL,
+	order_timestamp		TIMESTAMPTZ NOT NULL,
+	address				VARCHAR(50) NOT NULL,
+	postal_code			VARCHAR(6) NOT NULL,
 
+	PRIMARY KEY (uid, rid, fid, order_timestamp)
+);
 
+CREATE TABLE OrdersLog (
+	oid					SERIAL,
+	order_timestamp		TIMESTAMPTZ NOT NULL,
+	order_cost			NUMERIC NOT NULL,
+	delivery_cost		NUMERIC NOT NULL,
+	rider_id			INTEGER,
+	address				VARCHAR(50) NOT NULL,
+	postal_code			VARCHAR(6) NOT NULL,
+	depart_for_r		TIMESTAMPTZ,
+	arrived_at_r		TIMESTAMPTZ,
+	depart_for_c		TIMESTAMPTZ,
+	arrived_at_c		TIMESTAMPTZ,
 
+	PRIMARY KEY (oid, order_timestamp)
+);
 
----------------------
--- DELIVERY RIDERS --
----------------------
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (1, 'eliverock0', 'txidYo8ogvq', 'Elenore', 'Liverock', 'eliverock0@goo.ne.jp', '90522187', '2010-04-25 00:54:24', 13, '2010-04-25 00:54:24');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (2, 'lmcgiveen1', 'WkUKYqo', 'Lexy', 'McGiveen', 'lmcgiveen1@wsj.com', '94797038', '2014-07-25 00:40:57', 2, '2014-07-25 00:40:57');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (3, 'mwitter2', 'nuKC0yNW33', 'Manya', 'Witter', 'mwitter2@epa.gov', '85955704', '2019-09-24 09:11:18', 8, '2019-09-24 09:11:18');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (4, 'rtunnacliffe3', 'BQYEPOaIWoy2', 'Raeann', 'Tunnacliffe', 'rtunnacliffe3@tuttocitta.it', '92639660', '2016-02-24 18:18:21', 1, '2016-02-24 18:18:21');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (5, 'rjudkin4', 'P7BG3Gwc0p2', 'Raquela', 'Judkin', 'rjudkin4@nhs.uk', '66218708', '2005-12-24 10:27:07', 10, '2005-12-24 10:27:07');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (6, 'zhune5', 'V0IxaifFTD', 'Zared', 'Hune', 'zhune5@cmu.edu', '83130236', '2014-10-24 21:46:33', 19, '2014-10-24 21:46:33');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (7, 'mchittock6', 'eNAaz5', 'Merrielle', 'Chittock', 'mchittock6@go.com', '95852514', '2017-01-25 04:29:22', 22, '2017-01-25 04:29:22');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (8, 'mgaule7', 'JH3wuPyBb', 'Marje', 'Gaule', 'mgaule7@list-manage.com', '96012261', '2017-08-24 06:06:31', 19, '2017-08-24 06:06:31');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (9, 'kbellenie8', 'EwapTtHVgO5w', 'Keen', 'Bellenie', 'kbellenie8@irs.gov', '89953405', '2006-02-25 01:32:53', 26, '2006-02-25 01:32:53');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (10, 'ilothean9', 'sY7vtCBYWr', 'Irvin', 'Lothean', 'ilothean9@g.co', '82581176', '2014-04-25 04:47:23', 11, '2014-04-25 04:47:23');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (11, 'ngallimorea', 'VmkHP2Px', 'Nedda', 'Gallimore', 'ngallimorea@booking.com', '97750360', '2010-10-24 20:38:23', 21, '2010-10-24 20:38:23');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (12, 'cjammetb', 'pj8Asw', 'Catina', 'Jammet', 'cjammetb@printfriendly.com', '65919876', '2010-03-24 05:58:26', 5, '2010-03-24 05:58:26');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (13, 'atretwellc', 'exDBmnZFJ0C5', 'Averell', 'Tretwell', 'atretwellc@china.com.cn', '95199908', '2011-08-24 13:27:15', 22, '2011-08-24 13:27:15');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (14, 'mhuntard', 'm5HNR5x', 'Micheil', 'Huntar', 'mhuntard@nba.com', '92266885', '2007-09-25 04:53:46', 8, '2007-09-25 04:53:46');
-insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries, last_login) values (15, 'asinkingse', 'A2PT0xfSQQJ', 'Asa', 'Sinkings', 'asinkingse@jimdo.com', '80631891', '2015-08-24 17:09:07', 6, '2015-08-24 17:09:07');
-
-
-
-
-----------------------
--- RESTAURANT STAFF --
-----------------------
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (1, 'mbake0', 'dxSoWAwaYO', 'Madelena', 'Bake', 'mbake0@vk.com', '66204366', '2004-01-24 20:06:00', 3, '2004-01-24 20:06:00');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (2, 'smccullock1', 'qsI8Hc2yVrC', 'Silvano', 'McCullock', 'smccullock1@i2i.jp', '82526712', '2005-02-25 02:21:33', 2, '2005-02-25 02:21:33');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (3, 'ecronkshaw2', 'DehNYOwZV', 'Erminia', 'Cronkshaw', 'ecronkshaw2@webeden.co.uk', '82933793', '2017-09-24 04:52:37', 4, '2017-09-24 04:52:37');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (4, 'hhaibel3', 'eNUwfLC2K', 'Homere', 'Haibel', 'hhaibel3@skyrock.com', '92345284', '2006-03-25 04:10:09', 1, '2006-03-25 04:10:09');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (5, 'swhiskin4', '5IXxIvN6U', 'Sarge', 'Whiskin', 'swhiskin4@squarespace.com', '81791407', '2004-04-25 03:19:07', 3, '2004-04-25 03:19:07');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (6, 'jsmithers5', 'S6KomTK', 'Judye', 'Smithers', 'jsmithers5@europa.eu', '90320927', '2005-03-24 14:35:04', 3, '2005-03-24 14:35:04');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (7, 'cbertram6', '1RMR359exF', 'Cordie', 'Bertram', 'cbertram6@booking.com', '61407535', '2010-11-24 09:36:28', 1, '2010-11-24 09:36:28');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (8, 'ebirtwisle7', 'A9kmfCs9', 'Ernesta', 'Birtwisle', 'ebirtwisle7@reuters.com', '83154019', '2015-11-24 11:45:26', 2, '2015-11-24 11:45:26');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (9, 'gwhate8', 'TeA1FguY', 'Gaynor', 'Whate', 'gwhate8@aboutads.info', '68242775', '2014-12-24 19:35:52', 1, '2014-12-24 19:35:52');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (10, 'bwingham9', 'pwjeVVzahbG', 'Benita', 'Wingham', 'bwingham9@creativecommons.org', '90830057', '2008-07-24 13:53:35', 4, '2008-07-24 13:53:35');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (11, 'csustona', '77S5t6vZ0Nie', 'Chandler', 'Suston', 'csustona@imgur.com', '68811272', '2012-04-24 14:55:34', 2, '2012-04-24 14:55:34');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (12, 'aclampb', '9pm8z96', 'Archy', 'Clamp', 'aclampb@noaa.gov', '91466573', '2013-03-25 01:41:34', 1, '2013-03-25 01:41:34');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (13, 'jmcfetrichc', 'RM1RGQB9Zk', 'Jenelle', 'McFetrich', 'jmcfetrichc@bbc.co.uk', '92133628', '2006-05-24 05:33:20', 4, '2006-05-24 05:33:20');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (14, 'ygrigoired', 'FT9FnPhRL9L', 'Yvette', 'Grigoire', 'ygrigoired@fda.gov', '99236416', '2017-11-24 07:40:53', 3, '2017-11-24 07:40:53');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (15, 'blongeae', 'BxybL5', 'Barthel', 'Longea', 'blongeae@ifeng.com', '93785892', '2011-05-24 12:58:51', 4, '2011-05-24 12:58:51');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (16, 'ayearsleyf', 'RhymjB3jnYp', 'Abran', 'Yearsley', 'ayearsleyf@ed.gov', '96964318', '2011-07-24 08:24:19', 1, '2011-07-24 08:24:19');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (17, 'jshafierg', 'QWqfXc', 'Jeanine', 'Shafier', 'jshafierg@yellowpages.com', '65802032', '2012-07-24 22:09:04', 3, '2012-07-24 22:09:04');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (18, 'chogbenh', 'a8xlvn', 'Cari', 'Hogben', 'chogbenh@google.pl', '96523876', '2013-02-24 06:26:57', 4, '2013-02-24 06:26:57');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (19, 'hbackshilli', 'dlqYrkpmYjz', 'Hillary', 'Backshill', 'hbackshilli@tuttocitta.it', '93030173', '2012-02-24 23:31:49', 3, '2012-02-24 23:31:49');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (20, 'wmaccaffertyj', 'FO5704gj', 'Wrennie', 'MacCafferty', 'wmaccaffertyj@wunderground.com', '60722233', '2016-04-24 08:26:18', 4, '2016-04-24 08:26:18');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (21, 'abarrimk', 'WdMnFU', 'Arabelle', 'Barrim', 'abarrimk@mit.edu', '67028797', '2015-06-25 01:11:29', 2, '2015-06-25 01:11:29');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (22, 'psalvagel', 'O0w3iE', 'Prudi', 'Salvage', 'psalvagel@chicagotribune.com', '89189491', '2008-12-24 12:37:13', 3, '2008-12-24 12:37:13');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (23, 'acavellm', 'QEgjQgT', 'Anette', 'Cavell', 'acavellm@is.gd', '93250059', '2017-06-24 09:09:35', 3, '2017-06-24 09:09:35');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (24, 'vbrimilcomben', 'FMJ9I64EdmR1', 'Violet', 'Brimilcombe', 'vbrimilcomben@nasa.gov', '86777972', '2010-04-24 23:27:39', 1, '2010-04-24 23:27:39');
-insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid, last_login) values (25, 'vsineo', 'i6cbczDi', 'Vanda', 'Sine', 'vsineo@ibm.com', '64285442', '2008-03-24 07:47:31', 2, '2008-03-24 07:47:31');
+/* 
+ * TODO:
+ * Replace hard-coded values with sub queries
+ * to determine the available delivery rider
+ * depending on some criterias.
+ */
+CREATE OR REPLACE FUNCTION log_orders()
+	RETURNS TRIGGER AS
+	'
+	BEGIN
+		INSERT INTO OrdersLog(order_timestamp, order_cost, delivery_cost, rider_id, address, postal_code) 
+			SELECT
+				n.order_timestamp,
+				SUM(n.unit_price * n.qty),
+				n.delivery_cost,
+				5,
+				n.address,
+				n.postal_code
+			FROM new_table n
+			GROUP BY n.order_timestamp, n.delivery_cost, n.address, n.postal_code;
+        RETURN NULL;
+	END;
+	'
+LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS log_orders_trigger ON Orders;
+CREATE TRIGGER log_orders_trigger
+	AFTER INSERT ON Orders
+	REFERENCING NEW TABLE AS new_table
+	FOR EACH STATEMENT EXECUTE PROCEDURE log_orders();
 
 
 
@@ -173,7 +297,392 @@ insert into Staff (uid, username, password, first_name, last_name, email, phone_
 ------------------
 -- FDS MANAGERS --
 ------------------
-insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (1, 'asennett0', 'eLLCYCdB0', 'Antonius', 'Sennett', 'asennett0@wikimedia.org', '93015394', '2004-06-24 19:13:32', '2004-06-24 19:13:32');
-insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (2, 'syuryshev1', 'r18lSOz98t', 'Shelli', 'Yuryshev', 'syuryshev1@spotify.com', '66229547', '2018-09-24 14:21:30', '2018-09-24 14:21:30');
-insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (3, 'areeveley2', 'dEMJ1LDUUst0', 'Aurelia', 'Reeveley', 'areeveley2@webs.com', '66952137', '2004-01-24 08:10:38', '2004-01-24 08:10:38');
-insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date, last_login) values (4, 'ahowardgater3', 'pr72dWUHury', 'Ange', 'Howard - Gater', 'ahowardgater3@yahoo.co.jp', '93423753', '2015-03-24 15:05:28', '2015-03-24 15:05:28');
+insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'hbogie0', '2oV0Wpo', 'Halie', 'Bogie', 'hbogie0@earthlink.net', '60690938', NOW() - (interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'ldufray1', '2NGPg0', 'Lamond', 'Du Fray', 'ldufray1@salon.com', '83119402', NOW() - (interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'ehaslum2', 'seJd78', 'Emlyn', 'Haslum', 'ehaslum2@cafepress.com', '92332086', NOW() - (interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into FDSManagers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'yderle3', 'UM6fWyBlyETB', 'Yvon', 'Derle', 'yderle3@sakura.ne.jp', '92658500', NOW() - (interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+
+
+
+
+---------------
+-- CUSTOMERS --
+---------------
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'sharcus0', 'tvhf0ivDdR', 'Stoddard', 'Harcus', 'sharcus0@mapy.cz', '85096217', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'croskam1', 'Y6DfS70MFaBE', 'Chelsy', 'Roskam', 'croskam1@gravatar.com', '92045140', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'sherries2', '7GaoU0ti6', 'Stanislas', 'Herries', 'sherries2@fc2.com', '67219834', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'jwatford3', 'uRl9GF41', 'Jehu', 'Watford', 'jwatford3@t-online.de', '82426087', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'dhinz4', 'D7F0jGVku', 'Douglass', 'Hinz', 'dhinz4@comcast.net', '86339432', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'yfitzsimons5', 'CUTcjxQyf3q', 'Yuma', 'Fitzsimons', 'yfitzsimons5@seattletimes.com', '89227882', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'btuffey6', '0LUU5Z', 'Boothe', 'Tuffey', 'btuffey6@webs.com', '98016785', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'jgutherson7', '2VyWCGLJ', 'Jill', 'Gutherson', 'jgutherson7@intel.com', '61728893', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'bcumberpatch8', '2oBvpL', 'Berni', 'Cumberpatch', 'bcumberpatch8@xing.com', '85931687', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'dtumilson9', 'tPBhI3kD', 'Danice', 'Tumilson', 'dtumilson9@flavors.me', '83071317', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'dfehelya', 'iMqvYNAUs', 'Darrelle', 'Fehely', 'dfehelya@cdbaby.com', '61345771', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'jingarfillb', 'xuYsjg7qcypq', 'Jordain', 'Ingarfill', 'jingarfillb@wp.com', '97422443', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'dtabbittc', '94ADplNeA7yj', 'Daisy', 'Tabbitt', 'dtabbittc@boston.com', '89363689', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'dethertond', 'a0mUyzele8', 'Derk', 'Etherton', 'dethertond@ebay.com', '98076906', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'emartinete', 'DHBnfJcmcXW', 'Ellwood', 'Martinet', 'emartinete@washingtonpost.com', '94920581', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'dstannionf', 'll6VgwlzP', 'Dianna', 'Stannion', 'dstannionf@dmoz.org', '94067798', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'odukeg', 'dIWgbGa', 'Orella', 'Duke', 'odukeg@hao123.com', '87425358', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'rpiscullih', '4ysxouzDkR7F', 'Roxane', 'Pisculli', 'rpiscullih@bing.com', '97045119', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'lklemensiewiczi', 'p45KOIibZJ', 'Leora', 'Klemensiewicz', 'lklemensiewiczi@time.com', '98563852', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+insert into Customers (uid, username, password, first_name, last_name, email, phone_no, registration_date) values (DEFAULT, 'slavrickj', 'JVkrs1J0', 'Shep', 'Lavrick', 'slavrickj@bigcartel.com', '80881582', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'));
+
+
+
+
+------------------
+-- CREDIT CARDS --
+------------------
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (7, '3537771022455820', '0510', 'BRINEY SHADDICK', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (5, '3586676110384289', '7947', 'CAMMY CLEOBURY', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (15, '5550105555083336', '4273', 'JACQUELYN SEARSON', 'mastercard', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (19, '5602219917933134', '226', 'MAURISE MAPLETHORPE', 'bankcard', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (6, '4903986281048462', '7799', 'DEVA CHURCHLEY', 'switch', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (24, '201567223433561', '3178', 'MONROE HUZZEY', 'diners-club-enroute', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (12, '5151506736918816', '992', 'TANITANSY PILSBURY', 'mastercard', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (20, '5108751437906207', '3826', 'BAYARD KILBOURNE', 'mastercard', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (21, '3562138540625391', '4832', 'DORIS RIDETT', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (14, '5572998797411099', '761', 'CECIL SODA', 'diners-club-us-ca', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (9, '50380142212451111', '6389', 'LETICIA KEPPIE', 'maestro', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (10, '5100170636401811', '078', 'JUNIE TOURS', 'mastercard', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (7, '3569446152172518', '385', 'GYPSY NORTHGRAVES', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (6, '3537814557273000', '9573', 'DARLA SZABO', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (11, '3533047214118375', '243', 'DOROLISA KAUSCHER', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (7, '5602229221249663', '2416', 'HUEY COURTOIS', 'china-unionpay', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (16, '3557395920471377', '6002', 'BARBEY FARGUHAR', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (10, '4026346520590539', '4662', 'THOMAS CROIX', 'visa-electron', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (18, '6771091682123417284', '6320', 'MAYBELLE FERRAR', 'laser', last_day((now()::date + (random() * interval '5 years'))::date));
+insert into CreditCards (uid, card_no, cvv_no, name_on_card, card_type, expiry_date) values (5, '3579522824652612', '731', 'LOYDIE FIGGER', 'jcb', last_day((now()::date + (random() * interval '5 years'))::date));
+
+
+
+
+-----------------
+-- RESTAURANTS --
+-----------------
+insert into Restaurants (rid, rname, address, min_order_cost) values (DEFAULT, 'Gerhold-Schneider', '37190 Packers Trail', 3.5);
+insert into Restaurants (rid, rname, address, min_order_cost) values (DEFAULT, 'Jenkins Group', '54 Moulton Point', 1);
+insert into Restaurants (rid, rname, address, min_order_cost) values (DEFAULT, 'Schiller and Sons', '7 Ridgeview Crossing', 3);
+insert into Restaurants (rid, rname, address, min_order_cost) values (DEFAULT, 'Vandervort, Smitham and Mohr', '791 Maple Wood Pass', 0.5);
+
+
+
+
+---------------------
+-- DELIVERY RIDERS --
+---------------------
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'mjoplin0', '99mRUK9SIy', 'Marylinda', 'Joplin', 'mjoplin0@zdnet.com', '91156281', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 15);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'nstiven1', 'bYarJszgIWrW', 'Nolana', 'Stiven', 'nstiven1@live.com', '89047851', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 12);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'mstrete2', 'Gm9FEPo', 'Merl', 'Strete', 'mstrete2@sbwire.com', '96559892', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 29);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'ymacgibbon3', 'CEpdTkWI', 'Yetty', 'MacGibbon', 'ymacgibbon3@nhs.uk', '95690961', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'jantonias4', '6hgaM9p082', 'Jillene', 'Antonias', 'jantonias4@flavors.me', '97666473', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 17);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'bblancowe5', 'H8bHy0pWD3c', 'Brena', 'Blancowe', 'bblancowe5@microsoft.com', '94277769', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 15);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'hgeely6', 'MqjEJ6k1xHA', 'Herbert', 'Geely', 'hgeely6@yahoo.com', '91023570', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 14);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'kfairholme7', 'ShDCocYU656', 'Kip', 'Fairholme', 'kfairholme7@theguardian.com', '95716269', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 27);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'lheathcote8', 'SanzKbe1', 'Lillis', 'Heathcote', 'lheathcote8@abc.net.au', '81534822', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 17);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'lcheccucci9', 'e32mCzi5je', 'Leo', 'Checcucci', 'lcheccucci9@guardian.co.uk', '65568625', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 8);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'awehnerra', 'dbCvYC', 'Amity', 'Wehnerr', 'awehnerra@nature.com', '90190740', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 29);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'mcomptonb', 'Tq8QfSOPk', 'Meghann', 'Compton', 'mcomptonb@wired.com', '91859184', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 5);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'lcoweuppec', 'mj4fYK', 'Lorianna', 'Coweuppe', 'lcoweuppec@nyu.edu', '93321355', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 0);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'wvaggesd', '5W0Ipa2UNz', 'Willard', 'Vagges', 'wvaggesd@home.pl', '96079876', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 6);
+insert into Riders (uid, username, password, first_name, last_name, email, phone_no, registration_date, total_deliveries) values (DEFAULT, 'mkhomine', 'm1qZuIz', 'Marj', 'Khomin', 'mkhomine@archive.org', '90933430', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 28);
+
+
+
+
+----------------------
+-- RESTAURANT STAFF --
+----------------------
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'houldred0', 'gTM5xoAbeSzW', 'Haleigh', 'Ouldred', 'houldred0@cam.ac.uk', '68947594', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 2);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'mcicchinelli1', '0i0dDlCZBLr', 'Mair', 'Cicchinelli', 'mcicchinelli1@who.int', '88093576', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 1);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'ndensham2', 'xE2MCl', 'Nari', 'Densham', 'ndensham2@paginegialle.it', '60298707', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 3);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'brearie3', 'l1Ow6xW90qt2', 'Britney', 'Rearie', 'brearie3@cdc.gov', '94760768', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 1);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'psleicht4', 'sWTTF5WpVF', 'Pierce', 'Sleicht', 'psleicht4@about.me', '92323199', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 2);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'abickerton5', 'vM7dGd2cy', 'Avery', 'Bickerton', 'abickerton5@nationalgeographic.com', '99872952', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 1);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'awoolvin6', 'EEuTKO', 'Anders', 'Woolvin', 'awoolvin6@scientificamerican.com', '81701678', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 2);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'abeebis7', '39QK9nU', 'Ashley', 'Beebis', 'abeebis7@example.com', '87001729', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'sdunbar8', 'sLpSEmO', 'Sophey', 'Dunbar', 'sdunbar8@ed.gov', '95242436', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 1);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'mbergstrand9', 'x8RJrOx', 'Martynne', 'Bergstrand', 'mbergstrand9@goo.gl', '93867998', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'gnewarka', 'oBPDL2qC', 'Gunner', 'Newark', 'gnewarka@engadget.com', '88559639', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 3);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'aricholdb', 'tb7Pszk', 'Axe', 'Richold', 'aricholdb@yelp.com', '94113032', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'dwhitecrossc', 'hHZJIN7Mgyy', 'Devy', 'Whitecross', 'dwhitecrossc@buzzfeed.com', '99538203', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 3);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'dshelsherd', 'e9HmoC8OsG5', 'Dickie', 'Shelsher', 'dshelsherd@noaa.gov', '83353318', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'gdibartolomeoe', '6Jj8rX67uBa', 'Gordan', 'Di Bartolomeo', 'gdibartolomeoe@sciencedaily.com', '87402027', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 2);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'gbourgaizef', 'sDda48FaV', 'Gisela', 'Bourgaize', 'gbourgaizef@artisteer.com', '97190367', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 3);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'mpeeryg', 'OAgzfTttyp', 'Mellie', 'Peery', 'mpeeryg@ameblo.jp', '99688846', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'swillsmoreh', 'Ol1NaO7kSUy', 'Sherwin', 'Willsmore', 'swillsmoreh@miitbeian.gov.cn', '63404845', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'chandsi', 'rKfDAb', 'Christiano', 'Hands', 'chandsi@bbb.org', '88662559', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 1);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'mgreedj', 'MtonZexv', 'Marsha', 'Greed', 'mgreedj@about.com', '97527856', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 2);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'glittleyk', '3V30Sk1OM4', 'Gina', 'Littley', 'glittleyk@google.com', '99142009', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 1);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'ahammettl', 'KZUx9t', 'Amanda', 'Hammett', 'ahammettl@redcross.org', '92931818', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 2);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'bccominim', '4XpBAIMM', 'Burl', 'Ccomini', 'bccominim@google.ca', '90831603', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'cflewinn', 'P6Hy6yy', 'Cosetta', 'Flewin', 'cflewinn@exblog.jp', '68999898', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 2);
+insert into Staff (uid, username, password, first_name, last_name, email, phone_no, registration_date, rid) values (DEFAULT, 'fdreyeo', 'lxmm7X', 'Faustina', 'Dreye', 'fdreyeo@scribd.com', '92802951', NOW() - (random() * interval '5 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'), 4);
+
+
+
+
+---------------------
+-- FOOD CATEGORIES --
+---------------------
+insert into FoodCategories (fcid, fcname) values (1, 'Western');
+insert into FoodCategories (fcid, fcname) values (2, 'Vegetarian');
+insert into FoodCategories (fcid, fcname) values (3, 'Chinese');
+insert into FoodCategories (fcid, fcname) values (4, 'Malay');
+insert into FoodCategories (fcid, fcname) values (5, 'Indian');
+insert into FoodCategories (fcid, fcname) values (6, 'Japanese');
+insert into FoodCategories (fcid, fcname) values (7, 'Desserts');
+insert into FoodCategories (fcid, fcname) values (8, 'Drinks');
+insert into FoodCategories (fcid, fcname) values (9, 'Breakfast');
+insert into FoodCategories (fcid, fcname) values (10, 'Fast food');
+
+
+
+
+-----------
+-- FOODS --
+-----------
+insert into Foods (fid, fname, category) values (1, 'Naja Forte', 10);
+insert into Foods (fid, fname, category) values (2, 'Propranolol Hydrochloride', 6);
+insert into Foods (fid, fname, category) values (3, 'Ketodan', 10);
+insert into Foods (fid, fname, category) values (4, 'REFRESH OPTIVE Advanced', 10);
+insert into Foods (fid, fname, category) values (5, 'American Elm', 7);
+insert into Foods (fid, fname, category) values (6, 'Modafinil', 2);
+insert into Foods (fid, fname, category) values (7, 'Mary Kay CC Cream Sunscreen Broad Spectrum SPF 15 Deep', 1);
+insert into Foods (fid, fname, category) values (8, 'Cough Formula Cough and Cold', 9);
+insert into Foods (fid, fname, category) values (9, 'Johnson Grass', 4);
+insert into Foods (fid, fname, category) values (10, 'TLB-Matrix', 3);
+insert into Foods (fid, fname, category) values (11, 'leader acid control', 7);
+insert into Foods (fid, fname, category) values (12, 'Bioelements', 10);
+insert into Foods (fid, fname, category) values (13, 'Diazepam', 1);
+insert into Foods (fid, fname, category) values (14, 'EUCALYPTUS GLOBULUS POLLEN', 8);
+insert into Foods (fid, fname, category) values (15, 'Medi First Plus Cramp', 8);
+insert into Foods (fid, fname, category) values (16, 'RadiaBlock', 7);
+insert into Foods (fid, fname, category) values (17, 'Metoprolol Tartrate', 8);
+insert into Foods (fid, fname, category) values (18, 'ropinirole hydrochloride', 10);
+insert into Foods (fid, fname, category) values (19, 'Allergy', 3);
+insert into Foods (fid, fname, category) values (20, 'ANTACID', 5);
+insert into Foods (fid, fname, category) values (21, 'Sensorcaine', 10);
+insert into Foods (fid, fname, category) values (22, 'Dove Ultimate Visibly Smooth Wild Rose', 6);
+insert into Foods (fid, fname, category) values (23, 'HUMATROPE', 4);
+insert into Foods (fid, fname, category) values (24, 'Paroxetine Hydrochloride', 3);
+insert into Foods (fid, fname, category) values (25, 'Wingscale', 6);
+insert into Foods (fid, fname, category) values (26, 'Mucinex', 1);
+insert into Foods (fid, fname, category) values (27, 'All day Allergy d', 1);
+insert into Foods (fid, fname, category) values (28, 'FAMOTIDINE', 1);
+insert into Foods (fid, fname, category) values (29, 'SUPER DEFENSE', 1);
+insert into Foods (fid, fname, category) values (30, 'Leader Clear Lax', 6);
+insert into Foods (fid, fname, category) values (31, 'Amlodipine Besylate', 1);
+insert into Foods (fid, fname, category) values (32, 'Carbidopa and levodopa', 9);
+insert into Foods (fid, fname, category) values (33, 'Stool Softener', 8);
+insert into Foods (fid, fname, category) values (34, 'HICON', 3);
+insert into Foods (fid, fname, category) values (35, 'AZITHROMYCIN DIHYDRATE', 2);
+insert into Foods (fid, fname, category) values (36, 'BETULA LENTA POLLEN', 2);
+insert into Foods (fid, fname, category) values (37, 'Doxycycline', 4);
+insert into Foods (fid, fname, category) values (38, 'CIMETIDINE', 2);
+insert into Foods (fid, fname, category) values (39, 'BRODA Acne Spa', 9);
+insert into Foods (fid, fname, category) values (40, 'Canary Grass Pollen', 9);
+
+
+
+
+----------
+-- MENU --
+----------
+insert into Menu (fid, rid, daily_limit, unit_price) values (31, 1, 188, 14.2);
+insert into Menu (fid, rid, daily_limit, unit_price) values (40, 3, 254, 10.3);
+insert into Menu (fid, rid, daily_limit, unit_price) values (7, 1, 138, 7.8);
+insert into Menu (fid, rid, daily_limit, unit_price) values (18, 4, 181, 14.3);
+insert into Menu (fid, rid, daily_limit, unit_price) values (28, 2, 158, 5.4);
+insert into Menu (fid, rid, daily_limit, unit_price) values (5, 3, 98, 11.1);
+insert into Menu (fid, rid, daily_limit, unit_price) values (17, 4, 223, 5.6);
+insert into Menu (fid, rid, daily_limit, unit_price) values (17, 3, 97, 1.9);
+insert into Menu (fid, rid, daily_limit, unit_price) values (15, 2, 71, 1.0);
+insert into Menu (fid, rid, daily_limit, unit_price) values (35, 3, 153, 4.9);
+insert into Menu (fid, rid, daily_limit, unit_price) values (5, 1, 175, 3.3);
+insert into Menu (fid, rid, daily_limit, unit_price) values (19, 1, 147, 3.6);
+insert into Menu (fid, rid, daily_limit, unit_price) values (23, 3, 11, 7.2);
+insert into Menu (fid, rid, daily_limit, unit_price) values (6, 1, 177, 1.4);
+insert into Menu (fid, rid, daily_limit, unit_price) values (2, 4, 102, 5.5);
+
+
+
+
+----------------------------------
+-- DELIVERY COST (REGION-BASED) --
+----------------------------------
+insert into DeliveryCost values ('central', 2.00);
+insert into DeliveryCost values ('north', 2.40);
+insert into DeliveryCost values ('northeast', 2.20);
+insert into DeliveryCost values ('east', 2.50);
+insert into DeliveryCost values ('west', 2.20);
+
+
+
+
+--------------------
+-- DELIVERY AREAS --
+--------------------
+-- District 1
+insert into DeliveryAreas values ('central', '01');
+insert into DeliveryAreas values ('central', '02');
+insert into DeliveryAreas values ('central', '03');
+insert into DeliveryAreas values ('central', '04');
+insert into DeliveryAreas values ('central', '05');
+insert into DeliveryAreas values ('central', '06');
+
+-- District 2
+insert into DeliveryAreas values ('central', '07');
+insert into DeliveryAreas values ('central', '08');
+
+-- District 3
+insert into DeliveryAreas values ('central', '14');
+insert into DeliveryAreas values ('central', '15');
+insert into DeliveryAreas values ('central', '16');
+
+-- District 4
+insert into DeliveryAreas values ('central', '09');
+insert into DeliveryAreas values ('central', '10');
+
+-- District 5
+insert into DeliveryAreas values ('west', '11');
+insert into DeliveryAreas values ('west', '12');
+insert into DeliveryAreas values ('west', '13');
+
+-- District 6
+insert into DeliveryAreas values ('central', '17');
+
+-- District 7
+insert into DeliveryAreas values ('central', '18');
+insert into DeliveryAreas values ('central', '19');
+
+-- District 8
+insert into DeliveryAreas values ('central', '20');
+insert into DeliveryAreas values ('central', '21');
+
+-- District 9
+insert into DeliveryAreas values ('central', '22');
+insert into DeliveryAreas values ('central', '23');
+
+-- District 10
+insert into DeliveryAreas values ('central', '24');
+insert into DeliveryAreas values ('central', '25');
+insert into DeliveryAreas values ('central', '26');
+insert into DeliveryAreas values ('central', '27');
+
+-- District 11
+insert into DeliveryAreas values ('central', '28');
+insert into DeliveryAreas values ('central', '29');
+insert into DeliveryAreas values ('central', '30');
+
+-- District 12
+insert into DeliveryAreas values ('central', '31');
+insert into DeliveryAreas values ('central', '32');
+insert into DeliveryAreas values ('central', '33');
+
+-- District 13
+insert into DeliveryAreas values ('central', '34');
+insert into DeliveryAreas values ('central', '35');
+insert into DeliveryAreas values ('central', '36');
+insert into DeliveryAreas values ('central', '37');
+
+-- District 14
+insert into DeliveryAreas values ('central', '38');
+insert into DeliveryAreas values ('central', '39');
+insert into DeliveryAreas values ('central', '40');
+insert into DeliveryAreas values ('central', '41');
+
+-- District 15
+insert into DeliveryAreas values ('east', '42');
+insert into DeliveryAreas values ('east', '43');
+insert into DeliveryAreas values ('east', '44');
+insert into DeliveryAreas values ('east', '45');
+
+-- District 16
+insert into DeliveryAreas values ('east', '46');
+insert into DeliveryAreas values ('east', '47');
+insert into DeliveryAreas values ('east', '48');
+
+-- District 17
+insert into DeliveryAreas values ('east', '49');
+insert into DeliveryAreas values ('east', '50');
+insert into DeliveryAreas values ('east', '81');
+
+-- District 18
+insert into DeliveryAreas values ('east', '51');
+insert into DeliveryAreas values ('east', '52');
+
+-- District 19
+insert into DeliveryAreas values ('northeast', '53');
+insert into DeliveryAreas values ('northeast', '54');
+insert into DeliveryAreas values ('northeast', '55');
+insert into DeliveryAreas values ('northeast', '82');
+
+-- District 20
+insert into DeliveryAreas values ('northeast', '56');
+insert into DeliveryAreas values ('northeast', '57');
+
+-- District 21
+insert into DeliveryAreas values ('central', '58');
+insert into DeliveryAreas values ('central', '59');
+
+-- District 22
+insert into DeliveryAreas values ('west', '60');
+insert into DeliveryAreas values ('west', '61');
+insert into DeliveryAreas values ('west', '62');
+insert into DeliveryAreas values ('west', '63');
+insert into DeliveryAreas values ('west', '64');
+
+-- District 23
+insert into DeliveryAreas values ('west', '65');
+insert into DeliveryAreas values ('west', '66');
+insert into DeliveryAreas values ('west', '67');
+insert into DeliveryAreas values ('west', '68');
+
+-- District 24
+insert into DeliveryAreas values ('north', '69');
+insert into DeliveryAreas values ('north', '70');
+insert into DeliveryAreas values ('north', '71');
+
+-- District 25
+insert into DeliveryAreas values ('north', '72');
+insert into DeliveryAreas values ('north', '73');
+
+-- District 26
+insert into DeliveryAreas values ('central', '77');
+insert into DeliveryAreas values ('central', '78');
+
+-- District 27
+insert into DeliveryAreas values ('north', '75');
+insert into DeliveryAreas values ('north', '76');
+
+-- District 28
+insert into DeliveryAreas values ('northeast', '79');
+insert into DeliveryAreas values ('northeast', '80');
+
+
+
+
+------------
+-- ORDERS --
+------------
+insert into Orders
+values
+  (1, 1, 2, 5.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
+  (1, 1, 4, 2.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
+  (1, 1, 6, 1.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
+  (1, 1, 8, 6.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
+  (1, 1, 9, 0.50, 3, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
+  (1, 1, 10, 1.00, 2, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130');
+
+insert into Orders
+values
+  (2, 3, 1, 4.50, 1, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
+  (2, 3, 2, 1.50, 2, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
+  (2, 3, 3, 1.50, 1, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
+  (2, 3, 5, 3.50, 2, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346');
+
+
+

@@ -10,10 +10,15 @@ require('dotenv').config()
 console.log('Executing a query...')
 const db = require('./db')
 const testQuery = 'select now()'
-const str = 'create table users(sid integer, name varchar(80))'
-db.query(testQuery, null, (err, res) => {
+const str = 'select * from Customers'
+db.query(str, null, (err, res) => {
   if (err) {
     console.error(err)
+  } else {
+    res.rows.forEach((item) => {
+      // console.log(parseInt(item.points) + 2.5)
+      console.log(item.phone_no)
+    })
   }
   db.end()
 })
