@@ -1,12 +1,42 @@
-import React from 'react';
-import './App.css';
+import React from 'react'
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from 'react-router-dom'
+import Header from './components/Header'
+import Body from './components/Body'
+import Footer from './components/Footer'
+import './App.css'
 
-function App() {
-  return (
-    <div>
-      Hello World!
-    </div>
-  );
+class App extends React.Component {
+
+  constructor(props) {
+    super(props)
+
+    this.state = {}
+
+    // Function bindings.
+  }
+
+  render() {
+    return (
+      <div className='App'>
+        <Router>
+          <Header />
+          <Body />
+          <Footer />
+        </Router>
+        
+        {/* <Router>
+          <Header />
+          <Body />
+          <Footer />
+        </Router> */}
+      </div>
+    )
+  }
 }
 
-export default App;
+export default App
