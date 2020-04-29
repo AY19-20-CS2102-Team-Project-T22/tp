@@ -9,6 +9,7 @@ import Header from './components/Header'
 import Body from './components/Body'
 import Footer from './components/Footer'
 import Login from './components/Login'
+import Registration from './components/Registration'
 import './App.css'
 
 class App extends React.Component {
@@ -31,6 +32,9 @@ class App extends React.Component {
         <Router>
           <Route path='/login' exact>
             <Login />
+          </Route>
+          <Route path='/register' exact>
+            <Registration />
           </Route>
           <Route path='/' exact>
             <Header isLoggedIn={this.state.isLoggedIn} />

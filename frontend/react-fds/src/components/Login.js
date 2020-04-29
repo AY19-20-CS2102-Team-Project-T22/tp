@@ -22,9 +22,8 @@ class Login extends React.Component {
             <Input type='password' id='password' placeholder='Password' />
           </FormGroup>
           <Button>Login</Button>
-          {' '}
-          <Button>Register</Button>
         </Form>
+        <h8>Don't have an account? <Link to='/register'>Register here.</Link></h8>
       </div>
     )
   }

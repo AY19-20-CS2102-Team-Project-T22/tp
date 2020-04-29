@@ -1,9 +1,15 @@
 .login {
   height: 100vh;
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: column nowrap;
   justify-content: center;
   align-items: center;
+}
+
+.register {
+  height: 100vh;
+  display: flex;
+  margin-top: 10px;
 }
 
 .header {
