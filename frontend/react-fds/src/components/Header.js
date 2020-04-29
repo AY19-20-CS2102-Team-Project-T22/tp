@@ -40,11 +40,19 @@ class Header extends React.Component {
             Account
           </Link>
         }
-        <Link
-          to='/login'
-          style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
-          Log in
-        </Link>
+        {(!this.props.isLoggedIn)?
+          <Link
+            to='/login'
+            style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+            Login
+          </Link>
+          :
+          <Link
+            to='/logout'
+            style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+            Logout
+          </Link>
+        }
       </div>
     )
   }

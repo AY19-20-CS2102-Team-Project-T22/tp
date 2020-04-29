@@ -8,6 +8,7 @@ import {
 import Header from './components/Header'
 import Body from './components/Body'
 import Footer from './components/Footer'
+import Login from './components/Login'
 import './App.css'
 
 class App extends React.Component {
@@ -17,7 +18,7 @@ class App extends React.Component {
 
     this.state = {
       items: [],
-      isLoggedIn: true,
+      isLoggedIn: false,
       userId: null
     }
 
@@ -28,9 +29,15 @@ class App extends React.Component {
     return (
       <div className='App'>
         <Router>
-          <Header isLoggedIn={this.state.isLoggedIn} />
-          <Body />
-          <Footer />
+          <Route path='/login' exact>
+            <Login />
+          </Route>
+          <Route path='/' exact>
+            <Header isLoggedIn={this.state.isLoggedIn} />
+            <Body />
+            <Footer />
+          </Route>
+          
         </Router>
       </div>
     )
