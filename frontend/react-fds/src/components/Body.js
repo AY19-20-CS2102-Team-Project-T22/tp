@@ -13,7 +13,8 @@ class Body extends React.Component {
   render() {
     return (
       <div className='body'>
-        <Route path='/' exact>
+        Body
+        {/* <Route path='/' exact>
           <Home />
         </Route>
         <Route path='/about'>
@@ -21,7 +22,7 @@ class Body extends React.Component {
         </Route>
         <Route path='/users'>
           <Users />
-        </Route>
+        </Route> */}
       </div>
     )
   }

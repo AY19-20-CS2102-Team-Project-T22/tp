@@ -15,7 +15,11 @@ class App extends React.Component {
   constructor(props) {
     super(props)
 
-    this.state = {}
+    this.state = {
+      items: [],
+      isLoggedIn: true,
+      userId: null
+    }
 
     // Function bindings.
   }
@@ -24,16 +28,10 @@ class App extends React.Component {
     return (
       <div className='App'>
         <Router>
-          <Header />
+          <Header isLoggedIn={this.state.isLoggedIn} />
           <Body />
           <Footer />
         </Router>
-        
-        {/* <Router>
-          <Header />
-          <Body />
-          <Footer />
-        </Router> */}
       </div>
     )
   }

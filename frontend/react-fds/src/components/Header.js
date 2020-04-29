@@ -1,4 +1,5 @@
 import React from 'react'
+import { Button, InputGroup, InputGroupText, InputGroupAddon, Input } from 'reactstrap'
 import {
   BrowserRouter as Router,
   Switch,
@@ -7,22 +8,43 @@ import {
 } from 'react-router-dom'
 
 class Header extends React.Component {
+  constructor(props) {
+    super(props)
+  }
+
+  // componentDidMount() {
+  //   console.log('did mount')
+  // }
+
+  // componentDidUpdate() {
+  //   console.log('did update')
+  // }
+
   render() {
     return (
       <div className='header'>
-        <nav>
-          <ul>
-            <li>
-              <Link to='/'>Home</Link>
-            </li>
-            <li>
-              <Link to='/about'>About</Link>
-            </li>
-            <li>
-              <Link to='/users'>Users</Link>
-            </li>
-          </ul>
-        </nav>
+        <h6 style={{ flex: 2 }}>Toggle Side Panel Placeholder</h6>
+        <Link to='/' style={{ flex: 1, fontSize: '18px' }}>{'<Home>'}</Link>
+        <InputGroup style={{ flex: 12 }}>
+          <Input placeholder='Search for foods or restaurants...' />
+          <InputGroupAddon addonType="append">
+            <Button>
+              Submit
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+        {this.props.isLoggedIn &&
+          <Link
+            to='/accountinfo'
+            style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+            Account
+          </Link>
+        }
+        <Link
+          to='/login'
+          style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+          Log in
+        </Link>
       </div>
     )
   }
