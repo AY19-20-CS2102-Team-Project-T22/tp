@@ -31,8 +31,6 @@ db.query(testQuery, null, (err, res) => {
 })
 */
 
-app.use(express.json())
-
 // Start server.
 app.listen(port, () => {
   console.log(`Server is running on port ${port}.`)
