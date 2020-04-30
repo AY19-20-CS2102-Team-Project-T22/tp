@@ -22,12 +22,31 @@ class App extends React.Component {
 
       // States for food items display page.
       items: [],
-      filter: ''
+      filter: '',
+
+      // State for item cart.
+      cart: [],
+
+      // State for viewing filter panel.
+      showFilterPanel: true
     }
 
     // Function bindings.
     this.updateUserId = this.updateUserId.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
+    this.toggleFilterPanel = this.toggleFilterPanel.bind(this)
+  }
+
+  toggleFilterPanel() {
+    this.setState(prev => ({
+      showFilterPanel: !prev.showFilterPanel
+    }))
+  }
+
+  addToCart(e) {
+    this.setState(prev => ({
+      cart: [...prev, this.state.items[e.target.value]]
+    }))
   }
 
   updateUserId(uid) {
@@ -58,8 +77,13 @@ class App extends React.Component {
             <Header
               isLoggedIn={this.state.isLoggedIn}
               handleLogout={this.handleLogout}
+              toggleFilterPanel={this.toggleFilterPanel}
             />
-            <Body />
+            <Body
+              items={this.state.items}
+              filter={this.state.filter}
+              showFilterPanel={this.state.showFilterPanel}
+            />
             <Footer />
           </Route>
         </Router>

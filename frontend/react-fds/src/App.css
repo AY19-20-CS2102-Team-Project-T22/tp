@@ -18,18 +18,45 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  
+  box-shadow: 0px 0px 7px 0px rgba(0,0,0,0.5);
 }
 
 .body {
   width: 100%;
   height: calc(100vh - 50px - 50px);
-  background-color: cornflowerblue;
+  display: flex;
+  /* background-color: cornflowerblue; */
 }
 
 .footer {
   width: 100%;
   height: 50px;
   background-color: crimson;
+}
+
+.filter-panel {
+  width: 250px;
+  background-color: chartreuse;
+}
+
+.cart-panel {
+  width: 320px;
+  background-color: chocolate;
+}
+
+.item-display {
+  display: flex;
+  flex: 1;
+  flex-flow: row wrap;
+  background-color: darkcyan;
+}
+
+.food-item {
+  width: 33%;
+  /* height: 300px; */
+  margin: 30px;
+  box-shadow: 7px 7px 12px -3px rgba(0,0,0,0.4);
 }
 
 .App {

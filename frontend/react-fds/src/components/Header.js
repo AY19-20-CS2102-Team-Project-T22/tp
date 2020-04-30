@@ -1,6 +1,9 @@
 import React from 'react'
-import { Button, InputGroup, InputGroupAddon, Input } from 'reactstrap'
 import { Link } from 'react-router-dom'
+import { Button, InputGroup, InputGroupAddon, Input } from 'reactstrap'
+import IconButton from '@material-ui/core/IconButton'
+import FastfoodIcon from '@material-ui/icons/Fastfood'
+import MenuIcon from '@material-ui/icons/Menu'
 
 class Header extends React.Component {
   constructor(props) {
@@ -10,9 +13,34 @@ class Header extends React.Component {
   render() {
     return (
       <div className='header'>
-        <h6 style={{ flex: 2 }}>Toggle Side Panel Placeholder</h6>
-        <Link to='/' style={{ flex: 1, fontSize: '18px' }}>{'<Logo?>'}</Link>
-        <InputGroup style={{ flex: 12 }}>
+        <IconButton
+          onClick={this.props.toggleFilterPanel}
+          style={{
+            width: '50px',
+            height: '50px',
+            marginLeft: '10px',
+            marginRight: '10px',
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+        <Link
+          to='/'
+          style={{
+            height: '80%',
+            width: '45px'
+          }}
+        >
+          <FastfoodIcon
+            style={{
+              color: 'white',
+              backgroundColor: 'red',
+              width: '100%',
+              height: '100%'
+            }}
+          />
+        </Link>
+        <InputGroup style={{ marginLeft: '20px', marginRight: '20px', flex: 1 }}>
           <Input type='search' placeholder='Search for foods or restaurants...' />
           <InputGroupAddon addonType="append">
             <Button color='primary'>
@@ -23,13 +51,25 @@ class Header extends React.Component {
         {(this.props.isLoggedIn) ?
           <Link
             to='/accountinfo'
-            style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+            style={{
+              fontSize: '18px',
+              textAlign: 'center',
+              marginRight: '10px',
+              marginLeft: '20px'
+            }}
+          >
             Account
           </Link>
           :
           <Link
             to='/login'
-            style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+            style={{
+              fontSize: '18px',
+              textAlign: 'center',
+              marginRight: '10px',
+              marginLeft: '20px'
+            }}
+          >
             Login
           </Link>
 
@@ -37,13 +77,25 @@ class Header extends React.Component {
         {(!this.props.isLoggedIn) ?
           <Link
             to='/register'
-            style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+            style={{
+              fontSize: '18px',
+              textAlign: 'center',
+              marginRight: '20px',
+              marginLeft: '10px'
+            }}
+          >
             Register
           </Link>
           :
           <Link
             onClick={this.props.handleLogout}
-            style={{ flex: 1, fontSize: '18px', textAlign: 'center' }}>
+            style={{
+              fontSize: '18px',
+              textAlign: 'center',
+              marginRight: '20px',
+              marginLeft: '10px'
+            }}
+          >
             Log Out
           </Link>
         }
