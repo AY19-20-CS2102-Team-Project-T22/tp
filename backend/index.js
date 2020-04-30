@@ -11,7 +11,9 @@ app.use(cors())
 app.use(express.json())
 
 const usersRouter = require('./routes/users')
+const menuRouter = require('./routes/menu')
 app.use('/users', usersRouter)
+app.use('/menu', menuRouter)
 
 /* Testing query
 console.log('Executing a query...')

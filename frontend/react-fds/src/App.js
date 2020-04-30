@@ -3,9 +3,10 @@ import {
   BrowserRouter as Router,
   Route,
 } from 'react-router-dom'
+import axios from 'axios'
 import Header from './components/Header'
 import Body from './components/Body'
-import Footer from './components/Footer'
+// import Footer from './components/Footer'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import './App.css'
@@ -58,8 +59,23 @@ class App extends React.Component {
     alert('You have been logged out.')
   }
 
+  updateMenu(menu) {
+    // console.log(menu)
+    this.setState({ items: menu })
+  }
+
+  componentDidMount() {
+    // Retrieve food menu from the database.
+    axios.get('http://localhost:5000/menu')
+    .then(res => {
+      this.updateMenu(res.data)
+    })
+    .catch(err => {
+      alert(err)
+    })
+  }
+
   render() {
-    console.log(this.state.isLoggedIn)
     return (
       <div className='App'>
         <Router>
@@ -84,7 +100,6 @@ class App extends React.Component {
               filter={this.state.filter}
               showFilterPanel={this.state.showFilterPanel}
             />
-            <Footer />
           </Route>
         </Router>
       </div>

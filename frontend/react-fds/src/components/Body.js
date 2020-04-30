@@ -21,7 +21,7 @@ class Body extends React.Component {
     return (
       <div className='body'>
         {this.props.showFilterPanel && <FilterPanel />}
-        <ItemDisplay />
+        <ItemDisplay items={this.props.items} />
         <CartPanel />
       </div>
     )

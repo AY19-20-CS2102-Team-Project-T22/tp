@@ -22,7 +22,7 @@ class Header extends React.Component {
             marginRight: '10px',
           }}
         >
-          <MenuIcon />
+          <MenuIcon style={{ color: 'white' }} />
         </IconButton>
         <Link
           to='/'
@@ -34,7 +34,7 @@ class Header extends React.Component {
           <FastfoodIcon
             style={{
               color: 'white',
-              backgroundColor: 'red',
+              backgroundColor: 'orangered',
               width: '100%',
               height: '100%'
             }}
@@ -55,7 +55,9 @@ class Header extends React.Component {
               fontSize: '18px',
               textAlign: 'center',
               marginRight: '10px',
-              marginLeft: '20px'
+              marginLeft: '20px',
+              color: 'white',
+              fontWeight: 'bold'
             }}
           >
             Account
@@ -67,12 +69,13 @@ class Header extends React.Component {
               fontSize: '18px',
               textAlign: 'center',
               marginRight: '10px',
-              marginLeft: '20px'
+              marginLeft: '20px',
+              color: 'white',
+              fontWeight: 'bold'
             }}
           >
             Login
           </Link>
-
         }
         {(!this.props.isLoggedIn) ?
           <Link
@@ -81,7 +84,9 @@ class Header extends React.Component {
               fontSize: '18px',
               textAlign: 'center',
               marginRight: '20px',
-              marginLeft: '10px'
+              marginLeft: '10px',
+              color: 'white',
+              fontWeight: 'bold'
             }}
           >
             Register
@@ -93,7 +98,9 @@ class Header extends React.Component {
               fontSize: '18px',
               textAlign: 'center',
               marginRight: '20px',
-              marginLeft: '10px'
+              marginLeft: '10px',
+              color: 'white',
+              fontWeight: 'bold'
             }}
           >
             Log Out

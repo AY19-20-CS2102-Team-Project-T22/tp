@@ -15,12 +15,29 @@ class FoodItem extends React.Component {
   render() {
     return (
       <Card className='food-item'>
-        <CardImg top width="100%" src={FoodImage} alt="Card image cap" />
-        <CardBody>
-          <CardTitle>Food Name</CardTitle>
-          <CardSubtitle>Food Category</CardSubtitle>
-          <CardText>Some quick description about the food.</CardText>
-          <Button style={{ width: '100%' }}>Add to cart</Button>
+        <CardImg top width='100%' src={FoodImage} alt='Food_IMG' />
+        <CardBody style={{ height: '100%', textAlign: 'center' }}>
+          <CardTitle
+            style={{
+              fontSize: '16px',
+              height: '50px',
+              overflowY: 'auto'
+            }}
+          >
+            {this.props.item.fname}
+          </CardTitle>
+          <CardSubtitle style={{ fontSize: '15px', height: '70px' }}>Restaurant: <br />{this.props.item.rname}</CardSubtitle>
+          <CardSubtitle style={{ fontSize: '24px', fontWeight: 'bold' }}>${this.props.item.unit_price}</CardSubtitle>
+          <Button
+            style={{
+              width: '100%',
+              backgroundColor: 'orangered',
+              fontSize: '21px',
+              fontWeight: 'bold'
+            }}
+          >
+            Add to cart
+          </Button>
         </CardBody>
       </Card>
     )

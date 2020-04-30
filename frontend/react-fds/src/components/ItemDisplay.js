@@ -6,12 +6,23 @@ class ItemDisplay extends React.Component {
     super(props)
 
     this.state = {}
+
+    this.displayItems = this.displayItems.bind(this)
+  }
+
+  displayItems(items) {
+    console.log(items)
+    let menu = items.map((eachItem, i) => {
+      return <FoodItem item={eachItem} key={i} />
+    })
+
+    return menu
   }
 
   render() {
     return (
       <div className='item-display'>
-        Item Display
+        {this.displayItems(this.props.items)}
       </div>
     )
   }
