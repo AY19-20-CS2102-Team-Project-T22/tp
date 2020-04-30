@@ -1,23 +1,28 @@
 /* FDS Server */
 
 const express = require('express')
+const cors = require('cors')
 const app = express()
-const port = 3001
+const port = 5000
 
 require('dotenv').config()
+
+app.use(cors())
+app.use(express.json())
+
+const usersRouter = require('./routes/users')
+app.use('/users', usersRouter)
 
 /* Testing query
 console.log('Executing a query...')
 const db = require('./db')
 const testQuery = 'select now()'
-const str = 'select * from Customers'
-db.query(str, null, (err, res) => {
+db.query(testQuery, null, (err, res) => {
   if (err) {
     console.error(err)
   } else {
     res.rows.forEach((item) => {
-      // console.log(parseInt(item.points) + 2.5)
-      console.log(item.phone_no)
+      console.log(item)
     })
   }
   db.end()
