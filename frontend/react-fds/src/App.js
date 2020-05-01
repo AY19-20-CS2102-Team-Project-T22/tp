@@ -7,6 +7,7 @@ import axios from 'axios'
 import Header from './components/Header'
 import Body from './components/Body'
 // import Footer from './components/Footer'
+import Checkout from './components/Checkout'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import './App.css'
@@ -118,6 +119,9 @@ class App extends React.Component {
           </Route>
           <Route path='/register' exact>
             <Registration />
+          </Route>
+          <Route path='/checkout' exact>
+            <Checkout />
           </Route>
           <Route path='/' exact>
             <Header

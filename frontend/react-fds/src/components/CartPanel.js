@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Button, ListGroup, ListGroupItem, Badge } from 'reactstrap'
 import HighlightOffTwoToneIcon from '@material-ui/icons/HighlightOffTwoTone'
 import IconButton from '@material-ui/core/IconButton'
@@ -95,16 +96,19 @@ class CartPanel extends React.Component {
           }}
         >
           Total Cost: $ {this.calcTotalCost(this.props.cart).toFixed(2)}
-          <Button
-            color='primary'
-            style={{
-              marginTop: '10px',
-              width: '100%',
-              fontSize: '22px',
-              fontWeight: 'bold'
-            }}>
-            Checkout
-          </Button>
+          <Link to='/checkout'>
+            <Button
+              color='primary'
+              style={{
+                marginTop: '10px',
+                width: '100%',
+                fontSize: '22px',
+                fontWeight: 'bold'
+              }}
+            >
+              Checkout
+            </Button>
+          </Link>
         </div>
       </div>
     )
