@@ -74,12 +74,13 @@ class CartPanel extends React.Component {
       <div className='cart-panel'>
         <div
           style={{
+            color: 'white',
             textAlign: 'center',
             padding: '10px 0px 10px 0px',
             boxShadow: '0px 5px 5px 0px rgba(0,0,0,0.2)',
-            backgroundColor: 'white'
+            backgroundColor: 'rgb(250, 120, 100)'
           }}>
-          <h2>Cart</h2>
+          <h2 style={{ fontWeight: 'bold' }}>Cart</h2>
         </div>
         <div style={{ margin: '5px 0px 5px 0px', flex: '1', overflowY: 'auto' }}>
           <ListGroup flush>

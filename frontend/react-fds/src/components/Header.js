@@ -34,7 +34,7 @@ class Header extends React.Component {
           <FastfoodIcon
             style={{
               color: 'white',
-              backgroundColor: 'orangered',
+              backgroundColor: 'rgb(230, 61, 0)',
               width: '100%',
               height: '100%'
             }}

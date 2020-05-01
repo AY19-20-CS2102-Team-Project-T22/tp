@@ -37,7 +37,8 @@ class ItemDisplay extends React.Component {
             padding: '0px 10px 0px 10px',
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            boxShadow: '0px 3px 5px 2px rgba(0,0,0,0.3)'
           }}
         >
           <h3 style={{ fontWeight: 'bold' }}>
@@ -45,6 +46,7 @@ class ItemDisplay extends React.Component {
           </h3>
         </div>
         {this.displayItems(this.props.itemsOnDisplay)}
+        <div style={{ width: '100%', height: '20px' }}></div>
       </div>
     )
   }
