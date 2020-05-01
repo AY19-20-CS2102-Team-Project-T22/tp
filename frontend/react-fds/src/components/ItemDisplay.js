@@ -11,9 +11,15 @@ class ItemDisplay extends React.Component {
   }
 
   displayItems(items) {
-    console.log(items)
     let menu = items.map((eachItem, i) => {
-      return <FoodItem item={eachItem} key={i} />
+      return (
+        <FoodItem
+          item={eachItem}
+          handleAddToCart={this.props.handleAddToCart}
+          itemIndex={i}
+          key={i}
+        />
+      )
     })
 
     return menu
@@ -22,7 +28,7 @@ class ItemDisplay extends React.Component {
   render() {
     return (
       <div className='item-display'>
-        {this.displayItems(this.props.items)}
+        {this.displayItems(this.props.itemsOnDisplay)}
       </div>
     )
   }

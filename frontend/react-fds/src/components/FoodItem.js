@@ -29,6 +29,8 @@ class FoodItem extends React.Component {
           <CardSubtitle style={{ fontSize: '15px', height: '70px' }}>Restaurant: <br />{this.props.item.rname}</CardSubtitle>
           <CardSubtitle style={{ fontSize: '24px', fontWeight: 'bold' }}>${this.props.item.unit_price}</CardSubtitle>
           <Button
+            value={this.props.itemIndex}
+            onClick={this.props.handleAddToCart}
             style={{
               width: '100%',
               backgroundColor: 'orangered',

@@ -10,6 +10,7 @@ import Body from './components/Body'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import './App.css'
+import { isEquivalent } from './common/common'
 
 class App extends React.Component {
 
@@ -21,8 +22,11 @@ class App extends React.Component {
       isLoggedIn: false,
       userId: null,
 
-      // States for food items display page.
+      // State for full list of items on the Menu table.
       items: [],
+
+      // States for food items display page.
+      itemsOnDisplay: [],
       filter: '',
 
       // State for item cart.
@@ -33,9 +37,13 @@ class App extends React.Component {
     }
 
     // Function bindings.
+    this.initItems = this.initItems.bind(this)
     this.updateUserId = this.updateUserId.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
     this.toggleFilterPanel = this.toggleFilterPanel.bind(this)
+    this.handleAddToCart = this.handleAddToCart.bind(this)
+    this.handleRemoveFromCart = this.handleRemoveFromCart.bind(this)
+    this.updateItemsDisplayed = this.updateItemsDisplayed.bind(this)
   }
 
   toggleFilterPanel() {
@@ -44,10 +52,34 @@ class App extends React.Component {
     }))
   }
 
-  addToCart(e) {
+  handleAddToCart(e) {
+    // Check if food item belong to the same restaurant.
+
+    // Check if this is the first item.
+    if (this.state.cart.length > 0) {
+      // Get restaurant name from first item.
+      let restaurant = this.state.items[this.state.cart[0]].rname
+
+      if (this.state.items[e.target.value].rname !== restaurant) {
+        alert('Please select items from a single restaurant for each order.')
+        return
+      }
+    }
+
+    // Check if item already exists in cart.
+    // If yes, increment its quantity.
+    // Otherwise, insert as new element.
+    let itemToAdd = parseInt(e.target.value)
+    if (this.state.cart.includes(itemToAdd)) {
+    }
+    
     this.setState(prev => ({
-      cart: [...prev, this.state.items[e.target.value]]
+      cart: [...prev.cart, itemToAdd]
     }))
+  }
+
+  handleRemoveFromCart(e) {
+
   }
 
   updateUserId(uid) {
@@ -59,16 +91,19 @@ class App extends React.Component {
     alert('You have been logged out.')
   }
 
-  updateMenu(menu) {
-    // console.log(menu)
-    this.setState({ items: menu })
+  initItems(menu) {
+    this.setState({ items: menu, itemsOnDisplay: menu })
+  }
+
+  updateItemsDisplayed(filter) {
+
   }
 
   componentDidMount() {
-    // Retrieve food menu from the database.
+    // Retrieve all food items from menu from the database.
     axios.get('http://localhost:5000/menu')
     .then(res => {
-      this.updateMenu(res.data)
+      this.initItems(res.data)
     })
     .catch(err => {
       alert(err)
@@ -97,8 +132,11 @@ class App extends React.Component {
             />
             <Body
               items={this.state.items}
+              itemsOnDisplay={this.state.itemsOnDisplay}
+              cart={this.state.cart}
               filter={this.state.filter}
               showFilterPanel={this.state.showFilterPanel}
+              handleAddToCart={this.handleAddToCart}
             />
           </Route>
         </Router>
