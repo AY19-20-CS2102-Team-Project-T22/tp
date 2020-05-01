@@ -52,33 +52,29 @@ class App extends React.Component {
   }
 
   handleAddToCart(e) {
-    // Check if food item belong to the same restaurant.
-
     // Check if this is the first item.
     if (this.state.cart.length > 0) {
       // Get restaurant name from first item.
       let restaurant = this.state.items[this.state.cart[0]].rname
 
+      // Check if food item belongs to the same restaurant as first item.
       if (this.state.items[e.target.value].rname !== restaurant) {
         alert('Please select items from a single restaurant for each order.')
         return
       }
     }
 
-    // Check if item already exists in cart.
-    // If yes, increment its quantity.
-    // Otherwise, insert as new element.
     let itemToAdd = parseInt(e.target.value)
-    if (this.state.cart.includes(itemToAdd)) {
-    }
-    
+
     this.setState(prev => ({
       cart: [...prev.cart, itemToAdd]
     }))
   }
 
   handleRemoveFromCart(e) {
-
+    let itemToDelete = e.currentTarget.value
+    let tempCart = [...this.state.cart].filter(each => each !== parseInt(itemToDelete))
+    this.setState({ cart: tempCart })
   }
 
   updateUserId(uid) {
@@ -95,18 +91,18 @@ class App extends React.Component {
   }
 
   updateItemsDisplayed(filter) {
-
+    // TODO
   }
 
   componentDidMount() {
     // Retrieve all food items from menu from the database.
     axios.get('http://localhost:5000/menu')
-    .then(res => {
-      this.initItems(res.data)
-    })
-    .catch(err => {
-      alert(err)
-    })
+      .then(res => {
+        this.initItems(res.data)
+      })
+      .catch(err => {
+        alert(err)
+      })
   }
 
   render() {
@@ -136,6 +132,7 @@ class App extends React.Component {
               filter={this.state.filter}
               showFilterPanel={this.state.showFilterPanel}
               handleAddToCart={this.handleAddToCart}
+              handleRemoveFromCart={this.handleRemoveFromCart}
             />
           </Route>
         </Router>

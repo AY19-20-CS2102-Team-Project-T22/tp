@@ -1,5 +1,7 @@
 import React from 'react'
 import { Button, ListGroup, ListGroupItem, Badge } from 'reactstrap'
+import HighlightOffTwoToneIcon from '@material-ui/icons/HighlightOffTwoTone'
+import IconButton from '@material-ui/core/IconButton'
 
 class CartPanel extends React.Component {
   constructor(props) {
@@ -24,8 +26,11 @@ class CartPanel extends React.Component {
         }
       }
       cartList.push(
-        <ListGroupItem className='cart-item' key={i}>
-          <div style={{ fontWeight: 'bold', width: '200px' }}>
+        <ListGroupItem
+          className='cart-item'
+          key={idx}
+        >
+          <div style={{ fontWeight: 'bold', width: '190px' }}>
             {this.props.items[idx].fname}
           </div>
           <Badge
@@ -38,7 +43,16 @@ class CartPanel extends React.Component {
             {qty}
           </Badge>
           <div style={{ flex: '1' }}></div>
-          <h5>${parseFloat(this.props.items[idx].unit_price).toFixed(2)}</h5>
+          <h5 style={{ marginLeft: '5px' }}>
+            ${(parseFloat(this.props.items[idx].unit_price) * qty).toFixed(2)}
+          </h5>
+          <IconButton
+            style={{ width: '30px', height: '30px', marginLeft: '5px' }}
+            value={idx}
+            onClick={this.props.handleRemoveFromCart}
+          >
+            <HighlightOffTwoToneIcon color='secondary' />
+          </IconButton>
         </ListGroupItem>
       )
     }
@@ -61,23 +75,23 @@ class CartPanel extends React.Component {
           style={{
             textAlign: 'center',
             padding: '10px 0px 10px 0px',
-            boxShadow: '0px 5px 5px 0px rgba(0,0,0,0.2)'
+            boxShadow: '0px 5px 5px 0px rgba(0,0,0,0.2)',
+            backgroundColor: 'white'
           }}>
           <h2>Cart</h2>
         </div>
         <div style={{ margin: '5px 0px 5px 0px', flex: '1', overflowY: 'auto' }}>
-          <ListGroup>
+          <ListGroup flush>
             {this.displayCartItems(this.props.cart)}
           </ListGroup>
         </div>
         <div
           style={{
             height: '120px',
-            color: 'white',
             fontSize: '21px',
             fontWeight: 'bold',
             padding: '10px',
-            backgroundColor: 'orangered'
+            backgroundColor: 'white'
           }}
         >
           Total Cost: $ {this.calcTotalCost(this.props.cart).toFixed(2)}

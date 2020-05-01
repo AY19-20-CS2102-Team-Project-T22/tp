@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  Card, CardImg, CardText, CardBody,
+  Card, CardImg, CardBody,
   CardTitle, CardSubtitle, Button
 } from 'reactstrap'
 import FoodImage from '../images/placeholder_fooditem.jpg'
@@ -26,8 +26,16 @@ class FoodItem extends React.Component {
           >
             {this.props.item.fname}
           </CardTitle>
-          <CardSubtitle style={{ fontSize: '15px', height: '70px' }}>Restaurant: <br />{this.props.item.rname}</CardSubtitle>
-          <CardSubtitle style={{ fontSize: '24px', fontWeight: 'bold' }}>${this.props.item.unit_price}</CardSubtitle>
+          <CardSubtitle
+            style={{ fontSize: '15px', height: '70px' }}
+          >
+            Restaurant: <br />{this.props.item.rname}
+          </CardSubtitle>
+          <CardSubtitle
+            style={{ fontSize: '24px', fontWeight: 'bold' }}
+          >
+            ${parseFloat(this.props.item.unit_price).toFixed(2)}
+          </CardSubtitle>
           <Button
             value={this.props.itemIndex}
             onClick={this.props.handleAddToCart}

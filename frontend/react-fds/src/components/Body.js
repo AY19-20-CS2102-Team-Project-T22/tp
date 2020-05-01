@@ -29,6 +29,7 @@ class Body extends React.Component {
         <CartPanel
           items={this.props.items}
           cart={this.props.cart}
+          handleRemoveFromCart={this.props.handleRemoveFromCart}
         />
       </div>
     )
