@@ -10,7 +10,6 @@ import Body from './components/Body'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import './App.css'
-import { isEquivalent } from './common/common'
 
 class App extends React.Component {
 

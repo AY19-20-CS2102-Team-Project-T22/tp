@@ -93,6 +93,7 @@ class Header extends React.Component {
           </Link>
           :
           <Link
+            to='/'
             onClick={this.props.handleLogout}
             style={{
               fontSize: '18px',

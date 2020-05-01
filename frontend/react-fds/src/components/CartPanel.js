@@ -25,7 +25,20 @@ class CartPanel extends React.Component {
       }
       cartList.push(
         <ListGroupItem className='cart-item' key={i}>
-          {this.props.items[idx].fname} <Badge pill>{qty}</Badge> ${this.props.items[idx].unit_price}
+          <div style={{ fontWeight: 'bold', width: '200px' }}>
+            {this.props.items[idx].fname}
+          </div>
+          <Badge
+            color='warning'
+            style={{
+              fontSize: '15px',
+              boxShadow: '1px 1px 2px 1px rgba(0,0,0,0.4)'
+            }}
+          >
+            {qty}
+          </Badge>
+          <div style={{ flex: '1' }}></div>
+          <h5>${parseFloat(this.props.items[idx].unit_price).toFixed(2)}</h5>
         </ListGroupItem>
       )
     }

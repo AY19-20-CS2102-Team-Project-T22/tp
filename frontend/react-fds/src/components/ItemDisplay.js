@@ -28,6 +28,22 @@ class ItemDisplay extends React.Component {
   render() {
     return (
       <div className='item-display'>
+        <div
+          style={{
+            width: '100%',
+            height: '60px',
+            backgroundColor: 'yellow',
+            marginBottom: '15px',
+            padding: '0px 10px 0px 10px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <h3 style={{ fontWeight: 'bold' }}>
+            Pick a restaurant > Add foods/drinks to cart > Checkout
+          </h3>
+        </div>
         {this.displayItems(this.props.itemsOnDisplay)}
       </div>
     )

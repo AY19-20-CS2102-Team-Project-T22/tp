@@ -110,7 +110,7 @@ class Registration extends React.Component {
             <Input
               type='text'
               required
-              placeholder='Enter password'
+              placeholder='Enter last name'
               value={this.state.lastName}
               onChange={this.handleLastNameChange}
             />
