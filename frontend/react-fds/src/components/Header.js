@@ -6,10 +6,6 @@ import FastfoodIcon from '@material-ui/icons/Fastfood'
 import MenuIcon from '@material-ui/icons/Menu'
 
 class Header extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     return (
       <div className='header'>

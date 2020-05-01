@@ -31,7 +31,14 @@ class CartPanel extends React.Component {
           className='cart-item'
           key={idx}
         >
-          <div style={{ fontWeight: 'bold', width: '190px' }}>
+          <div
+            style={{
+              fontWeight: 'bold',
+              width: '190px',
+              flex: '1',
+              marginRight: '10px'
+            }}
+          >
             {this.props.items[idx].fname}
           </div>
           <Badge
@@ -43,12 +50,18 @@ class CartPanel extends React.Component {
           >
             {qty}
           </Badge>
-          <div style={{ flex: '1' }}></div>
-          <h5 style={{ marginLeft: '5px' }}>
+          <div
+            style={{
+              width: '70px',
+              textAlign: 'end',
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }}
+          >
             ${(parseFloat(this.props.items[idx].unit_price) * qty).toFixed(2)}
-          </h5>
+          </div>
           <IconButton
-            style={{ width: '30px', height: '30px', marginLeft: '5px' }}
+            style={{ width: '35px', height: '35px' }}
             value={idx}
             onClick={this.props.handleRemoveFromCart}
           >
