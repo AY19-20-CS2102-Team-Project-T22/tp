@@ -12,8 +12,10 @@ app.use(express.json())
 
 const usersRouter = require('./routes/users')
 const menuRouter = require('./routes/menu')
+const accountRouter = require('./routes/account_info')
 app.use('/users', usersRouter)
 app.use('/menu', menuRouter)
+app.use('/account_info', accountRouter)
 
 /* Testing query
 console.log('Executing a query...')
