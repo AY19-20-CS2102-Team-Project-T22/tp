@@ -6,7 +6,7 @@ class FilterPanel extends React.Component {
     super(props)
 
     this.state = {}
-  
+
     this.displayRestaurant = this.displayRestaurant.bind(this)
     this.displayFoodCategories = this.displayFoodCategories.bind(this)
   }
@@ -66,7 +66,11 @@ class FilterPanel extends React.Component {
           <Button value={2} onClick={this.props.handleAllBtn}>All</Button>{' '}
           <Button value={2} onClick={this.props.handleClearBtn}>Clear</Button>
           {this.displayFoodCategories(this.props.foodCategories)}
-          <Button type='submit'>Apply filters</Button>
+          <Button
+            style={{ width: '100%', marginTop: '40px', marginBottom: '20px' }}
+            type='submit'>
+            Apply filters
+            </Button>
         </Form>
 
       </div>

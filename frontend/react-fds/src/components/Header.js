@@ -37,7 +37,7 @@ class Header extends React.Component {
           />
         </Link>
         <InputGroup style={{ marginLeft: '20px', marginRight: '20px', flex: 1 }}>
-          <Input type='search' placeholder='Search for foods or restaurants...' />
+          <Input type='search' placeholder='Search for foods...' />
           <InputGroupAddon addonType="append">
             <Button color='primary'>
               Search
