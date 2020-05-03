@@ -134,6 +134,11 @@ class AccountInfo extends React.Component {
         <Label> your mail: {this.state.old_email} </Label> <br></br>
         <Label> your contactNo : {this.state.old_contactNo} </Label> <br></br>
       </div>
+      <Link
+        to='/accountinfo/credit_card'
+      >
+      Manage your credit card
+      </Link>
       <div className='modify'>
       <div style={{ flex: 1 }}></div>
       <Form style={{ flex: 1 }} onSubmit={this.handleSubmit}>
