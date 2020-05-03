@@ -12,11 +12,18 @@ class ItemDisplay extends React.Component {
 
   displayItems(items) {
     let menu = items.map((eachItem, i) => {
+      // Find real array index of item from `this.state.items`.
+      let itemIdx = 0
+      this.props.items.forEach((f, idx) => {
+        if (eachItem.fid === f.fid && eachItem.rname === f.rname) {
+          itemIdx = idx
+        }
+      })
       return (
         <FoodItem
           item={eachItem}
           handleAddToCart={this.props.handleAddToCart}
-          itemIndex={i}
+          itemIndex={itemIdx}
           key={i}
         />
       )

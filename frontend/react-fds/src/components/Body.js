@@ -40,6 +40,7 @@ class Body extends React.Component {
         />
         <CartPanel
           items={this.props.items}
+          itemsOnDisplay={this.props.itemsOnDisplay}
           cart={this.props.cart}
           handleRemoveFromCart={this.props.handleRemoveFromCart}
         />
