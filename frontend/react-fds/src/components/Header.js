@@ -45,6 +45,7 @@ class Header extends React.Component {
           </InputGroupAddon>
         </InputGroup>
         {(this.props.isLoggedIn) ?
+          <div>
           <Link
             to='/accountinfo'
             style={{
@@ -58,6 +59,20 @@ class Header extends React.Component {
           >
             Account
           </Link>
+          <Link
+            to='/orderHistory'
+            style={{
+              fontSize: '18px',
+              textAlign: 'center',
+              marginRight: '10px',
+              marginLeft: '20px',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+          >
+            Order
+          </Link>
+          </div>
           :
           <Link
             to='/login'

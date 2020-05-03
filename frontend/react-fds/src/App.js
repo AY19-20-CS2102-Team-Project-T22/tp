@@ -11,6 +11,7 @@ import Checkout from './components/Checkout'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import AccountInfo from './components/AccountInfo'
+import OrderHistory from './components/OrderHistory'
 import './App.css'
 
 class App extends React.Component {
@@ -252,6 +253,12 @@ class App extends React.Component {
           </Route>
           <Route path='/register' exact>
             <Registration />
+          </Route>
+          <Route path='/orderHistory' exact>
+            <OrderHistory
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
+            />
           </Route>
           <Route path='/accountinfo' exact>
             <AccountInfo 
