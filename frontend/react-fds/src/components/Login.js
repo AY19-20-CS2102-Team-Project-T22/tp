@@ -35,7 +35,7 @@ class Login extends React.Component {
           // Check if password matches.
           if (this.state.password === res.data.password) {
             alert('You are logged in as ' + res.data.username)
-            this.props.updateUserId(res.data.uid)
+            this.props.updateUser(res.data.uid, res.data.type)
           } else {
             alert('Error: You have entered an incorrect password.')
           }

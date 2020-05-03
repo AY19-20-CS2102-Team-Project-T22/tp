@@ -22,6 +22,7 @@ class App extends React.Component {
       // States for application login status.
       isLoggedIn: false,
       userId: null,
+      userType: null,
 
       // State for full list of items on the Menu table.
       items: [],
@@ -46,7 +47,7 @@ class App extends React.Component {
 
     // Function bindings.
     this.initItems = this.initItems.bind(this)
-    this.updateUserId = this.updateUserId.bind(this)
+    this.updateUser = this.updateUser.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
     this.toggleFilterPanel = this.toggleFilterPanel.bind(this)
     this.handleAddToCart = this.handleAddToCart.bind(this)
@@ -91,12 +92,12 @@ class App extends React.Component {
     this.setState({ cart: tempCart })
   }
 
-  updateUserId(uid) {
-    this.setState({ userId: uid, isLoggedIn: true })
+  updateUser(uid, type) {
+    this.setState({ userId: uid, isLoggedIn: true, userType: type })
   }
 
   handleLogout() {
-    this.setState({ isLoggedIn: false, userId: null })
+    this.setState({ isLoggedIn: false, userId: null, userType: null })
     alert('You have been logged out.')
   }
 
@@ -246,7 +247,7 @@ class App extends React.Component {
             <Login
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
-              updateUserId={this.updateUserId}
+              updateUserId={this.updateUser}
             />
           </Route>
           <Route path='/register' exact>
