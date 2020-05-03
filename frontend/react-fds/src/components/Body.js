@@ -22,9 +22,9 @@ class Body extends React.Component {
       <div className='body'>
         {this.props.showFilterPanel &&
           <FilterPanel
-            initFilterPanel={this.props.initFilterPanel}
             restaurants={this.props.restaurants}
             foodCategories={this.props.foodCategories}
+            updateItemsDisplayed={this.props.updateItemsDisplayed}
             restaurantsFilter={this.props.restaurantsFilter}
             foodCategoriesFilter={this.props.foodCategoriesFilter}
             handleRChange={this.props.handleRChange}

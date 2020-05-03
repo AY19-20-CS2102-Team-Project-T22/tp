@@ -103,23 +103,52 @@ class App extends React.Component {
     this.setState({ items: menu, itemsOnDisplay: menu })
   }
 
-  updateItemsDisplayed(filter) {
-    // TODO
-  }
+  updateItemsDisplayed(e) {
+    e.preventDefault()
 
+    // Construct url query strings.
+    const startUrlString = 'http://localhost:5000/menu/filter'
+
+    let rid = this.state.restaurants.filter((item, i) => {
+      return this.state.restaurantsFilter[i]
+    })
+    let rList = ''
+    rid.forEach(item => rList += item.rid + ',')
+    rList = rList.substring(0, rList.length - 1)
+
+
+    let fcid = this.state.foodCategories.filter((item, i) => {
+      return this.state.foodCategoriesFilter[i]
+    })
+    let fcList = ''
+    fcid.forEach(item => fcList += item.fcid + ',')
+    fcList = fcList.substring(0, fcList.length - 1)
+
+    // Retrieve food items from menu from the database
+    // with filters applied.
+    axios.get(
+      startUrlString 
+      + '?rid=' + rList
+      + '&fcid=' + fcList
+      )
+      .then(res => {
+        this.setState({ itemsOnDisplay: res.data })
+      })
+      .catch(err => {
+        alert(err)
+      })
+  }
 
   handleAllBtn(e) {
     let allTrue = []
     switch (e.target.value) {
       case '1': // Check restaurant checkboxes.
-        // console.log(this.state.restaurantsFilter)
         for (let i = 0; i < this.state.restaurants.length; i++) {
           allTrue.push(true)
         }
         this.setState({ restaurantsFilter: allTrue })
         break
       case '2': // Check food categories checkboxes.
-        // console.log(this.state.foodCategoriesFilter)
         for (let i = 0; i < this.state.foodCategoriesFilter.length; i++) {
           allTrue.push(true)
         }
@@ -132,26 +161,26 @@ class App extends React.Component {
     let allFalse = []
     switch (e.target.value) {
       case '1': // Clear restaurant checkboxes.
-        // console.log(this.state.restaurantsFilter)
         for (let i = 0; i < this.state.restaurants.length; i++) {
           allFalse.push(false)
         }
         this.setState({ restaurantsFilter: allFalse })
         break
       case '2': // Clear food categories checkboxes.
-        // console.log(this.state.foodCategoriesFilter)
         for (let i = 0; i < this.state.foodCategoriesFilter.length; i++) {
           allFalse.push(false)
         }
         this.setState({ foodCategoriesFilter: allFalse })
         break
     }
+
   }
 
   handleRChange(e) {
     let tempCheckboxState = [...this.state.restaurantsFilter]
     tempCheckboxState[e.target.value] = !tempCheckboxState[e.target.value]
     this.setState({ restaurantsFilter: tempCheckboxState })
+
   }
 
   handleFCChange(e) {
@@ -203,7 +232,12 @@ class App extends React.Component {
       })
   }
 
+  componentDidUpdate() {
+    // this.updateItemsDisplayed()
+  }
+
   render() {
+    // this.updateItemsDisplayed()
     return (
       <div className='App'>
         <Router>
@@ -230,8 +264,8 @@ class App extends React.Component {
               items={this.state.items}
               itemsOnDisplay={this.state.itemsOnDisplay}
               cart={this.state.cart}
+              updateItemsDisplayed={this.updateItemsDisplayed}
               showFilterPanel={this.state.showFilterPanel}
-              initFilterPanel={this.initFilterPanel}
               restaurants={this.state.restaurants}
               restaurantsFilter={this.state.restaurantsFilter}
               foodCategories={this.state.foodCategories}

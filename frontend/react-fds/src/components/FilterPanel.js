@@ -56,7 +56,7 @@ class FilterPanel extends React.Component {
   render() {
     return (
       <div className='filter-panel'>
-        <Form style={{ color: 'white' }}>
+        <Form onSubmit={this.props.updateItemsDisplayed} style={{ color: 'white' }}>
           <h5>Filters</h5><br />
           <h5>Restaurants{' '}</h5>
           <Button value={1} onClick={this.props.handleAllBtn}>All</Button>{' '}
@@ -66,6 +66,7 @@ class FilterPanel extends React.Component {
           <Button value={2} onClick={this.props.handleAllBtn}>All</Button>{' '}
           <Button value={2} onClick={this.props.handleClearBtn}>Clear</Button>
           {this.displayFoodCategories(this.props.foodCategories)}
+          <Button type='submit'>Apply filters</Button>
         </Form>
 
       </div>
