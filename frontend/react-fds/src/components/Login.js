@@ -33,7 +33,7 @@ class Login extends React.Component {
       .then(res => {
         if (res.data) {
           // Check if password matches.
-          if (this.state.password == res.data.password) {
+          if (this.state.password === res.data.password) {
             alert('You are logged in as ' + res.data.username)
             this.props.updateUserId(res.data.uid)
           } else {

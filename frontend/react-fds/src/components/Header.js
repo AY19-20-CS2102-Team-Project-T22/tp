@@ -6,10 +6,6 @@ import FastfoodIcon from '@material-ui/icons/Fastfood'
 import MenuIcon from '@material-ui/icons/Menu'
 
 class Header extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     return (
       <div className='header'>
@@ -34,14 +30,14 @@ class Header extends React.Component {
           <FastfoodIcon
             style={{
               color: 'white',
-              backgroundColor: 'orangered',
+              backgroundColor: 'rgb(230, 61, 0)',
               width: '100%',
               height: '100%'
             }}
           />
         </Link>
         <InputGroup style={{ marginLeft: '20px', marginRight: '20px', flex: 1 }}>
-          <Input type='search' placeholder='Search for foods or restaurants...' />
+          <Input type='search' placeholder='Search for foods...' />
           <InputGroupAddon addonType="append">
             <Button color='primary'>
               Search

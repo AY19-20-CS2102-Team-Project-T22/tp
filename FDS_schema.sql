@@ -70,7 +70,8 @@ CREATE TABLE FoodCategories (
 	fcid				SERIAL,
 	fcname				VARCHAR(20) NOT NULL,
 
-	PRIMARY KEY (fcid)
+	PRIMARY KEY (fcid),
+  UNIQUE (fcname)
 );
 
 CREATE TABLE DeliveryCost (
@@ -440,16 +441,17 @@ insert into Staff (uid, username, password, first_name, last_name, email, contac
 ---------------------
 -- FOOD CATEGORIES --
 ---------------------
-insert into FoodCategories (fcid, fcname) values (1, 'Western');
-insert into FoodCategories (fcid, fcname) values (2, 'Vegetarian');
-insert into FoodCategories (fcid, fcname) values (3, 'Chinese');
-insert into FoodCategories (fcid, fcname) values (4, 'Malay');
-insert into FoodCategories (fcid, fcname) values (5, 'Indian');
-insert into FoodCategories (fcid, fcname) values (6, 'Japanese');
-insert into FoodCategories (fcid, fcname) values (7, 'Desserts');
-insert into FoodCategories (fcid, fcname) values (8, 'Drinks');
-insert into FoodCategories (fcid, fcname) values (9, 'Breakfast');
-insert into FoodCategories (fcid, fcname) values (10, 'Fast food');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Local');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Western');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Vegetarian');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Chinese');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Malay');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Indian');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Japanese');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Desserts');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Drinks');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Breakfast');
+insert into FoodCategories (fcid, fcname) values (DEFAULT, 'Fast food');
 
 
 
@@ -457,46 +459,46 @@ insert into FoodCategories (fcid, fcname) values (10, 'Fast food');
 -----------
 -- FOODS --
 -----------
-insert into Foods (fid, fname, category) values (1, 'Naja Forte', 10);
-insert into Foods (fid, fname, category) values (2, 'Propranolol Hydrochloride', 6);
-insert into Foods (fid, fname, category) values (3, 'Ketodan', 10);
-insert into Foods (fid, fname, category) values (4, 'REFRESH OPTIVE Advanced', 10);
-insert into Foods (fid, fname, category) values (5, 'American Elm', 7);
-insert into Foods (fid, fname, category) values (6, 'Modafinil', 2);
-insert into Foods (fid, fname, category) values (7, 'Mary Kay CC Cream Sunscreen Broad Spectrum SPF 15 Deep', 1);
-insert into Foods (fid, fname, category) values (8, 'Cough Formula Cough and Cold', 9);
-insert into Foods (fid, fname, category) values (9, 'Johnson Grass', 4);
-insert into Foods (fid, fname, category) values (10, 'TLB-Matrix', 3);
-insert into Foods (fid, fname, category) values (11, 'leader acid control', 7);
-insert into Foods (fid, fname, category) values (12, 'Bioelements', 10);
-insert into Foods (fid, fname, category) values (13, 'Diazepam', 1);
-insert into Foods (fid, fname, category) values (14, 'EUCALYPTUS GLOBULUS POLLEN', 8);
-insert into Foods (fid, fname, category) values (15, 'Medi First Plus Cramp', 8);
-insert into Foods (fid, fname, category) values (16, 'RadiaBlock', 7);
-insert into Foods (fid, fname, category) values (17, 'Metoprolol Tartrate', 8);
-insert into Foods (fid, fname, category) values (18, 'ropinirole hydrochloride', 10);
-insert into Foods (fid, fname, category) values (19, 'Allergy', 3);
-insert into Foods (fid, fname, category) values (20, 'ANTACID', 5);
-insert into Foods (fid, fname, category) values (21, 'Sensorcaine', 10);
-insert into Foods (fid, fname, category) values (22, 'Dove Ultimate Visibly Smooth Wild Rose', 6);
-insert into Foods (fid, fname, category) values (23, 'HUMATROPE', 4);
-insert into Foods (fid, fname, category) values (24, 'Paroxetine Hydrochloride', 3);
-insert into Foods (fid, fname, category) values (25, 'Wingscale', 6);
-insert into Foods (fid, fname, category) values (26, 'Mucinex', 1);
-insert into Foods (fid, fname, category) values (27, 'All day Allergy d', 1);
-insert into Foods (fid, fname, category) values (28, 'FAMOTIDINE', 1);
-insert into Foods (fid, fname, category) values (29, 'SUPER DEFENSE', 1);
-insert into Foods (fid, fname, category) values (30, 'Leader Clear Lax', 6);
-insert into Foods (fid, fname, category) values (31, 'Amlodipine Besylate', 1);
-insert into Foods (fid, fname, category) values (32, 'Carbidopa and levodopa', 9);
-insert into Foods (fid, fname, category) values (33, 'Stool Softener', 8);
-insert into Foods (fid, fname, category) values (34, 'HICON', 3);
-insert into Foods (fid, fname, category) values (35, 'AZITHROMYCIN DIHYDRATE', 2);
-insert into Foods (fid, fname, category) values (36, 'BETULA LENTA POLLEN', 2);
-insert into Foods (fid, fname, category) values (37, 'Doxycycline', 4);
-insert into Foods (fid, fname, category) values (38, 'CIMETIDINE', 2);
-insert into Foods (fid, fname, category) values (39, 'BRODA Acne Spa', 9);
-insert into Foods (fid, fname, category) values (40, 'Canary Grass Pollen', 9);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Loratadine and Pseudoephedrine', 2);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Midodrine Hydrochloride', 2);
+insert into Foods (fid, fname, category) values (DEFAULT, 'ISAKNOX X202 WHITENING SECRET ESSENCE', 2);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Nyloxin', 6);
+insert into Foods (fid, fname, category) values (DEFAULT, 'NEOMYCIN SULFATE', 4);
+insert into Foods (fid, fname, category) values (DEFAULT, 'LBEL Couleur Luxe Rouge Amplifier XP amplifying SPF 15', 7);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Good Sense Heartburn Relief', 10);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Gabapentin', 8);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Gattex', 10);
+insert into Foods (fid, fname, category) values (DEFAULT, 'TopCare', 4);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Pinchot Juniper', 3);
+insert into Foods (fid, fname, category) values (DEFAULT, 'ALPRAZOLAM', 7);
+insert into Foods (fid, fname, category) values (DEFAULT, 'OxyContin', 9);
+insert into Foods (fid, fname, category) values (DEFAULT, 'FLOVENT', 11);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Fluconazole', 1);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Acetic Acid', 1);
+insert into Foods (fid, fname, category) values (DEFAULT, 'SkinMedica Daily Physical Defense SPF 30 Sunscreen', 2);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Degree', 2);
+insert into Foods (fid, fname, category) values (DEFAULT, 'pain relief', 9);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Betamethasone Valerate', 7);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Medicated Pain Relief', 11);
+insert into Foods (fid, fname, category) values (DEFAULT, 'FSK-5', 3);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Hand Wash', 10);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Tranexamic Acid', 6);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Josie Maran Argan Daily Moisturizer SPF47', 1);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Good Neighbor Pharmacy Pain Relief', 5);
+insert into Foods (fid, fname, category) values (DEFAULT, 'FLUVIRIN', 7);
+insert into Foods (fid, fname, category) values (DEFAULT, 'PHENTERMINE HYDROCHLORIDE', 5);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Naproxen', 4);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Anti-Bacterial Moisturizing Hand', 9);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Leader Sore Throat', 1);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Naloxone Hydrochloride', 7);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Drowz Away', 5);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Hydroxyzine Pamoate', 5);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Simvastatin', 11);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Isosorbide Mononitrate', 3);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Anticavity', 5);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Colirio Ocusan', 2);
+insert into Foods (fid, fname, category) values (DEFAULT, 'Fentanyl Citrate', 11);
+insert into Foods (fid, fname, category) values (DEFAULT, 'LBEL Couleur luxe rouge irresistible maximum hydration SPF 17', 5);
 
 
 
@@ -681,20 +683,10 @@ insert into DeliveryAreas values ('northeast', '80');
 ------------
 -- ORDERS --
 ------------
-insert into Orders
-values
-  (1, 1, 2, 5.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 4, 2.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 6, 1.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 8, 6.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 9, 0.50, 3, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 10, 1.00, 2, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130');
-
-insert into Orders
-values
-  (2, 3, 1, 4.50, 1, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
-  (2, 3, 2, 1.50, 2, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
-  (2, 3, 3, 1.50, 1, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
-  (2, 3, 5, 3.50, 2, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346');
+/* 
+Orders table columns:
+uid | rid | fid | unit_price | qty | delivery_cost | order_timestamp | address | postal_code
+primary key: (uid, rid, fid, order_timestamp)
+*/
 
 

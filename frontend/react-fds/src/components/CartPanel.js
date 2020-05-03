@@ -31,7 +31,14 @@ class CartPanel extends React.Component {
           className='cart-item'
           key={idx}
         >
-          <div style={{ fontWeight: 'bold', width: '190px' }}>
+          <div
+            style={{
+              fontWeight: 'bold',
+              width: '190px',
+              flex: '1',
+              marginRight: '10px'
+            }}
+          >
             {this.props.items[idx].fname}
           </div>
           <Badge
@@ -43,12 +50,18 @@ class CartPanel extends React.Component {
           >
             {qty}
           </Badge>
-          <div style={{ flex: '1' }}></div>
-          <h5 style={{ marginLeft: '5px' }}>
+          <div
+            style={{
+              width: '70px',
+              textAlign: 'end',
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }}
+          >
             ${(parseFloat(this.props.items[idx].unit_price) * qty).toFixed(2)}
-          </h5>
+          </div>
           <IconButton
-            style={{ width: '30px', height: '30px', marginLeft: '5px' }}
+            style={{ width: '35px', height: '35px' }}
             value={idx}
             onClick={this.props.handleRemoveFromCart}
           >
@@ -74,12 +87,13 @@ class CartPanel extends React.Component {
       <div className='cart-panel'>
         <div
           style={{
+            color: 'white',
             textAlign: 'center',
             padding: '10px 0px 10px 0px',
             boxShadow: '0px 5px 5px 0px rgba(0,0,0,0.2)',
-            backgroundColor: 'white'
+            backgroundColor: 'rgb(250, 120, 100)'
           }}>
-          <h2>Cart</h2>
+          <h2 style={{ fontWeight: 'bold' }}>Cart</h2>
         </div>
         <div style={{ margin: '5px 0px 5px 0px', flex: '1', overflowY: 'auto' }}>
           <ListGroup flush>
@@ -98,6 +112,7 @@ class CartPanel extends React.Component {
           Total Cost: $ {this.calcTotalCost(this.props.cart).toFixed(2)}
           <Link to='/checkout'>
             <Button
+              disabled={!this.props.isLoggedIn || this.props.cart.length === 0}
               color='primary'
               style={{
                 marginTop: '10px',

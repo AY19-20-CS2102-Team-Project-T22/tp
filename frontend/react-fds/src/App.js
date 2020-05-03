@@ -26,11 +26,18 @@ class App extends React.Component {
       // State for full list of items on the Menu table.
       items: [],
 
-      // States for food items display page.
+      // State for food items display page.
       itemsOnDisplay: [],
-      filter: '',
 
-      // State for item cart.
+      // State for restaurant list.
+      restaurants: [],
+      restaurantsFilter: [],
+
+      // State for food categories list.
+      foodCategories: [],
+      foodCategoriesFilter: [],
+
+      // State for local item cart.
       cart: [],
 
       // State for viewing filter panel.
@@ -45,6 +52,11 @@ class App extends React.Component {
     this.handleAddToCart = this.handleAddToCart.bind(this)
     this.handleRemoveFromCart = this.handleRemoveFromCart.bind(this)
     this.updateItemsDisplayed = this.updateItemsDisplayed.bind(this)
+
+    this.handleAllBtn = this.handleAllBtn.bind(this)
+    this.handleClearBtn = this.handleClearBtn.bind(this)
+    this.handleRChange = this.handleRChange.bind(this)
+    this.handleFCChange = this.handleFCChange.bind(this)
   }
 
   toggleFilterPanel() {
@@ -54,7 +66,7 @@ class App extends React.Component {
   }
 
   handleAddToCart(e) {
-    // Check if this is the first item.
+    //Check if this is the first item.
     if (this.state.cart.length > 0) {
       // Get restaurant name from first item.
       let restaurant = this.state.items[this.state.cart[0]].rname
@@ -92,8 +104,90 @@ class App extends React.Component {
     this.setState({ items: menu, itemsOnDisplay: menu })
   }
 
-  updateItemsDisplayed(filter) {
-    // TODO
+  updateItemsDisplayed(e) {
+    e.preventDefault()
+
+    // Construct url query strings.
+    const startUrlString = 'http://localhost:5000/menu/filter'
+
+    let rid = this.state.restaurants.filter((item, i) => {
+      return this.state.restaurantsFilter[i]
+    })
+    let rList = ''
+    rid.forEach(item => rList += item.rid + ',')
+    rList = rList.substring(0, rList.length - 1)
+
+
+    let fcid = this.state.foodCategories.filter((item, i) => {
+      return this.state.foodCategoriesFilter[i]
+    })
+    let fcList = ''
+    fcid.forEach(item => fcList += item.fcid + ',')
+    fcList = fcList.substring(0, fcList.length - 1)
+
+    // Retrieve food items from menu from the database
+    // with filters applied.
+    axios.get(
+      startUrlString
+      + '?rid=' + rList
+      + '&fcid=' + fcList
+    )
+      .then(res => {
+        this.setState({ itemsOnDisplay: res.data })
+      })
+      .catch(err => {
+        alert(err)
+      })
+  }
+
+  handleAllBtn(e) {
+    let allTrue = []
+    switch (e.target.value) {
+      case '1': // Check restaurant checkboxes.
+        for (let i = 0; i < this.state.restaurants.length; i++) {
+          allTrue.push(true)
+        }
+        this.setState({ restaurantsFilter: allTrue })
+        break
+      case '2': // Check food categories checkboxes.
+        for (let i = 0; i < this.state.foodCategoriesFilter.length; i++) {
+          allTrue.push(true)
+        }
+        this.setState({ foodCategoriesFilter: allTrue })
+        break
+    }
+  }
+
+  handleClearBtn(e) {
+    let allFalse = []
+    switch (e.target.value) {
+      case '1': // Clear restaurant checkboxes.
+        for (let i = 0; i < this.state.restaurants.length; i++) {
+          allFalse.push(false)
+        }
+        this.setState({ restaurantsFilter: allFalse })
+        break
+      case '2': // Clear food categories checkboxes.
+        for (let i = 0; i < this.state.foodCategoriesFilter.length; i++) {
+          allFalse.push(false)
+        }
+        this.setState({ foodCategoriesFilter: allFalse })
+        break
+    }
+
+  }
+
+  handleRChange(e) {
+    let tempCheckboxState = [...this.state.restaurantsFilter]
+    tempCheckboxState[e.target.value] = !tempCheckboxState[e.target.value]
+    this.setState({ restaurantsFilter: tempCheckboxState })
+
+  }
+
+  handleFCChange(e) {
+    let tempCheckboxState = [...this.state.foodCategoriesFilter]
+    tempCheckboxState[e.target.value] = !tempCheckboxState[e.target.value]
+    this.setState({ foodCategoriesFilter: tempCheckboxState })
   }
 
   componentDidMount() {
@@ -105,9 +199,46 @@ class App extends React.Component {
       .catch(err => {
         alert(err)
       })
+
+    // Retrieve all restaurant information from the database.
+    axios.get('http://localhost:5000/restaurants')
+      .then(res => {
+        this.setState({
+          restaurants: res.data
+        })
+        res.data.forEach(item => {
+          let temp = [...this.state.restaurantsFilter]
+          temp.push(true)
+          this.setState({ restaurantsFilter: temp })
+        })
+      })
+      .catch(err => {
+        alert(err)
+      })
+
+    // Retrieve all food categories from the database.
+    axios.get('http://localhost:5000/foodcategories')
+      .then(res => {
+        this.setState({
+          foodCategories: res.data
+        })
+        res.data.forEach(item => {
+          let temp = [...this.state.foodCategoriesFilter]
+          temp.push(true)
+          this.setState({ foodCategoriesFilter: temp })
+        })
+      })
+      .catch(err => {
+        alert(err)
+      })
+  }
+
+  componentDidUpdate() {
+    // this.updateItemsDisplayed()
   }
 
   render() {
+    // this.updateItemsDisplayed()
     return (
       <div className='App'>
         <Router>
@@ -128,7 +259,12 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/checkout' exact>
-            <Checkout />
+            <Checkout
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
+              items={this.state.items}
+              cart={this.state.cart}
+            />
           </Route>
           <Route path='/' exact>
             <Header
@@ -137,11 +273,21 @@ class App extends React.Component {
               toggleFilterPanel={this.toggleFilterPanel}
             />
             <Body
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
               items={this.state.items}
               itemsOnDisplay={this.state.itemsOnDisplay}
               cart={this.state.cart}
-              filter={this.state.filter}
+              updateItemsDisplayed={this.updateItemsDisplayed}
               showFilterPanel={this.state.showFilterPanel}
+              restaurants={this.state.restaurants}
+              restaurantsFilter={this.state.restaurantsFilter}
+              foodCategories={this.state.foodCategories}
+              foodCategoriesFilter={this.state.foodCategoriesFilter}
+              handleRChange={this.handleRChange}
+              handleFCChange={this.handleFCChange}
+              handleAllBtn={this.handleAllBtn}
+              handleClearBtn={this.handleClearBtn}
               handleAddToCart={this.handleAddToCart}
               handleRemoveFromCart={this.handleRemoveFromCart}
             />

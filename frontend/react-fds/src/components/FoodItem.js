@@ -13,10 +13,34 @@ class FoodItem extends React.Component {
   }
 
   render() {
+    let btnStyle
+    if (this.props.item.is_available) {
+      btnStyle = {
+        width: '100%',
+        backgroundColor: 'orangered',
+        fontSize: '21px',
+        fontWeight: 'bold'
+      }
+    } else {
+      btnStyle = {
+        width: '100%',
+        backgroundColor: 'grey',
+        fontSize: '21px',
+        fontWeight: 'bold'
+      }
+    }
+    
     return (
       <Card className='food-item'>
         <CardImg top width='100%' src={FoodImage} alt='Food_IMG' />
         <CardBody style={{ height: '100%', textAlign: 'center' }}>
+          <CardSubtitle
+            style={{
+              fontSize: '15px'
+            }}
+          >
+            {'(' + this.props.item.fcname + ')'}
+          </CardSubtitle>
           <CardTitle
             style={{
               fontSize: '16px',
@@ -27,7 +51,10 @@ class FoodItem extends React.Component {
             {this.props.item.fname}
           </CardTitle>
           <CardSubtitle
-            style={{ fontSize: '15px', height: '70px' }}
+            style={{ 
+              fontSize: '15px', 
+              height: '70px'
+             }}
           >
             Restaurant: <br />{this.props.item.rname}
           </CardSubtitle>
@@ -37,16 +64,12 @@ class FoodItem extends React.Component {
             ${parseFloat(this.props.item.unit_price).toFixed(2)}
           </CardSubtitle>
           <Button
+            disabled={!this.props.item.is_available}
             value={this.props.itemIndex}
             onClick={this.props.handleAddToCart}
-            style={{
-              width: '100%',
-              backgroundColor: 'orangered',
-              fontSize: '21px',
-              fontWeight: 'bold'
-            }}
+            style={btnStyle}
           >
-            Add to cart
+            {this.props.item.is_available? 'Add to cart' : 'Sold out'}
           </Button>
         </CardBody>
       </Card>

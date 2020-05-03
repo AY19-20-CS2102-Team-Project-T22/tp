@@ -20,14 +20,29 @@ class Body extends React.Component {
   render() {
     return (
       <div className='body'>
-        {this.props.showFilterPanel && <FilterPanel />}
+        {this.props.showFilterPanel &&
+          <FilterPanel
+            restaurants={this.props.restaurants}
+            foodCategories={this.props.foodCategories}
+            updateItemsDisplayed={this.props.updateItemsDisplayed}
+            restaurantsFilter={this.props.restaurantsFilter}
+            foodCategoriesFilter={this.props.foodCategoriesFilter}
+            handleRChange={this.props.handleRChange}
+            handleFCChange={this.props.handleFCChange}
+            handleAllBtn={this.props.handleAllBtn}
+            handleClearBtn={this.props.handleClearBtn}
+          />
+        }
         <ItemDisplay
           items={this.props.items}
           itemsOnDisplay={this.props.itemsOnDisplay}
           handleAddToCart={this.props.handleAddToCart}
         />
         <CartPanel
+          isLoggedIn={this.props.isLoggedIn}
+          userId={this.props.userId}
           items={this.props.items}
+          itemsOnDisplay={this.props.itemsOnDisplay}
           cart={this.props.cart}
           handleRemoveFromCart={this.props.handleRemoveFromCart}
         />

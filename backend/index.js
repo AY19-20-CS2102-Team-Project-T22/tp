@@ -10,11 +10,17 @@ require('dotenv').config()
 app.use(cors())
 app.use(express.json())
 
-const usersRouter = require('./routes/users')
-const menuRouter = require('./routes/menu')
+const ordersRouter = require('./routes/orders')
+const restaurantsRouter = require('./routes/restaurants')
+const foodCategoriesRouter = require('./routes/foodCategories')
+const deliveryRouter = require('./routes/delivery')
 const accountRouter = require('./routes/account_info')
-app.use('/users', usersRouter)
+app.use('/users', usersRouter)a
 app.use('/menu', menuRouter)
+app.use('/orders', ordersRaouter)
+app.use('/restaurants', restaurantsRouter)
+app.use('/foodcategories', foodCategoriesRouter)
+app.use('/delivery', deliveryRouter)
 app.use('/account_info', accountRouter)
 
 /* Testing query
