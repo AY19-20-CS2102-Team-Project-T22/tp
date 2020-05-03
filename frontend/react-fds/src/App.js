@@ -127,10 +127,10 @@ class App extends React.Component {
     // Retrieve food items from menu from the database
     // with filters applied.
     axios.get(
-      startUrlString 
+      startUrlString
       + '?rid=' + rList
       + '&fcid=' + fcList
-      )
+    )
       .then(res => {
         this.setState({ itemsOnDisplay: res.data })
       })
@@ -252,7 +252,12 @@ class App extends React.Component {
             <Registration />
           </Route>
           <Route path='/checkout' exact>
-            <Checkout />
+            <Checkout
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
+              items={this.state.items}
+              cart={this.state.cart}
+            />
           </Route>
           <Route path='/' exact>
             <Header
@@ -261,6 +266,8 @@ class App extends React.Component {
               toggleFilterPanel={this.toggleFilterPanel}
             />
             <Body
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
               items={this.state.items}
               itemsOnDisplay={this.state.itemsOnDisplay}
               cart={this.state.cart}

@@ -11,7 +11,7 @@ router.route('/login').get((req, res) => {
       console.log(error)
       res.status(400).json('Error: ' + error)
     } else {
-      console.log(result.rows)
+      // console.log(result.rows)
 
       // The query should return only one row of data -> array length = 1.
       res.status(200).json(result.rows[0]) // Sends password (Non-secure).
@@ -53,13 +53,28 @@ router.route('/:type/add').post((req, res) => {
       console.log(error)
       res.status(400).json('Error: ' + error)
     } else {
-      console.log(result)
+      // console.log(result)
       res.status(200).json(result)
     }
     // db.end()
   })
 })
 
-// Handles user queries with arbitrary params (search filters).
+// Queries database for credit cards of user.
+router.route('/customers/:uid/creditcards').get((req, res) => {
+  const query = 'SELECT card_no FROM CreditCards WHERE uid=$1'
+  const values = [req.params.uid]
+
+  // db.connect()
+  db.query(query, values, (error, result) => {
+    if (error) {
+      console.log(error)
+      res.status(400).json('Error: ' + error)
+    } else {
+      res.status(200).json(result.rows)
+    }
+    // db.end()
+  })
+})
 
 module.exports = router

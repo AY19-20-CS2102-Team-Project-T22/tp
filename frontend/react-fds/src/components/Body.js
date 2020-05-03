@@ -39,6 +39,8 @@ class Body extends React.Component {
           handleAddToCart={this.props.handleAddToCart}
         />
         <CartPanel
+          isLoggedIn={this.props.isLoggedIn}
+          userId={this.props.userId}
           items={this.props.items}
           itemsOnDisplay={this.props.itemsOnDisplay}
           cart={this.props.cart}

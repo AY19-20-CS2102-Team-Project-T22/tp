@@ -112,6 +112,7 @@ class CartPanel extends React.Component {
           Total Cost: $ {this.calcTotalCost(this.props.cart).toFixed(2)}
           <Link to='/checkout'>
             <Button
+              disabled={!this.props.isLoggedIn || this.props.cart.length === 0}
               color='primary'
               style={{
                 marginTop: '10px',

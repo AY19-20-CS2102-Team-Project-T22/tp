@@ -688,20 +688,5 @@ Orders table columns:
 uid | rid | fid | unit_price | qty | delivery_cost | order_timestamp | address | postal_code
 primary key: (uid, rid, fid, order_timestamp)
 */
-insert into Orders
-values
-  (1, 1, 2, 5.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 4, 2.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 6, 1.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 8, 6.50, 1, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 9, 0.50, 3, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130'),
-  (1, 1, 10, 1.00, 2, 2.00, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130');
-
-insert into Orders
-values
-  (2, 3, 1, 4.50, 1, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
-  (2, 3, 2, 1.50, 2, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
-  (2, 3, 3, 1.50, 1, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346'),
-  (2, 3, 5, 3.50, 2, 2.80, now(), 'BLK 346 CHOA CHU KANG LOOP #08-11', '680346');
 
 
