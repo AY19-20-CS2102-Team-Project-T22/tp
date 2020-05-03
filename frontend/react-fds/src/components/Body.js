@@ -20,7 +20,19 @@ class Body extends React.Component {
   render() {
     return (
       <div className='body'>
-        {this.props.showFilterPanel && <FilterPanel />}
+        {this.props.showFilterPanel &&
+          <FilterPanel
+            initFilterPanel={this.props.initFilterPanel}
+            restaurants={this.props.restaurants}
+            foodCategories={this.props.foodCategories}
+            restaurantsFilter={this.props.restaurantsFilter}
+            foodCategoriesFilter={this.props.foodCategoriesFilter}
+            handleRChange={this.props.handleRChange}
+            handleFCChange={this.props.handleFCChange}
+            handleAllBtn={this.props.handleAllBtn}
+            handleClearBtn={this.props.handleClearBtn}
+          />
+        }
         <ItemDisplay
           items={this.props.items}
           itemsOnDisplay={this.props.itemsOnDisplay}

@@ -12,8 +12,14 @@ app.use(express.json())
 
 const usersRouter = require('./routes/users')
 const menuRouter = require('./routes/menu')
+const ordersRouter = require('./routes/orders')
+const restaurantsRouter = require('./routes/restaurants')
+const FoodCategoriesRouter = require('./routes/foodCategories')
 app.use('/users', usersRouter)
 app.use('/menu', menuRouter)
+app.use('/orders', ordersRouter)
+app.use('/restaurants', restaurantsRouter)
+app.use('/foodcategories', FoodCategoriesRouter)
 
 /* Testing query
 console.log('Executing a query...')
