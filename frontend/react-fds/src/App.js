@@ -247,7 +247,7 @@ class App extends React.Component {
             <Login
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
-              updateUserId={this.updateUser}
+              updateUser={this.updateUser}
             />
           </Route>
           <Route path='/register' exact>
@@ -257,6 +257,7 @@ class App extends React.Component {
             <AccountInfo 
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
+              userType={this.state.userType}
             />
           </Route>
           <Route path='/checkout' exact>

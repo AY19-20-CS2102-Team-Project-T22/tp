@@ -8,7 +8,7 @@ class AccountInfo extends React.Component {
     super(props)
     this.state = {
       uid: props.userId,
-      accountType: 'customers',
+      accountType: props.userType,
       old_firstName: '',
       old_lastName: '',
       old_username: '',

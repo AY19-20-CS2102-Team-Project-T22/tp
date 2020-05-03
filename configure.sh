@@ -9,5 +9,5 @@ cd backend
 npm install
 wget "http://127.0.0.1/.env"
 cd ..
-cd frontend
+cd frontend/react-fds
 yarn install  # about 5 mins
