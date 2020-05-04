@@ -158,13 +158,29 @@ CREATE TABLE MWS (
 );
 
 /*
- * dayOfWeek: range [1, 7] => Mon to Sun
- */
-CREATE TABLE wws (
-  uid integer REFERENCES Riders (uid),
+Query to get total hours for each day:
+
+WITH daily_total_hours as (
+  SELECT uid, workdate, SUM(
+    (end_1::time - start_1::time) +
+    (CASE WHEN start_2 IS NOT NULL THEN end_2::time - start_2::time ELSE interval '0' END) +
+    (CASE WHEN start_3 IS NOT NULL THEN end_3::time - start_3::time ELSE interval '0' END) +
+    (CASE WHEN start_4 IS NOT NULL THEN end_4::time - start_4::time ELSE interval '0' END) +
+    (CASE WHEN start_5 IS NOT NULL THEN end_5::time - start_5::time ELSE interval '0' END) +
+    (CASE WHEN start_6 IS NOT NULL THEN end_6::time - start_6::time ELSE interval '0' END)
+  ) as total_hrs
+  FROM wws
+  GROUP BY uid, workdate
+  ORDER BY workdate
+)
+select * from daily_total_hours;
+
+*/
+CREATE TABLE WWS (
+  uid integer,
   workDate date not null,
-  start_1 timetz not null,
-  end_1	timetz not null,
+  start_1 timetz,
+  end_1	timetz,
   start_2 timetz,
   end_2 timetz,
   start_3 timetz,
@@ -179,12 +195,12 @@ CREATE TABLE wws (
   primary key (uid, workDate),
   
   -- minimum of 1 work hours for each interval
-  check (start_1 < end_1 AND end_1::time - start_1::time >=  interval '1h'),
-  check (start_2 < end_2 AND end_2::time - start_2::time >=  interval '1h'),
-  check (start_3 < end_3 AND end_3::time - start_3::time >=  interval '1h'),
-  check (start_4 < end_4 AND end_4::time - start_4::time >=  interval '1h'),
-  check (start_5 < end_5 AND end_5::time - start_5::time >=  interval '1h'),
-  check (start_6 < end_6 AND end_6::time - start_6::time >=  interval '1h'),
+  check (start_1 < end_1 AND end_1::time - start_1::time >=  interval '1h' AND end_1::time - start_1::time <=  interval '4h'),
+  check (start_2 < end_2 AND end_2::time - start_2::time >=  interval '1h' AND end_2::time - start_2::time <=  interval '4h'),
+  check (start_3 < end_3 AND end_3::time - start_3::time >=  interval '1h' AND end_3::time - start_3::time <=  interval '4h'),
+  check (start_4 < end_4 AND end_4::time - start_4::time >=  interval '1h' AND end_4::time - start_4::time <=  interval '4h'),
+  check (start_5 < end_5 AND end_5::time - start_5::time >=  interval '1h' AND end_5::time - start_5::time <=  interval '4h'),
+  check (start_6 < end_6 AND end_6::time - start_6::time >=  interval '1h' AND end_6::time - start_6::time <=  interval '4h'),
   
   -- Break time between work intervals must be >= 1 hour
   check (
@@ -196,6 +212,7 @@ CREATE TABLE wws (
     ),
   
   -- if start time is defined, end time must also be defined
+  check (start_1 IS NOT NULL AND end_1 IS NOT NULL OR start_1 IS NULL AND end_1 IS NULL),
   check (start_2 IS NOT NULL AND end_2 IS NOT NULL OR start_2 IS NULL AND end_2 IS NULL),
   check (start_3 IS NOT NULL AND end_3 IS NOT NULL OR start_3 IS NULL AND end_3 IS NULL),
   check (start_4 IS NOT NULL AND end_4 IS NOT NULL OR start_4 IS NULL AND end_4 IS NULL),
@@ -203,6 +220,7 @@ CREATE TABLE wws (
   check (start_6 IS NOT NULL AND end_6 IS NOT NULL OR start_6 IS NULL AND end_6 IS NULL),
   
   -- cannot define interval x if interval x - 1 is not defined
+  check (start_2 IS NULL OR start_2 IS NOT NULL AND start_1 IS NOT NULL),
   check (start_3 IS NULL OR start_3 IS NOT NULL AND start_2 IS NOT NULL),
   check (start_4 IS NULL OR start_4 IS NOT NULL AND start_3 IS NOT NULL),
   check (start_5 IS NULL OR start_5 IS NOT NULL AND start_4 IS NOT NULL),
