@@ -8,10 +8,7 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5432,
 })
 
-// client.connect()
-
 module.exports = {
-  pool: pool,
   query: (text, params, callback) => {
     const start = Date.now()
     return pool.query(text, params, (err, res) => {
