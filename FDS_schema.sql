@@ -176,7 +176,7 @@ CREATE TABLE wws (
   start_6 timetz,
   end_6 timetz,
   
-  primary key (uid, dayOfWeek),
+  primary key (uid, workDate),
   
   -- minimum of 1 work hours for each interval
   check (start_1 < end_1 AND end_1::time - start_1::time >=  interval '1h'),
