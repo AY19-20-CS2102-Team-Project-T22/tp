@@ -829,13 +829,65 @@ insert into DeliveryAreas values ('northeast', '80');
 
 
 
-------------
--- ORDERS --
-------------
-/* 
-Orders table columns:
-uid | rid | fid | unit_price | qty | delivery_cost | order_timestamp | address | postal_code
-primary key: (uid, rid, fid, order_timestamp)
-*/
+----------------------------
+-- WEEKLY WORK SCHEDULES --
+----------------------------
+insert into wws values (
+  28,
+  now()::date - interval '4d',
+  '10:00 am',
+  '12:00 pm',
+  '2:00 pm',
+  '5:00 pm'
+  );
 
+insert into wws values (
+  28,
+  now()::date - interval '3d',
+  '12:00 pm',
+  '3:00 pm'
+  );
 
+insert into wws values (
+  28,
+  now()::date,
+  '10:00 am',
+  '11:00 am',
+  '12:00 pm',
+  '1:00 pm',
+  '2:00 pm',
+  '3:00 pm',
+  '4:00 pm',
+  '5:00 pm',
+  '6:00 pm',
+  '7:00 pm',
+  '8:00 pm',
+  '9:00 pm'
+  );
+  
+insert into wws values (
+  28,
+  now()::date + interval '1d',
+  '10:00 am',
+  '1:00 pm',
+  '3:00 pm',
+  '5:00 pm'
+  );
+  
+insert into wws values (
+  35,
+  now()::date - interval '9d',
+  '11:00 am',
+  '12:00 pm',
+  '3:00 pm',
+  '6:00 pm'
+  );
+  
+insert into wws values (
+  35,
+  now()::date - interval '7d',
+  '11:00 am',
+  '12:00 pm',
+  '3:00 pm',
+  '6:00 pm'
+  );
