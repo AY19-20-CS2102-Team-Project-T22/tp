@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link, Redirect } from 'react-router-dom'
 import axios from 'axios'
 import {
   Button,
@@ -24,8 +25,13 @@ class Checkout extends React.Component {
       paymentMethod: 0,
       orderCost: 0.0,
       deliveryCost: 0.0,
-      totalCost: 0.0
+      totalCost: 0.0,
+      
+      // For redirecting purposes.
+      redirect: false
     }
+
+    this.setRedirectToHomePage = this.setRedirectToHomePage.bind(this)
 
     this.handleAddressDropdownChange = this.handleAddressDropdownChange.bind(this)
     this.handleAddressChange = this.handleAddressChange.bind(this)
@@ -37,6 +43,10 @@ class Checkout extends React.Component {
     this.calcOrderCost = this.calcOrderCost.bind(this)
     this.calcDeliveryCost = this.calcDeliveryCost.bind(this)
     this.populateWithRegisteredCCs = this.populateWithRegisteredCCs.bind(this)
+  }
+
+  setRedirectToHomePage() {
+    this.setState({ redirect: true })
   }
 
   handleAddressDropdownChange(e) {
@@ -92,11 +102,12 @@ class Checkout extends React.Component {
 
         // Get credit card number.
         let ccNo = null
-        if (this.state.paymentMethod !== 0) {
-          ccNo = this.state.cc[this.state.paymentMethod - 1].card_no
+        let paymentMethod = parseInt(this.state.paymentMethod)
+        if (paymentMethod !== 0) {
+          ccNo = this.state.cc[paymentMethod - 1].card_no
         }
 
-        // Insert new order to database
+        // Construct information details to be inserted to database.
         const dataToSend = {
           uid: this.props.userId,
           rid: restaurantId,
@@ -108,9 +119,16 @@ class Checkout extends React.Component {
           cardNo: ccNo
         }
 
+        // Insert query request.
         axios.post('http://localhost:5000/orders/add', dataToSend)
           .then(res => {
-            console.log('successfully inserted order to db')
+            alert('Your order is successful. Returning to homepage.')
+            
+            // Clear cart.
+            this.props.clearCart()
+
+            // Return to homepage.
+            this.setRedirectToHomePage()
           })
           .catch(err => {
             alert(err)
@@ -181,7 +199,6 @@ class Checkout extends React.Component {
     this.props.cart.forEach(item => {
       totalCost += parseFloat(this.props.items[item].unit_price)
     })
-    // this.setState({ orderCost: totalCost })
     return totalCost
   }
 
@@ -235,28 +252,17 @@ class Checkout extends React.Component {
         alert(err)
       })
 
-    // Retrieve past delivery addresses entered by user (if any).
-
-  }
-
-  componentDidUpdate() {
-    // this.calcOrderCost()
-    // this.calcDeliveryCost()
-    // this.setState(prev => ({
-    //   totalCost: prev.orderCost + prev.deliveryCost
-    // }))
+    // TODO: Retrieve past delivery addresses entered by user (if any).
+    // Use OrdersLog to get the last 5 addresses.
+    
   }
 
   render() {
 
 
     return (
-      // <div className='checkout'>
-      //   1) Make database query to get customer credit cards.<br />
-      //   2) Make user fill up a form (payment method, delivery location (need postal), etc).<br />
-      //   3) When form submitted, perform database operation accordingly.<br />
-      // </div>
       <div className='checkout'>
+        {this.state.redirect && <Redirect to='/' />}
         <div
           style={{
             flex: '1',
@@ -327,29 +333,63 @@ class Checkout extends React.Component {
               >
                 <option value={0}>Cash</option>
                 {this.populateWithRegisteredCCs()}
-                {/* <option value={1}>Credit card ending with xxxx</option>
-                <option value={2}>Credit card ending with yyyy</option> */}
               </Input>
             </FormGroup>
             <Button
-              style={{ width: '100%' }}
+              style={{
+                width: '100%',
+                height: '70px',
+                fontSize: '24px'
+              }}
               type='submit'
               color='primary'
             >
               Proceed to Order
             </Button>
+            <Link to='/'>
+              <Button
+                style={{ width: '100%', marginTop: '20px' }}
+              >
+                Back
+              </Button>
+            </Link>
           </Form>
         </div>
         <div
           style={{
-            paddingLeft: '20px',
+            paddingLeft: '40px',
             flex: '1',
             display: 'flex',
-            justifyContent: 'center'
+            flexFlow: 'row wrap',
+            alignItems: 'flex-start',
+            alignContent: 'flex-start'
+            // justifyContent: 'center'
+            // alignItems: 'center'
           }}>
-          Order Cost: {this.calcOrderCost().toFixed(2)}<br />
-          Delivery Cost: {this.state.deliveryCost.toFixed(2)}<br />
-          Total Cost: {(this.calcOrderCost() + this.state.deliveryCost).toFixed(2)}
+          <div style={{
+            width: '100%',
+            height: '70px',
+            paddingLeft: '40px'
+          }}>
+            <h3>Order Details</h3>
+          </div>
+          <div style={{
+            flex: '2',
+            paddingLeft: '40px'
+          }}>
+            <h4>
+              Order Cost:<br />
+              Delivery Cost:<br />
+              Total Cost:
+            </h4>
+          </div>
+          <div style={{ flex: '1' }}>
+            <h4>
+              $ {this.calcOrderCost().toFixed(2)}<br />
+              $ {this.state.deliveryCost.toFixed(2)}<br />
+              $ {(this.calcOrderCost() + this.state.deliveryCost).toFixed(2)}
+            </h4>
+          </div>
         </div>
       </div>
     )

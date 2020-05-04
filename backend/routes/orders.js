@@ -15,63 +15,77 @@ router.route('/add').post((req, res) => {
   // (1, 1, 9, 0.50, 3, 2.20, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130', 0, null),
   // (1, 1, 10, 1.00, 2, 2.20, now(), 'BLK 130 BUKIT BATOK WEST AVE 6 #12-342', '650130', 0, null)
   // `
-  db.client.query('BEGIN', (error, result) => {
-    if (error) {
-      res.status(400).json('error')
+  db.getClient((err, client, done) => {
+    if (err) {
+      res.status(400).json(err)
+      done()
       return
     }
 
-    let query = `INSERT INTO Orders VALUES `
-    let values = []
-    let index = 1
-    orderList.forEach(async (item, i) => {
-      query +=
-      `
-      (
-        $${index++},
-        $${index++},
-        $${index++},
-        $${index++},
-        $${index++},
-        $${index++},
-        NOW(),
-        $${index++},
-        $${index++},
-        $${index++},
-        $${index++}
-      ),`
-      values.push(req.body.uid)
-      values.push(req.body.rid)
-      values.push(item.fid)
-      values.push(item.unitPrice)
-      values.push(item.qty)
-      values.push(req.body.deliveryCost)
-      values.push(req.body.address)
-      values.push(req.body.postalCode)
-      values.push(req.body.paymentMethod)
-      values.push(req.body.cardNo)
-    })
-
-    query = query.substring(0, query.length - 1)
-    // console.log(query)
-
-    db.client.query(query, values, (error, result) => {
-      if (error) {
-        console.log(error.stack)
-        res.status(400).json('error on insert operation')
+    client.query('BEGIN', (err1, res1) => {
+      if (err1) {
+        console.error(err1.stack)
+        res.status(400).json(err1)
+        done()
         return
-      } else {
-        res.status(200).json('success')
-        db.client.query('COMMIT', (error, result) => {
-          if (error) {
-            console.log(error.stack)
-            res.status(400).json('error committing')
-            return
-          }
-        })
       }
+
+      let query = `INSERT INTO Orders VALUES `
+      let values = []
+      let index = 1
+      orderList.forEach(async (item, i) => {
+        query +=
+          `
+          (
+            $${index++},
+            $${index++},
+            $${index++},
+            $${index++},
+            $${index++},
+            $${index++},
+            NOW(),
+            $${index++},
+            $${index++},
+            $${index++},
+            $${index++}
+          ),`
+
+        values.push(req.body.uid)
+        values.push(req.body.rid)
+        values.push(item.fid)
+        values.push(item.unitPrice)
+        values.push(item.qty)
+        values.push(req.body.deliveryCost)
+        values.push(req.body.address)
+        values.push(req.body.postalCode)
+        values.push(req.body.paymentMethod)
+        values.push(req.body.cardNo)
+      })
+
+      query = query.substring(0, query.length - 1) // Remove last comma.
+
+      client.query(query, values, (err2, res2) => {
+        if (err2) {
+          console.log(err2.stack)
+          res.status(400).json(err2)
+          done()
+          return
+        } else {
+          client.query('COMMIT', (err3, res3) => {
+            if (err3) {
+              console.log(err3.stack)
+              res.status(400).json(err3)
+              done()
+              return
+            }
+            res.status(200).json(res3)
+            done()
+          })
+        }
+      })
     })
   })
+
 
   // ;(async () => {
   //   try {
