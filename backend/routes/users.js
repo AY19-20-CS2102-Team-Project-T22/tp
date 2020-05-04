@@ -75,6 +75,7 @@ router.route('/customers/:uid/creditcards').get((req, res) => {
     }
     // db.end()
   })
-})
+}
+)
 
 module.exports = router
