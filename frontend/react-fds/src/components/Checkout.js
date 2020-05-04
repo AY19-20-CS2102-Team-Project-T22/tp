@@ -90,6 +90,12 @@ class Checkout extends React.Component {
           })
         }
 
+        // Get credit card number.
+        let ccNo = null
+        if (this.state.paymentMethod !== 0) {
+          ccNo = this.state.cc[this.state.paymentMethod - 1].card_no
+        }
+
         // Insert new order to database
         const dataToSend = {
           uid: this.props.userId,
@@ -99,7 +105,7 @@ class Checkout extends React.Component {
           postalCode: this.state.postalCode,
           deliveryCost: cost,
           paymentMethod: this.state.paymentMethod,
-          cardNo: this.state.paymentMethod === 0 ? null : this.state.cc[this.state.paymentMethod - 1].card_no
+          cardNo: ccNo
         }
 
         axios.post('http://localhost:5000/orders/add', dataToSend)

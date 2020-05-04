@@ -292,17 +292,31 @@ CREATE OR REPLACE FUNCTION log_orders()
 	'
 	BEGIN
 		INSERT INTO OrdersLog(order_timestamp, order_cost, delivery_cost, payment_method, rider_id, address, postal_code) 
-			SELECT
-				n.order_timestamp,
-				SUM(n.unit_price * n.qty),
-				n.delivery_cost,
-        n.payment_method,
-				5,
-				n.address,
-				n.postal_code
-			FROM new_table n
-			GROUP BY n.order_timestamp, n.delivery_cost, n.payment_method, n.address, n.postal_code;
-        RETURN NULL;
+			(WITH temp_table as (
+        SELECT
+          n.order_timestamp,
+          SUM(n.unit_price * n.qty) as order_cost,
+          n.delivery_cost,
+          n.payment_method,
+          5 as rider_id,
+          n.address,
+          n.postal_code
+        FROM new_table n
+        GROUP BY n.order_timestamp, n.delivery_cost, n.payment_method, n.address, n.postal_code
+      )
+      SELECT
+        order_timestamp,
+        SUM(order_cost),
+        delivery_cost,
+        payment_method,
+        rider_id,
+        address,
+        postal_code
+      FROM temp_table
+      GROUP BY order_timestamp, delivery_cost, payment_method, rider_id, address, postal_code)
+      ;
+
+      RETURN NULL;
 	END;
 	'
 LANGUAGE plpgsql;
