@@ -29,7 +29,6 @@ router.route('/cost/').get((req, res) => {
       console.log(error)
       res.status(400).json('Error: ' + error)
     } else {
-      console.log('succeeded query')
       if (result.rows.length === 1) {
         res.status(200).json(result.rows[0])
       } else [

@@ -123,6 +123,7 @@ CREATE TABLE CreditCards (
 	expiry_date			DATE NOT NULL,
 
 	PRIMARY KEY (uid, card_no),
+  UNIQUE (card_no),
 	FOREIGN KEY (uid) REFERENCES Customers(uid) ON DELETE CASCADE
 );
 
@@ -255,8 +256,12 @@ CREATE TABLE Orders (
 	order_timestamp		TIMESTAMPTZ NOT NULL,
 	address				VARCHAR(50) NOT NULL,
 	postal_code			VARCHAR(6) NOT NULL,
+  payment_method  INTEGER NOT NULL,
+  card_no         BIGINT REFERENCES CreditCards(card_no),
 
-	PRIMARY KEY (uid, rid, fid, order_timestamp)
+	PRIMARY KEY (uid, rid, fid, order_timestamp),
+  CHECK (payment_method = 0 AND card_no IS NULL
+         OR payment_method <> 0 AND card_no IS NOT NULL)
 );
 
 CREATE TABLE OrdersLog (
@@ -264,6 +269,7 @@ CREATE TABLE OrdersLog (
 	order_timestamp		TIMESTAMPTZ NOT NULL,
 	order_cost			NUMERIC NOT NULL,
 	delivery_cost		NUMERIC NOT NULL,
+  payment_method  INTEGER NOT NULL,
 	rider_id			INTEGER,
 	address				VARCHAR(50) NOT NULL,
 	postal_code			VARCHAR(6) NOT NULL,
@@ -285,16 +291,17 @@ CREATE OR REPLACE FUNCTION log_orders()
 	RETURNS TRIGGER AS
 	'
 	BEGIN
-		INSERT INTO OrdersLog(order_timestamp, order_cost, delivery_cost, rider_id, address, postal_code) 
+		INSERT INTO OrdersLog(order_timestamp, order_cost, delivery_cost, payment_method, rider_id, address, postal_code) 
 			SELECT
 				n.order_timestamp,
 				SUM(n.unit_price * n.qty),
 				n.delivery_cost,
+        n.payment_method,
 				5,
 				n.address,
 				n.postal_code
 			FROM new_table n
-			GROUP BY n.order_timestamp, n.delivery_cost, n.address, n.postal_code;
+			GROUP BY n.order_timestamp, n.delivery_cost, n.payment_method, n.address, n.postal_code;
         RETURN NULL;
 	END;
 	'

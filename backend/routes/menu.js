@@ -5,7 +5,8 @@ const db = require('../db')
 router.route('/').get((req, res) => {
   const query = 
   `
-  SELECT fid, 
+  SELECT fid,
+         rid, 
 	       (SELECT rname FROM Restaurants r WHERE m.rid=r.rid),
          unit_price,
          is_available,

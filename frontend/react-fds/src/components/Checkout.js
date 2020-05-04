@@ -20,8 +20,8 @@ class Checkout extends React.Component {
       recentLocations: [],
       address: '',
       postalCode: '',
-      selectedLoc: 1,
-      paymentMethod: 1,
+      selectedLoc: 6,
+      paymentMethod: 0,
       orderCost: 0.0,
       deliveryCost: 0.0,
       totalCost: 0.0
@@ -36,6 +36,7 @@ class Checkout extends React.Component {
     this.displayItemsInCart = this.displayItemsInCart.bind(this)
     this.calcOrderCost = this.calcOrderCost.bind(this)
     this.calcDeliveryCost = this.calcDeliveryCost.bind(this)
+    this.populateWithRegisteredCCs = this.populateWithRegisteredCCs.bind(this)
   }
 
   handleAddressDropdownChange(e) {
@@ -56,6 +57,62 @@ class Checkout extends React.Component {
 
   handleSubmit(e) {
     e.preventDefault()
+
+    // Get the restaurant id for this order.
+    const restaurantId = this.props.items[this.props.cart[0]].rid
+
+    // Calculate final delivery cost.
+    axios.get(
+      'http://localhost:5000/delivery/cost?postalcode='
+      + this.state.postalCode
+    )
+      .then(res => {
+        let cost = parseFloat(res.data.cost)
+
+        // Get the fid and quantity for each unique item in cart.
+        let sortedCart = this.props.cart.sort()
+        let orderList = []
+        let quantity
+        for (let i = 0; i < sortedCart.length; i += quantity) {
+          quantity = 1
+          let idx = sortedCart[i]
+          for (let j = i + 1; j < sortedCart.length; j++) {
+            if (idx === sortedCart[j]) {
+              quantity++
+            } else {
+              break
+            }
+          }
+          orderList.push({
+            fid: this.props.items[idx].fid,
+            unitPrice: this.props.items[idx].unit_price,
+            qty: quantity,
+          })
+        }
+
+        // Insert new order to database
+        const dataToSend = {
+          uid: this.props.userId,
+          rid: restaurantId,
+          orders: orderList,
+          address: this.state.address,
+          postalCode: this.state.postalCode,
+          deliveryCost: cost,
+          paymentMethod: this.state.paymentMethod,
+          cardNo: this.state.paymentMethod === 0 ? null : this.state.cc[this.state.paymentMethod - 1].card_no
+        }
+
+        axios.post('http://localhost:5000/orders/add', dataToSend)
+          .then(res => {
+            console.log('successfully inserted order to db')
+          })
+          .catch(err => {
+            alert(err)
+          })
+      })
+      .catch(err => {
+        alert(err)
+      })
   }
 
   displayItemsInCart() {
@@ -123,7 +180,12 @@ class Checkout extends React.Component {
   }
 
   handleDeliveryCostCalc(e) {
-    this.calcDeliveryCost()
+    if (this.state.selectedLoc == 6) {
+      this.calcDeliveryCost()
+    } else {
+      let cost = this.state.recentLocations[this.state.selectedLoc].delivery_cost
+      this.setState({ deliveryCost: cost })
+    }
   }
 
   calcDeliveryCost() {
@@ -139,6 +201,18 @@ class Checkout extends React.Component {
       .catch(err => {
         alert(err)
       })
+  }
+
+  populateWithRegisteredCCs() {
+    return this.state.cc.map((eachItem, i) => {
+      // Extract last 4 digits of card number.
+      let lastFourDigits =
+        eachItem.card_no.
+          substring(eachItem.card_no.length - 4, eachItem.card_no.length)
+      return (
+        <option value={i + 1}>Credit card ending with {lastFourDigits}</option>
+      )
+    })
   }
 
   componentDidMount() {
@@ -198,11 +272,11 @@ class Checkout extends React.Component {
                 value={this.state.selectedLoc}
                 onChange={this.handleAddressDropdownChange}
               >
-                <option value={1}>Location 1</option>
-                <option value={2}>Location 2</option>
-                <option value={3}>Location 3</option>
-                <option value={4}>Location 4</option>
-                <option value={5}>Location 5</option>
+                <option value={0}>Location 1</option>
+                <option value={1}>Location 2</option>
+                <option value={2}>Location 3</option>
+                <option value={3}>Location 4</option>
+                <option value={4}>Location 5</option>
                 <option value={6}>Other</option>
               </Input>
             </FormGroup>
@@ -245,9 +319,10 @@ class Checkout extends React.Component {
                 value={this.state.paymentMethod}
                 onChange={this.handlePaymentMethodChange}
               >
-                <option value={1}>Cash</option>
-                <option value={2}>Credit card ending with xxxx</option>
-                <option value={3}>Credit card ending with yyyy</option>
+                <option value={0}>Cash</option>
+                {this.populateWithRegisteredCCs()}
+                {/* <option value={1}>Credit card ending with xxxx</option>
+                <option value={2}>Credit card ending with yyyy</option> */}
               </Input>
             </FormGroup>
             <Button

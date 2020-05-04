@@ -11,6 +11,7 @@ const client = new Client({
 client.connect()
 
 module.exports = {
+  client: client,
   query: (text, params, callback) => {
     const start = Date.now()
     return client.query(text, params, (err, res) => {
