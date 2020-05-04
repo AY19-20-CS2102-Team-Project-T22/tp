@@ -5,18 +5,14 @@ const db = require('../db')
 router.route('/login').get((req, res) => {
   const query = 'SELECT uid, username, password FROM Users WHERE username=$1'
   const values = [req.query.username]
-  // db.connect()
   db.query(query, values, (error, result) => {
     if (error) {
       console.log(error)
       res.status(400).json('Error: ' + error)
     } else {
-      // console.log(result.rows)
-
       // The query should return only one row of data -> array length = 1.
       res.status(200).json(result.rows[0]) // Sends password (Non-secure).
     }
-    // db.end()
   })
 })
 
@@ -47,16 +43,13 @@ router.route('/:type/add').post((req, res) => {
     (req.body.email != '') ? req.body.email : null,
     (req.body.contactNo != '') ? req.body.contactNo : null
   ]
-  // db.connect()
   db.query(query, values, (error, result) => {
     if (error) {
       console.log(error)
       res.status(400).json('Error: ' + error)
     } else {
-      // console.log(result)
       res.status(200).json(result)
     }
-    // db.end()
   })
 })
 
@@ -65,7 +58,6 @@ router.route('/customers/:uid/creditcards').get((req, res) => {
   const query = 'SELECT card_no FROM CreditCards WHERE uid=$1'
   const values = [req.params.uid]
 
-  // db.connect()
   db.query(query, values, (error, result) => {
     if (error) {
       console.log(error)
@@ -73,7 +65,6 @@ router.route('/customers/:uid/creditcards').get((req, res) => {
     } else {
       res.status(200).json(result.rows)
     }
-    // db.end()
   })
 }
 )

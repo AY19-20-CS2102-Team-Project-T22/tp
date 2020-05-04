@@ -153,6 +153,96 @@ CREATE TRIGGER check_riders_trigger
 	BEFORE INSERT ON Riders
 	FOR EACH ROW EXECUTE PROCEDURE check_riders();
 
+CREATE TABLE MWS (
+
+);
+
+/*
+ * dayOfWeek: range [1, 7] => Mon to Sun
+ */
+CREATE TABLE wws (
+  uid integer,
+  dayOfWeek integer not null,
+  start_1 timetz not null,
+  end_1	timetz not null,
+  start_2 timetz,
+  end_2 timetz,
+  start_3 timetz,
+  end_3	timetz,
+  start_4 timetz,
+  end_4 timetz,
+  start_5 timetz,
+  end_5	timetz,
+  start_6 timetz,
+  end_6 timetz,
+  
+  primary key (uid, dayOfWeek),
+  
+  -- minimum of 1 work hours for each interval
+  check (start_1 < end_1 AND end_1::time - start_1::time >=  interval '1h'),
+  check (start_2 < end_2 AND end_2::time - start_2::time >=  interval '1h'),
+  check (start_3 < end_3 AND end_3::time - start_3::time >=  interval '1h'),
+  check (start_4 < end_4 AND end_4::time - start_4::time >=  interval '1h'),
+  check (start_5 < end_5 AND end_5::time - start_5::time >=  interval '1h'),
+  check (start_6 < end_6 AND end_6::time - start_6::time >=  interval '1h'),
+  
+  -- Break time between work intervals must be >= 1 hour
+  check (
+    start_2::time - end_1::time >= interval '1h' 
+    AND start_3::time - end_2::time >= interval '1h' 
+    AND start_4::time - end_3::time >= interval '1h' 
+    AND start_5::time - end_4::time >= interval '1h' 
+    AND start_6::time - end_5::time >= interval '1h'
+    ),
+  
+  -- if start time is defined, end time must also be defined
+  check (start_2 IS NOT NULL AND end_2 IS NOT NULL OR start_2 IS NULL AND end_2 IS NULL),
+  check (start_3 IS NOT NULL AND end_3 IS NOT NULL OR start_3 IS NULL AND end_3 IS NULL),
+  check (start_4 IS NOT NULL AND end_4 IS NOT NULL OR start_4 IS NULL AND end_4 IS NULL),
+  check (start_5 IS NOT NULL AND end_5 IS NOT NULL OR start_5 IS NULL AND end_5 IS NULL),
+  check (start_6 IS NOT NULL AND end_6 IS NOT NULL OR start_6 IS NULL AND end_6 IS NULL),
+  
+  -- cannot define interval x if interval x - 1 is not defined
+  check (start_3 IS NULL OR start_3 IS NOT NULL AND start_2 IS NOT NULL),
+  check (start_4 IS NULL OR start_4 IS NOT NULL AND start_3 IS NOT NULL),
+  check (start_5 IS NULL OR start_5 IS NOT NULL AND start_4 IS NOT NULL),
+  check (start_6 IS NULL OR start_6 IS NOT NULL AND start_5 IS NOT NULL),
+  
+  -- work hours must be between 10am to 10pm
+  check (start_1 >= time '10:00' AND end_1 <= time '22:00'),
+  check (start_2 >= time '10:00' AND end_2 <= time '22:00'),
+  check (start_3 >= time '10:00' AND end_3 <= time '22:00'),
+  check (start_4 >= time '10:00' AND end_4 <= time '22:00'),
+  check (start_5 >= time '10:00' AND end_5 <= time '22:00'),
+  check (start_6 >= time '10:00' AND end_6 <= time '22:00'),
+  
+  -- work hours must be on the hour (e.g. 11:00 am - allowed BUT 11:30 am - not allowed)
+  check (
+    extract(m from start_1) = 0 AND extract(s from start_1) = 0
+    AND extract(m from end_1) = 0 AND extract(s from end_1) = 0
+  ),
+  check (
+    extract(m from start_2) = 0 AND extract(s from start_2) = 0
+    AND extract(m from end_2) = 0 AND extract(s from end_2) = 0
+  ),
+  check (
+    extract(m from start_3) = 0 AND extract(s from start_3) = 0
+    AND extract(m from end_3) = 0 AND extract(s from end_3) = 0
+  ),
+  check (
+    extract(m from start_4) = 0 AND extract(s from start_4) = 0
+    AND extract(m from end_4) = 0 AND extract(s from end_4) = 0
+  ),
+  check (
+    extract(m from start_5) = 0 AND extract(s from start_5) = 0
+    AND extract(m from end_5) = 0 AND extract(s from end_5) = 0
+  ),
+  check (
+    extract(m from start_6) = 0 AND extract(s from start_6) = 0
+    AND extract(m from end_6) = 0 AND extract(s from end_6) = 0
+  )
+);
+
 CREATE TABLE Staff (
 	rid					INTEGER REFERENCES Restaurants(rid) ON DELETE CASCADE,
 
