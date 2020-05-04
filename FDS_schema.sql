@@ -158,9 +158,9 @@ CREATE TABLE MWS (
 );
 
 /*
-Query to get total hours for each day:
+-- Query to get total hours
 
-WITH daily_total_hours as (
+WITH daily_total_hours AS (
   SELECT uid, workdate, SUM(
     (end_1::time - start_1::time) +
     (CASE WHEN start_2 IS NOT NULL THEN end_2::time - start_2::time ELSE interval '0' END) +
@@ -173,8 +173,28 @@ WITH daily_total_hours as (
   GROUP BY uid, workdate
   ORDER BY workdate
 )
-select * from daily_total_hours;
 
+-- To get daily total hours for every riders
+SELECT * FROM daily_total_hours;
+
+-- To get weekly total hours for every riders
+SELECT uid, 
+(SELECT (CASE EXTRACT(dow FROM workdate)
+         WHEN 1 THEN workdate
+         WHEN 2 THEN workdate - interval '1d'
+         WHEN 3 THEN workdate - interval '2d'     
+         WHEN 4 THEN workdate - interval '3d'
+         WHEN 5 THEN workdate - interval '4d'
+         WHEN 6 THEN workdate - interval '5d'
+         WHEN 0 THEN workdate - interval '6d'
+         ELSE null
+         END
+)) as start_date_of_week,
+SUM(total_hrs)
+FROM daily_total_hours
+GROUP BY uid, start_date_of_week
+ORDER BY start_date_of_week
+;
 */
 CREATE TABLE WWS (
   uid integer references Riders (uid),
