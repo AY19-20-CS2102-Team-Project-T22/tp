@@ -177,7 +177,7 @@ select * from daily_total_hours;
 
 */
 CREATE TABLE WWS (
-  uid integer,
+  uid integer references Riders (uid),
   workDate date not null,
   start_1 timetz,
   end_1	timetz,
@@ -194,7 +194,7 @@ CREATE TABLE WWS (
   
   primary key (uid, workDate),
   
-  -- minimum of 1 work hours for each interval
+  -- minimum of 1 work hours and maximum 4 work hours for each interval
   check (start_1 < end_1 AND end_1::time - start_1::time >=  interval '1h' AND end_1::time - start_1::time <=  interval '4h'),
   check (start_2 < end_2 AND end_2::time - start_2::time >=  interval '1h' AND end_2::time - start_2::time <=  interval '4h'),
   check (start_3 < end_3 AND end_3::time - start_3::time >=  interval '1h' AND end_3::time - start_3::time <=  interval '4h'),
