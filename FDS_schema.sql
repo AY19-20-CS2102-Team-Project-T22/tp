@@ -161,7 +161,7 @@ CREATE TABLE MWS (
  * dayOfWeek: range [1, 7] => Mon to Sun
  */
 CREATE TABLE wws (
-  uid integer,
+  uid integer REFERENCES Riders (uid),
   workDate date not null,
   start_1 timetz not null,
   end_1	timetz not null,
