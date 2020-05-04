@@ -162,7 +162,7 @@ CREATE TABLE MWS (
  */
 CREATE TABLE wws (
   uid integer,
-  dayOfWeek integer not null,
+  workDate date not null,
   start_1 timetz not null,
   end_1	timetz not null,
   start_2 timetz,
