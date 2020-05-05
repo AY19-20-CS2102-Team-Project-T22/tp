@@ -13,7 +13,7 @@ import Registration from './components/Registration'
 import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
 import './App.css'
-import UserSideBar from './components/UserSideBar'
+import PaymentMethods from './components/PaymentMethods'
 
 class App extends React.Component {
 
@@ -321,6 +321,25 @@ class App extends React.Component {
               firstName = {this.state.firstName}
             />
           </Route>
+          <Route path='/myPaymentMethods' exact>
+            <Header
+              isLoggedIn={this.state.isLoggedIn}
+              handleLogout={this.handleLogout}
+              toggleFilterPanel={this.toggleFilterPanel}
+              itemsOnDisplay = {this.state.itemsOnDisplay}
+              updateItemsDisplayed={this.updateItemsDisplayed}
+              filterItemList = {this.filterItemList}
+              handleFqueryChange = {this.handleFqueryChange}
+              fquery = {this.fquery}
+            />
+            <PaymentMethods
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
+              userType={this.state.userType}
+              firstName = {this.state.firstName}
+            />
+          </Route>
+
           <Route path='/checkout' exact>
             <Checkout
               isLoggedIn={this.state.isLoggedIn}

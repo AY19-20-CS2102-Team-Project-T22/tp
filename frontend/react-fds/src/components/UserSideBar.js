@@ -55,7 +55,7 @@ class MyAccount extends React.Component {
                     </Button>
                 </Link>
                 
-                <Link to='/'>
+                <Link to='/myPaymentMethods'>
                     <Button
                         style={{ width: '100%' }}
                         color='secondary'
