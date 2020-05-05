@@ -1,11 +1,16 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Button, InputGroup, InputGroupAddon, Input } from 'reactstrap'
 import IconButton from '@material-ui/core/IconButton'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import MenuIcon from '@material-ui/icons/Menu'
+import SearchBar from './SearchBar'
 
 class Header extends React.Component {
+
+  constructor(props) {
+    super(props)
+  }
+
   render() {
     return (
       <div className='header'>
@@ -36,14 +41,13 @@ class Header extends React.Component {
             }}
           />
         </Link>
-        <InputGroup style={{ marginLeft: '20px', marginRight: '20px', flex: 1 }}>
-          <Input type='search' placeholder='Search for foods...' />
-          <InputGroupAddon addonType="append">
-            <Button color='primary'>
-              Search
-            </Button>
-          </InputGroupAddon>
-        </InputGroup>
+            <SearchBar 
+              itemsOnDisplay = {this.props.itemsOnDisplay}
+              updateItemsDisplayed={this.props.updateItemsDisplayed}
+              handleFqueryChange = {this.props.handleFqueryChange}
+              fquery = {this.fquery}
+            />
+
         {(this.props.isLoggedIn) ?
           <div>
           <Link

@@ -30,10 +30,14 @@ class App extends React.Component {
 
       // State for food items display page.
       itemsOnDisplay: [],
+      itemsOnDisplayFilter: [],
 
       // State for restaurant list.
       restaurants: [],
       restaurantsFilter: [],
+
+      // State for food query.
+      fquery : '',
 
       // State for food categories list.
       foodCategories: [],
@@ -59,6 +63,11 @@ class App extends React.Component {
     this.handleClearBtn = this.handleClearBtn.bind(this)
     this.handleRChange = this.handleRChange.bind(this)
     this.handleFCChange = this.handleFCChange.bind(this)
+    this.handleFqueryChange = this.handleFqueryChange.bind(this)
+
+    this.filterItemList = this.filterItemList.bind(this)
+
+
   }
 
   toggleFilterPanel() {
@@ -106,9 +115,15 @@ class App extends React.Component {
     this.setState({ items: menu, itemsOnDisplay: menu })
   }
 
+  filterItemList(items) {
+    console.log("FILTERITEMLIST : " + items)
+    this.setState({itemsOnDisplay : items})
+  }
+
   updateItemsDisplayed(e) {
     e.preventDefault()
-
+    
+    console.log("UPDATEITEMSDISPLAYED : fquery is "  + this.state.fquery)
     // Construct url query strings.
     const startUrlString = 'http://localhost:5000/menu/filter'
 
@@ -127,12 +142,14 @@ class App extends React.Component {
     fcid.forEach(item => fcList += item.fcid + ',')
     fcList = fcList.substring(0, fcList.length - 1)
 
+
     // Retrieve food items from menu from the database
     // with filters applied.
     axios.get(
       startUrlString
       + '?rid=' + rList
       + '&fcid=' + fcList
+      + '&fquery=' + this.state.fquery
     )
       .then(res => {
         this.setState({ itemsOnDisplay: res.data })
@@ -177,6 +194,11 @@ class App extends React.Component {
         break
     }
 
+  }
+
+  handleFqueryChange(e) {
+    console.log(e.target.value)
+    this.setState({fquery : e.target.value})
   }
 
   handleRChange(e) {
@@ -233,6 +255,8 @@ class App extends React.Component {
       .catch(err => {
         alert(err)
       })
+
+      this.setState({ fquery : ''})
   }
 
   componentDidUpdate() {
@@ -280,6 +304,11 @@ class App extends React.Component {
               isLoggedIn={this.state.isLoggedIn}
               handleLogout={this.handleLogout}
               toggleFilterPanel={this.toggleFilterPanel}
+              itemsOnDisplay = {this.state.itemsOnDisplay}
+              updateItemsDisplayed={this.updateItemsDisplayed}
+              filterItemList = {this.filterItemList}
+              handleFqueryChange = {this.handleFqueryChange}
+              fquery = {this.fquery}
             />
             <Body
               isLoggedIn={this.state.isLoggedIn}

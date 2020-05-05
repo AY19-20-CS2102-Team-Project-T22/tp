@@ -47,6 +47,8 @@ router.route('/filter').get((req, res) => {
       (SELECT rid FROM Restaurants r WHERE a.rname=r.rname) IN (` + req.query.rid + `)
       AND 
       (SELECT fcid FROM FoodCategories fc WHERE a.fcname=fc.fcname) IN (` + req.query.fcid + `)
+      AND
+      LOWER(a.fname) LIKE LOWER('%`+ req.query.fquery + `%')
       ORDER BY a.fname;
     `
     db.query(query, null, (error, result) => {
