@@ -1,5 +1,5 @@
 import React from 'react'
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import { Button, Input, InputGroup, InputGroupAddon, Label, Form, FormGroup } from 'reactstrap'
 
 class AutoCompleteSearch extends React.Component {
@@ -58,12 +58,6 @@ class AutoCompleteSearch extends React.Component {
                {suggestions.map((item, i ) => <li onClick = {() => this.props.handleFquery(item.fname)}>{item.fname}</li>)}
             </ul>
         );
-    }
-
-    onSubmitSearch(e) {
-        const { suggestions } = this.state.suggestions
-        console.log('Submitting' + e.target.value)
-        this.props.handleUpdateItemsFiltered(suggestions)
     }
     
 

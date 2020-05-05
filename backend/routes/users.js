@@ -3,7 +3,7 @@ const db = require('../db')
 
 // Handles login request.
 router.route('/login').get((req, res) => {
-  const query = 'SELECT uid, username, password FROM Users WHERE username=$1'
+  const query = 'SELECT uid, username, password, first_name FROM Users WHERE username=$1'
   const values = [req.query.username]
   db.query(query, values, (error, result) => {
     if (error) {

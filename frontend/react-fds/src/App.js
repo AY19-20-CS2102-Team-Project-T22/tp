@@ -13,6 +13,7 @@ import Registration from './components/Registration'
 import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
 import './App.css'
+import UserSideBar from './components/UserSideBar'
 
 class App extends React.Component {
 
@@ -24,6 +25,7 @@ class App extends React.Component {
       isLoggedIn: false,
       userId: null,
       userType: null,
+      firstName: null,
 
       // State for full list of items on the Menu table.
       items: [],
@@ -108,8 +110,8 @@ class App extends React.Component {
     this.setState({ cart: tempCart })
   }
 
-  updateUser(uid, type) {
-    this.setState({ userId: uid, isLoggedIn: true, userType: type })
+  updateUser(uid, type, first_name) {
+    this.setState({ userId: uid, isLoggedIn: true, userType: type, firstName: first_name })
   }
 
   handleLogout() {
@@ -285,16 +287,38 @@ class App extends React.Component {
             <Registration />
           </Route>
           <Route path='/orderHistory' exact>
+            <Header
+              isLoggedIn={this.state.isLoggedIn}
+              handleLogout={this.handleLogout}
+              toggleFilterPanel={this.toggleFilterPanel}
+              itemsOnDisplay = {this.state.itemsOnDisplay}
+              updateItemsDisplayed={this.updateItemsDisplayed}
+              filterItemList = {this.filterItemList}
+              handleFqueryChange = {this.handleFqueryChange}
+              fquery = {this.fquery}
+            />
             <OrderHistory
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
+              firstName = {this.state.firstName}
             />
           </Route>
           <Route path='/accountinfo' exact>
-            <AccountInfo 
+            <Header
+              isLoggedIn={this.state.isLoggedIn}
+              handleLogout={this.handleLogout}
+              toggleFilterPanel={this.toggleFilterPanel}
+              itemsOnDisplay = {this.state.itemsOnDisplay}
+              updateItemsDisplayed={this.updateItemsDisplayed}
+              filterItemList = {this.filterItemList}
+              handleFqueryChange = {this.handleFqueryChange}
+              fquery = {this.fquery}
+            />
+            <AccountInfo
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               userType={this.state.userType}
+              firstName = {this.state.firstName}
             />
           </Route>
           <Route path='/checkout' exact>

@@ -2,6 +2,7 @@ import React from 'react'
 import axios from 'axios'
 import { Button, Form, FormGroup, Label, Input } from 'reactstrap'
 import { Link } from 'react-router-dom'
+import UserSidebar from './UserSideBar'
 
 class OrderHistory extends React.Component {
   constructor(props) {
@@ -22,7 +23,7 @@ class OrderHistory extends React.Component {
     this.handlePasswordChange = this.handlePasswordChange.bind(this)
     this.handleEmailChange = this.handleEmailChange.bind(this)
     this.handleContactChange = this.handleContactChange.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
+
     this.getOrderHistroy();
   }
 
@@ -85,36 +86,14 @@ class OrderHistory extends React.Component {
     })
   }
 
-  handleSubmit(e) {
-    e.preventDefault()
-
-    // HTTP POST request to backend.
-    // Send account information over HTTP (Non-secure).
-    let url = 'http://localhost:5000/account_info/modify';
-    let data = {
-      uid: this.state.uid,
-      type: this.state.accountType,
-      firstName: this.state.firstName,
-      lastName: this.state.lastName,
-      username: this.state.username,
-      email: this.state.email,
-      password: this.state.password,
-      contactNo: parseInt(this.state.contactNo)
-    };
-    axios.post(url, data)
-      .then(res => {
-        alert('You have successfully modified.')
-        window.location = '/'
-      })
-      .catch(err => {
-        // Display error.
-        alert(err)
-      })
-  }
-
   render() {
     return (
-        <Label>Order History</Label>
+
+      <div className='body'>
+        <UserSidebar firstName = {this.props.firstName}>
+        </UserSidebar>
+        <div className ='item-display'></div>
+      </div>
     )
   }
 }
