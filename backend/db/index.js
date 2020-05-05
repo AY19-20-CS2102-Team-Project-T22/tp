@@ -1,6 +1,6 @@
-const { Client } = require('pg')
+const { Pool } = require('pg')
 
-const client = new Client({
+const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
@@ -8,12 +8,10 @@ const client = new Client({
   port: process.env.DB_PORT || 5432,
 })
 
-client.connect()
-
 module.exports = {
   query: (text, params, callback) => {
     const start = Date.now()
-    return client.query(text, params, (err, res) => {
+    return pool.query(text, params, (err, res) => {
       // Logging.
       const duration = Date.now() - start
       console.log('Executed query', { text, duration })
@@ -21,6 +19,12 @@ module.exports = {
       callback(err, res)
     })
   },
-  connect: () => client.connect(),
-  end: () => client.end()
+  getClient: (callback) => {
+    pool.connect((err, client, done) => {
+      if (err) {
+        console.error('Error acquiring client,', err.stack)
+      }
+      callback(err, client, done)
+    })
+  }
 }
