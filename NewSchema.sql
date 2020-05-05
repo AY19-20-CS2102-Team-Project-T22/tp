@@ -20,23 +20,23 @@ DROP TABLE IF EXISTS RestaurantPromotions CASCADE;
 DROP TABLE IF EXISTS Orders CASCADE;
 DROP TABLE IF EXISTS Reviews CASCADE;
 
-
+/*SET TIMEZONE = +8;*/
 
 CREATE TABLE Users (
-	userId 			 	SERIAL,
-	type				INTEGER NOT NULL CHECK (type >= 1 and type <= 4),
+	userId				SERIAL,
+	type 				INTEGER NOT NULL CHECK (type >= 1 and type <= 4),
 	userName		 	VARCHAR(30) NOT NULL,
 	userPassword     	VARCHAR(30) NOT NULL,
 	lastName         	VARCHAR(20) NOT NULL,
 	firstName       	VARCHAR(20) NOT NULL,
 	phoneNumber     	INTEGER NOT NULL,
 	registrationDate	TIMESTAMP NOT NULL,
-	emailAddress    	VARCHAR NOT NULL,
+	email				VARCHAR NOT NULL,
 	active          	BOOLEAN NOT NULL
 
 	PRIMARY KEY (userId),
 	UNIQUE (phoneNumber),
-	UNIQUE (emailAddress),
+	UNIQUE (email),
 	CHECK (phoneNumber >= 10000000 and phoneNumber <= 99999999)
 );
 
@@ -55,7 +55,7 @@ CREATE TABLE Customers (
 CREATE TABLE RecentLocations (
 	customerId			INTEGER,
 	location 			INTEGER NOT NULL, /*postal code*/
-	lastUsingTime		TIMESTAMP,
+	lastUsingTime		TIMESTAMP NOT NULL,
 
 	PRIMARY KEY (customerId, lastUsingTime),
 	FOREIGN KEY (customerId) REFERENCES Users(userId) ON DELETE CASCADE ON UPDATE CASCADE
@@ -64,7 +64,7 @@ CREATE TABLE RecentLocations (
 
 CREATE TABLE CreditCards (
 	cardNo				INTEGER,
-	customerId			INTEGER,
+	customerId			INTEGER NOT NULL,
 	bank				VARCHAR(20) NOT NULL,
 
 	PRIMARY KEY (cardNo),
@@ -76,7 +76,8 @@ CREATE TABLE Restaurants (
 	name 				VARCHAR(30) NOT NULL,
 	minOrderCost		INTEGER DEFAULT 0,
 
-	PRIMARY KEY (restaurantId)
+	PRIMARY KEY (restaurantId),
+	CHECK (minOrderCost > 0)
 );
 
 CREATE TABLE Foods (
@@ -117,7 +118,7 @@ CREATE TABLE Carts (
 
 CREATE TABLE DeliveryRiders (
 	riderId				INTEGER,
-	type				INTEGER NOT NULL CHECK (type == 1 or type == 2),
+	type				INTEGER NOT NULL CHECK (type = 1 or type = 2),
 
 	PRIMARY KEY (riderId),
 	FOREIGN KEY (riderId) REFERENCES Users(userId) ON DELETE CASCADE
@@ -131,13 +132,12 @@ CREATE TABLE WWS (
 	endDate				DATE,
 	isUsed				BOOLEAN NOT NULL DEFAULT 't',
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
-	schedule			INTEGER[7][24],
+	schedule			INTEGER[][3], /*every slot: starting time & end time*/
 
 	UNIQUE (riderId, startDate),
 	PRIMARY KEY (workId),
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
-	CHECK (endDate >= startDate)
-
+	CHECK (endDate >= startDate),
 )
 
 CREATE TABLE MWS (
@@ -212,7 +212,7 @@ CREATE TABLE FDSManagers (
 /*cannot delete any record*/
 CREATE TABLE Promotions (
 	promoId 			SERIAL,
-	type				INTEGER NOT NULL CHECK (type == 1 or type == 2), /*use integer(1, 2) to represent type*/
+	type				INTEGER NOT NULL CHECK (type = 1 or type = 2), /*use integer(1, 2) to represent type*/
 	value				INTEGER, /*what does this mean?*/
 	startDate			DATE,
 	endDate				DATE,
@@ -244,8 +244,10 @@ CREATE TABLE Orders (
 	orderId				SERIAL,
 	customerId			INTEGER,
 	riderId				INTEGER,
+	restaurantId		INTEGER,
 	orderTime			TIMESTAMP[5], /*five types of time*/
-	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod == 1 or paymentMethod == 2), 
+	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 or paymentMethod = 2),
+	cardNo				BIGINT,
 	foodFee 			DECIMAL NOT NULL,
 	deliveryFee			DECIMAL NOT NULL,
 	deliveryLocation	INTEGER NOT NULL,
@@ -254,7 +256,9 @@ CREATE TABLE Orders (
 	PRIMARY KEY (orderId),
 	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE SET NULL,
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE SET NULL,
-	FOREIGN KEY (promoId) REFERENCES Promotions(promoId)
+	FOREIGN KEY (restaurantId) REFERENCES Restaurants(restaurantId) ON DELETE SET NULL,
+	FOREIGN KEY (promoId) REFERENCES Promotions(promoId),
+	CHECK (paymentMethod = 1 && cardNo IS NOT NULL)
 
 )
 
