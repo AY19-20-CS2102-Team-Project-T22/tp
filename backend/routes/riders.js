@@ -23,7 +23,7 @@ CREATE TABLE OrdersLog (
 router.route('/orderHistory').get((req, res) => {
     let query = 'select oid, order_timestamp, order_cost, delivery_cost, address, \
                 postal_code, depart_for_r, arrived_at_r, depart_for_c from OrdersLog where rider_id=$1';
-    let values = [req.params.rider_id];     //rider_id is necessary
+    let values = [req.query.rider_id];     //rider_id is necessary
     if (req.params.order_timestamp) {   //order_timestamp filter
         query += ' AND order_timestamp=$' + (values.length+1).toString();
         values.push(req.params.order_timestamp);
@@ -64,5 +64,10 @@ router.route('/orderHistory').get((req, res) => {
         // db.end()
       })
 })
+
+//Queries database for past schedule
+
+//Queries database for past salaries
+
 
 module.exports = router;

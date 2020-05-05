@@ -123,6 +123,7 @@ CREATE TABLE CreditCards (
 	expiry_date			DATE NOT NULL,
 
 	PRIMARY KEY (uid, card_no),
+  UNIQUE (card_no),
 	FOREIGN KEY (uid) REFERENCES Customers(uid) ON DELETE CASCADE
 );
 
@@ -151,6 +152,134 @@ DROP TRIGGER IF EXISTS check_riders_trigger ON Riders;
 CREATE TRIGGER check_riders_trigger
 	BEFORE INSERT ON Riders
 	FOR EACH ROW EXECUTE PROCEDURE check_riders();
+
+CREATE TABLE MWS (
+
+);
+
+/*
+-- Query to get total hours
+
+WITH daily_total_hours AS (
+  SELECT uid, workdate, SUM(
+    (end_1::time - start_1::time) +
+    (CASE WHEN start_2 IS NOT NULL THEN end_2::time - start_2::time ELSE interval '0' END) +
+    (CASE WHEN start_3 IS NOT NULL THEN end_3::time - start_3::time ELSE interval '0' END) +
+    (CASE WHEN start_4 IS NOT NULL THEN end_4::time - start_4::time ELSE interval '0' END) +
+    (CASE WHEN start_5 IS NOT NULL THEN end_5::time - start_5::time ELSE interval '0' END) +
+    (CASE WHEN start_6 IS NOT NULL THEN end_6::time - start_6::time ELSE interval '0' END)
+  ) as total_hrs
+  FROM wws
+  GROUP BY uid, workdate
+  ORDER BY workdate
+)
+
+-- To get daily total hours for every riders
+SELECT * FROM daily_total_hours;
+
+-- To get weekly total hours for every riders
+SELECT uid, 
+(SELECT (CASE EXTRACT(dow FROM workdate)
+         WHEN 1 THEN workdate
+         WHEN 2 THEN workdate - interval '1d'
+         WHEN 3 THEN workdate - interval '2d'     
+         WHEN 4 THEN workdate - interval '3d'
+         WHEN 5 THEN workdate - interval '4d'
+         WHEN 6 THEN workdate - interval '5d'
+         WHEN 0 THEN workdate - interval '6d'
+         ELSE null
+         END
+)) as start_date_of_week,
+SUM(total_hrs)
+FROM daily_total_hours
+GROUP BY uid, start_date_of_week
+ORDER BY start_date_of_week
+;
+*/
+CREATE TABLE WWS (
+  uid integer references Riders (uid),
+  workDate date not null,
+  start_1 timetz,
+  end_1	timetz,
+  start_2 timetz,
+  end_2 timetz,
+  start_3 timetz,
+  end_3	timetz,
+  start_4 timetz,
+  end_4 timetz,
+  start_5 timetz,
+  end_5	timetz,
+  start_6 timetz,
+  end_6 timetz,
+  
+  primary key (uid, workDate),
+  
+  -- minimum of 1 work hours and maximum 4 work hours for each interval
+  check (start_1 < end_1 AND end_1::time - start_1::time >=  interval '1h' AND end_1::time - start_1::time <=  interval '4h'),
+  check (start_2 < end_2 AND end_2::time - start_2::time >=  interval '1h' AND end_2::time - start_2::time <=  interval '4h'),
+  check (start_3 < end_3 AND end_3::time - start_3::time >=  interval '1h' AND end_3::time - start_3::time <=  interval '4h'),
+  check (start_4 < end_4 AND end_4::time - start_4::time >=  interval '1h' AND end_4::time - start_4::time <=  interval '4h'),
+  check (start_5 < end_5 AND end_5::time - start_5::time >=  interval '1h' AND end_5::time - start_5::time <=  interval '4h'),
+  check (start_6 < end_6 AND end_6::time - start_6::time >=  interval '1h' AND end_6::time - start_6::time <=  interval '4h'),
+  
+  -- Break time between work intervals must be >= 1 hour
+  check (
+    start_2::time - end_1::time >= interval '1h' 
+    AND start_3::time - end_2::time >= interval '1h' 
+    AND start_4::time - end_3::time >= interval '1h' 
+    AND start_5::time - end_4::time >= interval '1h' 
+    AND start_6::time - end_5::time >= interval '1h'
+    ),
+  
+  -- if start time is defined, end time must also be defined
+  check (start_1 IS NOT NULL AND end_1 IS NOT NULL OR start_1 IS NULL AND end_1 IS NULL),
+  check (start_2 IS NOT NULL AND end_2 IS NOT NULL OR start_2 IS NULL AND end_2 IS NULL),
+  check (start_3 IS NOT NULL AND end_3 IS NOT NULL OR start_3 IS NULL AND end_3 IS NULL),
+  check (start_4 IS NOT NULL AND end_4 IS NOT NULL OR start_4 IS NULL AND end_4 IS NULL),
+  check (start_5 IS NOT NULL AND end_5 IS NOT NULL OR start_5 IS NULL AND end_5 IS NULL),
+  check (start_6 IS NOT NULL AND end_6 IS NOT NULL OR start_6 IS NULL AND end_6 IS NULL),
+  
+  -- cannot define interval x if interval x - 1 is not defined
+  check (start_2 IS NULL OR start_2 IS NOT NULL AND start_1 IS NOT NULL),
+  check (start_3 IS NULL OR start_3 IS NOT NULL AND start_2 IS NOT NULL),
+  check (start_4 IS NULL OR start_4 IS NOT NULL AND start_3 IS NOT NULL),
+  check (start_5 IS NULL OR start_5 IS NOT NULL AND start_4 IS NOT NULL),
+  check (start_6 IS NULL OR start_6 IS NOT NULL AND start_5 IS NOT NULL),
+  
+  -- work hours must be between 10am to 10pm
+  check (start_1 >= time '10:00' AND end_1 <= time '22:00'),
+  check (start_2 >= time '10:00' AND end_2 <= time '22:00'),
+  check (start_3 >= time '10:00' AND end_3 <= time '22:00'),
+  check (start_4 >= time '10:00' AND end_4 <= time '22:00'),
+  check (start_5 >= time '10:00' AND end_5 <= time '22:00'),
+  check (start_6 >= time '10:00' AND end_6 <= time '22:00'),
+  
+  -- work hours must be on the hour (e.g. 11:00 am - allowed BUT 11:30 am - not allowed)
+  check (
+    extract(m from start_1) = 0 AND extract(s from start_1) = 0
+    AND extract(m from end_1) = 0 AND extract(s from end_1) = 0
+  ),
+  check (
+    extract(m from start_2) = 0 AND extract(s from start_2) = 0
+    AND extract(m from end_2) = 0 AND extract(s from end_2) = 0
+  ),
+  check (
+    extract(m from start_3) = 0 AND extract(s from start_3) = 0
+    AND extract(m from end_3) = 0 AND extract(s from end_3) = 0
+  ),
+  check (
+    extract(m from start_4) = 0 AND extract(s from start_4) = 0
+    AND extract(m from end_4) = 0 AND extract(s from end_4) = 0
+  ),
+  check (
+    extract(m from start_5) = 0 AND extract(s from start_5) = 0
+    AND extract(m from end_5) = 0 AND extract(s from end_5) = 0
+  ),
+  check (
+    extract(m from start_6) = 0 AND extract(s from start_6) = 0
+    AND extract(m from end_6) = 0 AND extract(s from end_6) = 0
+  )
+);
 
 CREATE TABLE Staff (
 	rid					INTEGER REFERENCES Restaurants(rid) ON DELETE CASCADE,
@@ -255,8 +384,12 @@ CREATE TABLE Orders (
 	order_timestamp		TIMESTAMPTZ NOT NULL,
 	address				VARCHAR(50) NOT NULL,
 	postal_code			VARCHAR(6) NOT NULL,
+  payment_method  INTEGER NOT NULL,
+  card_no         BIGINT REFERENCES CreditCards(card_no),
 
-	PRIMARY KEY (uid, rid, fid, order_timestamp)
+	PRIMARY KEY (uid, rid, fid, order_timestamp),
+  CHECK (payment_method = 0 AND card_no IS NULL
+         OR payment_method <> 0 AND card_no IS NOT NULL)
 );
 
 CREATE TABLE OrdersLog (
@@ -264,6 +397,7 @@ CREATE TABLE OrdersLog (
 	order_timestamp		TIMESTAMPTZ NOT NULL,
 	order_cost			NUMERIC NOT NULL,
 	delivery_cost		NUMERIC NOT NULL,
+  payment_method  INTEGER NOT NULL,
 	rider_id			INTEGER,
 	address				VARCHAR(50) NOT NULL,
 	postal_code			VARCHAR(6) NOT NULL,
@@ -285,17 +419,32 @@ CREATE OR REPLACE FUNCTION log_orders()
 	RETURNS TRIGGER AS
 	'
 	BEGIN
-		INSERT INTO OrdersLog(order_timestamp, order_cost, delivery_cost, rider_id, address, postal_code) 
-			SELECT
-				n.order_timestamp,
-				SUM(n.unit_price * n.qty),
-				n.delivery_cost,
-				5,
-				n.address,
-				n.postal_code
-			FROM new_table n
-			GROUP BY n.order_timestamp, n.delivery_cost, n.address, n.postal_code;
-        RETURN NULL;
+		INSERT INTO OrdersLog(order_timestamp, order_cost, delivery_cost, payment_method, rider_id, address, postal_code) 
+			(WITH temp_table as (
+        SELECT
+          n.order_timestamp,
+          SUM(n.unit_price * n.qty) as order_cost,
+          n.delivery_cost,
+          n.payment_method,
+          5 as rider_id,
+          n.address,
+          n.postal_code
+        FROM new_table n
+        GROUP BY n.order_timestamp, n.delivery_cost, n.payment_method, n.address, n.postal_code
+      )
+      SELECT
+        order_timestamp,
+        SUM(order_cost),
+        delivery_cost,
+        payment_method,
+        rider_id,
+        address,
+        postal_code
+      FROM temp_table
+      GROUP BY order_timestamp, delivery_cost, payment_method, rider_id, address, postal_code)
+      ;
+
+      RETURN NULL;
 	END;
 	'
 LANGUAGE plpgsql;
@@ -680,13 +829,65 @@ insert into DeliveryAreas values ('northeast', '80');
 
 
 
-------------
--- ORDERS --
-------------
-/* 
-Orders table columns:
-uid | rid | fid | unit_price | qty | delivery_cost | order_timestamp | address | postal_code
-primary key: (uid, rid, fid, order_timestamp)
-*/
+----------------------------
+-- WEEKLY WORK SCHEDULES --
+----------------------------
+insert into wws values (
+  28,
+  now()::date - interval '4d',
+  '10:00 am',
+  '12:00 pm',
+  '2:00 pm',
+  '5:00 pm'
+  );
 
+insert into wws values (
+  28,
+  now()::date - interval '3d',
+  '12:00 pm',
+  '3:00 pm'
+  );
 
+insert into wws values (
+  28,
+  now()::date,
+  '10:00 am',
+  '11:00 am',
+  '12:00 pm',
+  '1:00 pm',
+  '2:00 pm',
+  '3:00 pm',
+  '4:00 pm',
+  '5:00 pm',
+  '6:00 pm',
+  '7:00 pm',
+  '8:00 pm',
+  '9:00 pm'
+  );
+  
+insert into wws values (
+  28,
+  now()::date + interval '1d',
+  '10:00 am',
+  '1:00 pm',
+  '3:00 pm',
+  '5:00 pm'
+  );
+  
+insert into wws values (
+  35,
+  now()::date - interval '9d',
+  '11:00 am',
+  '12:00 pm',
+  '3:00 pm',
+  '6:00 pm'
+  );
+  
+insert into wws values (
+  35,
+  now()::date - interval '7d',
+  '11:00 am',
+  '12:00 pm',
+  '3:00 pm',
+  '6:00 pm'
+  );

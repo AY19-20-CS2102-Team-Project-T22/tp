@@ -51,6 +51,8 @@ class App extends React.Component {
     }
 
     // Function bindings.
+    this.clearCart = this.clearCart.bind(this)
+
     this.initItems = this.initItems.bind(this)
     this.updateUser = this.updateUser.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
@@ -74,6 +76,10 @@ class App extends React.Component {
     this.setState(prev => ({
       showFilterPanel: !prev.showFilterPanel
     }))
+  }
+
+  clearCart() {
+    this.setState({ cart: [] })
   }
 
   handleAddToCart(e) {
@@ -297,6 +303,7 @@ class App extends React.Component {
               userId={this.state.userId}
               items={this.state.items}
               cart={this.state.cart}
+              clearCart={this.clearCart}
             />
           </Route>
           <Route path='/' exact>
