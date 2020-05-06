@@ -33,7 +33,7 @@ router.route('/num_of_customers').get((req, res) => {
             console.log("error");
             break;
     }
-    const query = 'select count(uid) from customers where registration_date>=$1 AND registration_date<=$2';
+    const query = 'select count(uid) as num from customers where registration_date>=$1 AND registration_date<=$2';
     const values = [start_time_str, end_time_str];
     
     // db.connect()
@@ -65,7 +65,7 @@ router.route('/num_of_orders').get((req, res) => {
             // db.end()
         })
     }
-    else{       // params: year, month
+    else{       // params: year, month, uid(optional)
         let start_time_str = req.query.year + "-" + req.query.month + "-01 00:00:00+8";          // "yyyy-mm-01 00:00:00"
         let end_time_str = '';
         switch(req.query.month){
@@ -125,5 +125,29 @@ router.route('/cost_of_orders').get((req, res) => {
         // db.end()
     })
 })
+
+
+//For each hour and for each delivery location area, the total number of orders placed at that hour for that location area
+//num_of_orders?postal_code=112233&timestamp=155555500000000
+router.route('/num_of_orders2').get((req, res) => {
+    const start_stamp = new Date(parseInt(req.query.timestamp));
+    const end_stamp = new Date(parseInt(req.query.timestamp)+3600000);
+    const start_time = start_stamp.getFullYear() + '-' + start_stamp.getMonth()+ '-' + start_stamp.getDate() + ' ' + start_stamp.getHours() + ':' + start_stamp.getMinutes() + ':' + start_stamp.getSeconds();
+    const end_time = end_stamp.getFullYear() + '-' + end_stamp.getMonth()+ '-' + end_stamp.getDate() + ' ' + end_stamp.getHours() + ':' + end_stamp.getMinutes() + ':' + end_stamp.getSeconds();
+    const query = 'select count(oid) from OrdersLog where postal_code=$1 AND order_timestamp>=$2 AND order_timestamp<=$3';
+    const values = [req.query.postal_code, start_time, end_time];
+    
+    // db.connect()
+    db.query(query, values, (error, result) => {
+        if (error) {
+        console.log(error)
+        res.status(400).json('Error: ' + error)
+        } else {
+        res.status(200).json(result.rows)
+        }
+        // db.end()
+    })
+})
+
 
 module.exports = router;

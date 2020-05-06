@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const db = require('../db')
 
-router.route('/add').get((req, res) => {
+router.route('/timestamp').get((req, res) => {
   const query = 
   `
   select now()
