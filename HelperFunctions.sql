@@ -178,7 +178,9 @@ AS $BODY$
 $BODY$ LANGUAGE plpgsql STABLE STRICT;
 
 
+
 /*Helper Function to retrieve top 5 favourite food items for a given restaurant, mth,yr*/
+/*
 CREATE OR REPLACE FUNCTION getTop5(rId INTEGER, mth INTEGER, yr INTEGER) 
 RETURNS TABLE (
     fId INTEGER,
@@ -187,7 +189,9 @@ RETURNS TABLE (
 AS $BODY$
     BEGIN
         SELECT O.ordersid, F.foodName INTO fId, fName
-        FROM Orders O JOIN Foods F
+        FROM Orders O NATURAL JOIN Foods F
+        ;
 
     END;
 $BODY$ LANGUAGE plpgsql;
+*/
