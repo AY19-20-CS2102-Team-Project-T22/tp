@@ -263,13 +263,14 @@ CREATE TABLE Orders (
 	customerId			INTEGER,
 	riderId				INTEGER,
 	restaurantId		INTEGER,
-	orderTime			TIMESTAMP[5], /*five types of time*/
+	orderTime			TIMESTAMP[5], /*five types of time  time */
 	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 or paymentMethod = 2),
 	cardNo				BIGINT,
 	foodFee 			DECIMAL NOT NULL,
 	deliveryFee			DECIMAL NOT NULL,
 	deliveryLocation	INTEGER NOT NULL,
 	promoId				INTEGER,
+	ratings 			INTEGER,
 
 	PRIMARY KEY (orderId),
 	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE SET NULL,
