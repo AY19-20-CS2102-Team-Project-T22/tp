@@ -12,7 +12,9 @@ DROP TABLE IF EXISTS
 	DeliveryAreas,
 	Menu,
 	Orders,
-	OrdersLog
+	OrdersLog,
+  MWS,
+  WWS
 CASCADE;
 
 

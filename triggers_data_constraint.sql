@@ -103,10 +103,54 @@ CREATE CONSTRAINT TRIGGER check_break_trigger
 	FOR EACH ROW
 	EXECUTE FUNCTION check_break();
 
-/*ensure every hour interval has at least 5 riders*/
-CREATE OR REPLACE FUNCTION check_num_of_riders RETURNS TRIGGER AS $$
+/*ensure that food in cart has enough availability*/
+CREATE OR REPLACE FUNCTION check_food_availability () RETURNS TRIGGER AS $$
 DECLARE
-	weekday			WWS_Schedules.weekday%TYPE
+	availability 		INTEGER;
+BEGIN
+	SELECT quantity INTO availability
+	FROM Foods
+	WHERE NEW.foodId = Foods.foodId;
+
+	IF availability < NEW.quantity THEN
+		RAISE exception 'There are only % available', availability;
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_food_availability_trigger
+	BEFORE UPDATE OF foodId, quantity OR INSERT
+	ON Carts
+	FOR EACH ROW
+	EXECUTE FUNCTION check_food_availability ();
+
+/*ensure that every customer will have at most 5 recentlocations*/
+CREATE OR REPLACE FUNCTION check_location_num () RETURNS TRIGGER AS $$
+DECLARE
+	num 		INTEGER;
+BEGIN
+	SELECT sum (location) INTO num
+	FROM RecentLocations R
+	WHERE NEW.customerId = R.customerId;
+
+	IF sum > 5 THEN
+		RAISE exception 'There are already five locations that have been stored';
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_location_num_trigger ON RecentLocations CASCADE;
+CREATE TRIGGER check_location_num_trigger
+	BEFORE INSERT
+	ON RecentLocations
+	FOR EACH ROW
+	EXECUTE check_location_num ();
+
+/*ensure every hour interval has at least 5 riders*/
+/*CREATE OR REPLACE FUNCTION check_num_of_riders RETURNS TRIGGER AS $$
+DECLARE
+	weekday			WWS_Schedules.weekday%TYPE;
 BEGIN
 	
 END;
@@ -127,10 +171,7 @@ CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
 	DEFERRABLE INITIALLY DEFERRED
 	FOR EACH ROW
 	EXECUTE FUNCTION check_num_of_riders();
-
-/*ensure that food in cart has enough availability*/
-CREATE OR REPLACE FUNCTION check_food_availability () RETURNS TRIGGER AS $$
-
+*/
 
 
 /*ensures each customer only has 5 location records*/
