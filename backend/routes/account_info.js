@@ -4,7 +4,7 @@ const db = require('../db')
 // return account info
 router.route('/').get((req, res) => {
   const query = 'SELECT * FROM Users WHERE userId=$1'
-  const values = [req.query.userId]
+  const values = [req.query.uid]
   db.query(query, values, (error, result) => {
     if (error) {
       console.log(error)
@@ -94,7 +94,7 @@ router.route('/modify').post((req, res) => {
         }
       })
     }
-    res.status(200).json(result);
+    res.status(200).json(true);
 })
 
 module.exports = router

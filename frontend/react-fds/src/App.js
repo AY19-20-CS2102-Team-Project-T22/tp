@@ -12,8 +12,8 @@ import Login from './components/Login'
 import Registration from './components/Registration'
 import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
+import CreditCard from './components/CreditCard'
 import './App.css'
-import PaymentMethods from './components/PaymentMethods'
 
 class App extends React.Component {
 
@@ -25,21 +25,16 @@ class App extends React.Component {
       isLoggedIn: false,
       userId: null,
       userType: null,
-      firstName: null,
 
       // State for full list of items on the Menu table.
       items: [],
 
       // State for food items display page.
       itemsOnDisplay: [],
-      itemsOnDisplayFilter: [],
 
       // State for restaurant list.
       restaurants: [],
       restaurantsFilter: [],
-
-      // State for food query.
-      fquery : '',
 
       // State for food categories list.
       foodCategories: [],
@@ -53,8 +48,6 @@ class App extends React.Component {
     }
 
     // Function bindings.
-    this.clearCart = this.clearCart.bind(this)
-
     this.initItems = this.initItems.bind(this)
     this.updateUser = this.updateUser.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
@@ -67,21 +60,12 @@ class App extends React.Component {
     this.handleClearBtn = this.handleClearBtn.bind(this)
     this.handleRChange = this.handleRChange.bind(this)
     this.handleFCChange = this.handleFCChange.bind(this)
-    this.handleFqueryChange = this.handleFqueryChange.bind(this)
-
-    this.filterItemList = this.filterItemList.bind(this)
-
-
   }
 
   toggleFilterPanel() {
     this.setState(prev => ({
       showFilterPanel: !prev.showFilterPanel
     }))
-  }
-
-  clearCart() {
-    this.setState({ cart: [] })
   }
 
   handleAddToCart(e) {
@@ -110,8 +94,8 @@ class App extends React.Component {
     this.setState({ cart: tempCart })
   }
 
-  updateUser(uid, type, first_name) {
-    this.setState({ userId: uid, isLoggedIn: true, userType: type, firstName: first_name })
+  updateUser(uid, type) {
+    this.setState({ userId: uid, isLoggedIn: true, userType: type })
   }
 
   handleLogout() {
@@ -123,15 +107,9 @@ class App extends React.Component {
     this.setState({ items: menu, itemsOnDisplay: menu })
   }
 
-  filterItemList(items) {
-    console.log("FILTERITEMLIST : " + items)
-    this.setState({itemsOnDisplay : items})
-  }
-
   updateItemsDisplayed(e) {
     e.preventDefault()
-    
-    console.log("UPDATEITEMSDISPLAYED : fquery is "  + this.state.fquery)
+
     // Construct url query strings.
     const startUrlString = 'http://localhost:5000/menu/filter'
 
@@ -150,14 +128,12 @@ class App extends React.Component {
     fcid.forEach(item => fcList += item.fcid + ',')
     fcList = fcList.substring(0, fcList.length - 1)
 
-
     // Retrieve food items from menu from the database
     // with filters applied.
     axios.get(
       startUrlString
       + '?rid=' + rList
       + '&fcid=' + fcList
-      + '&fquery=' + this.state.fquery
     )
       .then(res => {
         this.setState({ itemsOnDisplay: res.data })
@@ -202,11 +178,6 @@ class App extends React.Component {
         break
     }
 
-  }
-
-  handleFqueryChange(e) {
-    console.log(e.target.value)
-    this.setState({fquery : e.target.value})
   }
 
   handleRChange(e) {
@@ -263,8 +234,6 @@ class App extends React.Component {
       .catch(err => {
         alert(err)
       })
-
-      this.setState({ fquery : ''})
   }
 
   componentDidUpdate() {
@@ -287,66 +256,31 @@ class App extends React.Component {
             <Registration />
           </Route>
           <Route path='/orderHistory' exact>
-            <Header
-              isLoggedIn={this.state.isLoggedIn}
-              handleLogout={this.handleLogout}
-              toggleFilterPanel={this.toggleFilterPanel}
-              itemsOnDisplay = {this.state.itemsOnDisplay}
-              updateItemsDisplayed={this.updateItemsDisplayed}
-              filterItemList = {this.filterItemList}
-              handleFqueryChange = {this.handleFqueryChange}
-              fquery = {this.fquery}
-            />
             <OrderHistory
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
-              firstName = {this.state.firstName}
             />
           </Route>
           <Route path='/accountinfo' exact>
-            <Header
-              isLoggedIn={this.state.isLoggedIn}
-              handleLogout={this.handleLogout}
-              toggleFilterPanel={this.toggleFilterPanel}
-              itemsOnDisplay = {this.state.itemsOnDisplay}
-              updateItemsDisplayed={this.updateItemsDisplayed}
-              filterItemList = {this.filterItemList}
-              handleFqueryChange = {this.handleFqueryChange}
-              fquery = {this.fquery}
-            />
-            <AccountInfo
+            <AccountInfo 
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               userType={this.state.userType}
-              firstName = {this.state.firstName}
             />
           </Route>
-          <Route path='/myPaymentMethods' exact>
-            <Header
-              isLoggedIn={this.state.isLoggedIn}
-              handleLogout={this.handleLogout}
-              toggleFilterPanel={this.toggleFilterPanel}
-              itemsOnDisplay = {this.state.itemsOnDisplay}
-              updateItemsDisplayed={this.updateItemsDisplayed}
-              filterItemList = {this.filterItemList}
-              handleFqueryChange = {this.handleFqueryChange}
-              fquery = {this.fquery}
-            />
-            <PaymentMethods
+          <Route path='/accountinfo/credit_card' exact>
+            <CreditCard 
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               userType={this.state.userType}
-              firstName = {this.state.firstName}
             />
           </Route>
-
           <Route path='/checkout' exact>
             <Checkout
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               items={this.state.items}
               cart={this.state.cart}
-              clearCart={this.clearCart}
             />
           </Route>
           <Route path='/' exact>
@@ -354,11 +288,6 @@ class App extends React.Component {
               isLoggedIn={this.state.isLoggedIn}
               handleLogout={this.handleLogout}
               toggleFilterPanel={this.toggleFilterPanel}
-              itemsOnDisplay = {this.state.itemsOnDisplay}
-              updateItemsDisplayed={this.updateItemsDisplayed}
-              filterItemList = {this.filterItemList}
-              handleFqueryChange = {this.handleFqueryChange}
-              fquery = {this.fquery}
             />
             <Body
               isLoggedIn={this.state.isLoggedIn}
