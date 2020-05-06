@@ -132,3 +132,7 @@ CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
 	FOR EACH ROW
 	EXECUTE FUNCTION check_num_of_riders();
 
+/*ensure that food in cart has enough availability*/
+CREATE OR REPLACE FUNCTION check_food_availability () RETURNS TRIGGER AS $$
+
+
