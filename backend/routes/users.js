@@ -53,20 +53,5 @@ router.route('/:type/add').post((req, res) => {
   })
 })
 
-// Queries database for credit cards of user.
-router.route('/customers/:uid/creditcards').get((req, res) => {
-  const query = 'SELECT card_no FROM CreditCards WHERE uid=$1'
-  const values = [req.params.uid]
-
-  db.query(query, values, (error, result) => {
-    if (error) {
-      console.log(error)
-      res.status(400).json('Error: ' + error)
-    } else {
-      res.status(200).json(result.rows)
-    }
-  })
-}
-)
 
 module.exports = router
