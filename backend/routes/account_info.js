@@ -3,8 +3,8 @@ const db = require('../db')
 
 // return account info
 router.route('/').get((req, res) => {
-  const query = 'SELECT * FROM Users WHERE uid=$1'
-  const values = [req.query.uid]
+  const query = 'SELECT * FROM Users WHERE userId=$1'
+  const values = [req.query.userId]
   db.query(query, values, (error, result) => {
     if (error) {
       console.log(error)

@@ -5,15 +5,13 @@ const db = require('../db')
 router.route('/').get((req, res) => {
   const query = 
   `
-  SELECT fid, 
-	       (SELECT rname FROM Restaurants r WHERE m.rid=r.rid),
-         unit_price,
-         is_available,
-         fname,
-         (SELECT fcname FROM FoodCategories fc WHERE f.category=fc.fcid)
-  from Menu m NATURAL JOIN Foods f
-  ORDER BY fname
-  `
+  select foodId as fid,
+        (select name as rname from Restaurants r where Foods.restaurantId=r.restaurantId),
+        (select quantity > 0 from Foods),
+        name,
+        (select category as fcname from FoodCategories fc where Foods.foodId=fc.foodId)
+  from Foods Foods order by name
+  `;
   db.query(query, null, (error, result) => {
     if (error) {
       console.log(error)
