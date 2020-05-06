@@ -1,58 +1,145 @@
 const router = require('express').Router()
 const db = require('../db')
 
-/*
-CREATE TABLE OrdersLog (
-	oid					SERIAL,
-	order_timestamp		TIMESTAMPTZ NOT NULL,
-	order_cost			NUMERIC NOT NULL,
-	delivery_cost		NUMERIC NOT NULL,
-	rider_id			INTEGER,
-	address				VARCHAR(50) NOT NULL,
-	postal_code			VARCHAR(6) NOT NULL,
-	depart_for_r		TIMESTAMPTZ,
-	arrived_at_r		TIMESTAMPTZ,
-	depart_for_c		TIMESTAMPTZ,
-	arrived_at_c		TIMESTAMPTZ,
-
-	PRIMARY KEY (oid, order_timestamp)
-);
-*/
 
 //Queries database for order history
-router.route('/orderHistory').get((req, res) => {
-    let query = 'select oid, order_timestamp, order_cost, delivery_cost, address, \
-                postal_code, depart_for_r, arrived_at_r, depart_for_c from OrdersLog where rider_id=$1';
-    let values = [req.query.rider_id];     //rider_id is necessary
-    if (req.params.order_timestamp) {   //order_timestamp filter
-        query += ' AND order_timestamp=$' + (values.length+1).toString();
-        values.push(req.params.order_timestamp);
+router.route('/rider_info').get((req, res) => {
+    let return_value = {
+        'type':0,
+        'num_of_orders':0,
+        'total_salary':0
+    };
+
+    //get type
+    let query = 'select * from DeliveryRiders where riderId=$1';
+    let values = [req.query.riderId];
+    db.query(query, values, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        }
+    });
+    return_value.type = result.rows[0].type;
+
+    //get number of orders
+    query = 'select count(orderId) from Orders where riderId=$1';
+    values = [req.query.riderId];
+    db.query(query, values, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        }
+    });
+    return_value.num_of_orders = result.rows[0].count;
+
+    //get total salary
+    query = 'select SUM(deliveryFee) from Orders where riderId=$1';
+    values = [req.query.riderId];
+    db.query(query, values, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        }
+    });
+    const deliver_salary = result.rows[0].sum;
+    query = 'select SUM(baseSalary) from WWS where riderId=$1';
+    values = [req.query.riderId];
+    db.query(query, values, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        }
+    });
+    const WWSbaseSalary = result.rows[0].sum;
+    query = 'select SUM(baseSalary) from MWS where riderId=$1';
+    values = [req.query.riderId];
+    db.query(query, values, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        }
+    });
+    const MWSbaseSalary = result.rows[0].sum;
+    const total_salary = deliver_salary + WWSbaseSalary + MWSbaseSalary;
+    return_value.total_salary = total_salary;
+    res.status(200).json(return_value);
+
+})
+
+
+
+//1. total number of orders  2.total working hours 3. total salary 4. average deliver time 5. num of ratings 6. average rating
+router.route('/num_of_orders').get((req, res) => {
+    let start_time_str = req.query.year + "-" + req.query.month + "-01 00:00:00+8";          // "yyyy-mm-01 00:00:00"
+    let end_time_str = '';
+    switch(req.query.month){
+        case '01':
+        case '03':
+        case '05':
+        case '07':
+        case '08':
+        case '10':
+        case '12':
+            end_time_str = req.query.year + "-" + req.query.month +"-31 23:59:59+8";
+            break;
+        case '04':
+        case '06':
+        case '09':
+        case '11':
+            end_time_str = req.query.year + "-" + req.query.month+ "-30 23:59:59+8";
+            break;
+        case '02':
+            end_time_str = req.query.year + "-" + req.query.month + "-28 23:59:59+8";    //FIXME: ignore leap year here
+            break;
+        default:
+            break;
     }
-    if (req.params.address) {   //address filter
-        query += ' AND address=$' + (values.length+1).toString();
-        values.push(req.params.address);
+
+    const query = 'select count(orderId) from Orders where riderId=$1 AND OrderTime[0]>=$2 AND OrderTime[0]<=$3';
+    const values = [req.query.rider_id, start_time_str, end_time_str];     //rider_id is necessary
+
+    // db.connect()
+    db.query(query, values, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        } else {
+          res.status(200).json(result.rows)
+        }
+        // db.end()
+      })
+})
+
+//1. total number of orders  2.total working hours 3. total salary 4. average deliver time 5. num of ratings 6. average rating
+router.route('/working_hours').get((req, res) => {
+    let start_time_str = req.query.year + "-" + req.query.month + "-01 00:00:00+8";          // "yyyy-mm-01 00:00:00"
+    let end_time_str = '';
+    switch(req.query.month){
+        case '01':
+        case '03':
+        case '05':
+        case '07':
+        case '08':
+        case '10':
+        case '12':
+            end_time_str = req.query.year + "-" + req.query.month +"-31 23:59:59+8";
+            break;
+        case '04':
+        case '06':
+        case '09':
+        case '11':
+            end_time_str = req.query.year + "-" + req.query.month+ "-30 23:59:59+8";
+            break;
+        case '02':
+            end_time_str = req.query.year + "-" + req.query.month + "-28 23:59:59+8";    //FIXME: ignore leap year here
+            break;
+        default:
+            break;
     }
-    if (req.params.postal_code) {   //postal_code filter
-        query += ' AND postal_code=$' + (values.length+1).toString();
-        values.push(req.params.postal_code);
-    }
-    if (req.params.depart_for_r) {   //depart_for_r filter
-        query += ' AND depart_for_r=$' + (values.length+1).toString();
-        values.push(req.params.depart_for_r);
-    }
-    if (req.params.arrived_at_r) {   //arrived_at_r filter
-        query += ' AND arrived_at_r=$' + (values.length+1).toString();
-        values.push(req.params.arrived_at_r);
-    }
-    if (req.params.depart_for_c) {   //depart_for_c filter
-        query += ' AND depart_for_c=$' + (values.length+1).toString();
-        values.push(req.params.depart_for_c);
-    }
-    if (req.params.arrived_at_c) {   //arrived_at_c filter
-        query += ' AND arrived_at_c=$' + (values.length+1).toString();
-        values.push(req.params.arrived_at_c);
-    }
-    
+
+    const query = 'select count(orderId) from Orders where riderId=$1 AND OrderTime[0]>=$2 AND OrderTime[0]<=$3';
+    const values = [req.query.rider_id, start_time_str, end_time_str];     //rider_id is necessary
+
     // db.connect()
     db.query(query, values, (error, result) => {
         if (error) {
