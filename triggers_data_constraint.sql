@@ -103,7 +103,7 @@ CREATE CONSTRAINT TRIGGER check_break_trigger
 	FOR EACH ROW
 	EXECUTE FUNCTION check_break();
 
-/*ensure that food in cart has enough availability*/
+/*ensure that food in cart has enough availability, if 0 set availability to false*/
 CREATE OR REPLACE FUNCTION check_food_availability () RETURNS TRIGGER AS $$
 DECLARE
 	availability 		INTEGER;
@@ -115,6 +115,10 @@ BEGIN
 	IF availability < NEW.quantity THEN
 		RAISE exception 'There are only % available', availability;
 	END IF;
+
+	IF availability = 0 THEN
+		UPDATE Foods SET issold = FALSE WHERE foodid = NEW.foodId;
+	END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -124,6 +128,7 @@ CREATE TRIGGER check_food_availability_trigger
 	ON Carts
 	FOR EACH ROW
 	EXECUTE FUNCTION check_food_availability ();
+
 
 /*ensures each customer only has 5 location records*/
 CREATE OR REPLACE FUNCTION check_customer_locations () RETURNS TRIGGER AS $$
