@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS Users, Customers, Riders, Staff, FDSManagers, Restaurants, Foods, FoodCategories, DeliveryCost, CreditCards, DeliveryAreas, Menu, Orders, OrdersLog, WWS, MWS, RecentLocations CASCADE;
+DROP TABLE IF EXISTS Users, Customers, Riders, Staff, FDSManagers, Restaurants, Foods, FoodCategories, DeliveryCost, CreditCards, DeliveryAreas, Menu, Orders, OrdersLog, WWS, MWS, RecentLocations, WWS_Schedules CASCADE;
 
 
 /* Set Timezone to UTC+8 */
@@ -178,13 +178,10 @@ END;
 LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS check_riders_trigger ON Riders;
-
 CREATE TRIGGER check_riders_trigger
   BEFORE INSERT ON Riders
   FOR EACH ROW
   EXECUTE PROCEDURE check_riders ();
-
-CREATE TABLE MWS ();
 
 
 /*
@@ -323,9 +320,11 @@ CREATE TABLE MWS
     /*use 1-4 to represents 4 shifts*/
   UNIQUE(riderId, startDate),
   PRIMARY KEY (workId),
-  FOREIGN KEY (riderId) REFERENCES DeliveryRiders(uid) ON DELETE CASCADE,
+  FOREIGN KEY (riderId) REFERENCES Riders(uid) ON DELETE CASCADE,
   CHECK (endDate >= startDate)
 );
+
+
 
 CREATE TABLE Staff (
   rid integer REFERENCES Restaurants (rid) ON DELETE CASCADE,
@@ -470,7 +469,7 @@ CREATE TABLE Carts
   foodId integer NOT NULL,
   restaurantId integer NOT NULL,
   PRIMARY KEY (cartId, foodId),
-  FOREIGN KEY (cartId) REFERENCES Customers (customerId) ON DELETE CASCADE,
+  FOREIGN KEY (cartId) REFERENCES Customers (uid) ON DELETE CASCADE,
   FOREIGN KEY (foodId, restaurantId) REFERENCES Foods (foodId, restaurantId) ON DELETE CASCADE ON UPDATE CASCADE
   /*Order in only one restaurant, handled by logic*/
 );
