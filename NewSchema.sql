@@ -43,21 +43,22 @@ DROP TABLE IF EXISTS Reviews CASCADE;
 
 /*SET TIMEZONE = +8;*/
 CREATE TABLE Users (
-    userId serial,
-    type INTEGER NOT NULL CHECK (TYPE >= 1 AND TYPE <= 4),
-    userName varchar(30) NOT NULL,
-    userPassword varchar(30) NOT NULL,
-    lastName varchar(20) NOT NULL,
-    firstName varchar(20) NOT NULL,
-    phoneNumber integer NOT NULL,
-    registrationDate timestamp NOT NULL,
-    email varchar NOT NULL,
-    active boolean NOT NULL,
-    PRIMARY KEY (userId),
-    UNIQUE (userName),
-    UNIQUE (phoneNumber),
-    UNIQUE (email),
-    CHECK (phoneNumber >= 10000000 AND phoneNumber <= 99999999)
+	userId				SERIAL,
+	type 				INTEGER NOT NULL CHECK (type >= 1 and type <= 4),
+	userName		 	VARCHAR(30) NOT NULL,
+	userPassword     	VARCHAR(30) NOT NULL,
+	lastName         	VARCHAR(20) NOT NULL,
+	firstName       	VARCHAR(20) NOT NULL,
+	phoneNumber     	INTEGER NOT NULL,
+	registrationDate	TIMESTAMP NOT NULL,
+	email				VARCHAR NOT NULL,
+	active          	BOOLEAN NOT NULL,
+
+	PRIMARY KEY (userId),
+	UNIQUE (phoneNumber),
+	UNIQUE (email),
+	UNIQUE (userName),
+	CHECK (phoneNumber >= 10000000 and phoneNumber <= 99999999)
 );
 
 CREATE TABLE Customers (
@@ -117,14 +118,16 @@ CREATE TABLE FoodCategories (
 );
 
 CREATE TABLE Carts (
-    cartId integer,
-    quantity integer DEFAULT 1,
-    foodId integer NOT NULL,
-    restaurantId integer NOT NULL,
-    PRIMARY KEY (cartId, foodId),
-    FOREIGN KEY (cartId) REFERENCES Customers (customerId) ON DELETE CASCADE,
-    FOREIGN KEY (foodId, restaurantId) REFERENCES Foods (foodId, restaurantId) ON DELETE CASCADE ON UPDATE CASCADE
-    /*Order in only one restaurant*/
+	cartId				INTEGER,
+	quantity			INTEGER DEFAULT 1,
+	foodId				INTEGER NOT NULL,
+	restaurantId		INTEGER NOT NULL,
+
+	PRIMARY KEY (carId, foodId),
+	FOREIGN KEY (carId) REFERENCES Customers(customerId) ON DELETE CASCADE,
+	FOREIGN KEY (foodId, restaurantId) REFERENCES Foods (foodId, restaurantId) ON DELETE CASCADE ON UPDATE CASCADE
+	/*Order in only one restaurant*/
+
 );
 
 CREATE TABLE DeliveryRiders (
@@ -135,16 +138,18 @@ CREATE TABLE DeliveryRiders (
 );
 
 CREATE TABLE WWS (
-    workId serial,
-    riderId integer NOT NULL,
-    startDate date NOT NULL,
-    endDate date,
-    isUsed boolean NOT NULL DEFAULT 't',
-    baseSalary DECIMAL NOT NULL CHECK (baseSalary > 0),
-    UNIQUE (riderId, startDate),
-    PRIMARY KEY (workId),
-    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE,
-    CHECK (endDate >= startDate)
+	workId				SERIAL,
+	riderId				INTEGER NOT NULL,
+	startDate			DATE NOT NULL,
+	endDate				DATE,
+	isUsed				BOOLEAN NOT NULL DEFAULT 't',
+	workDays			INTEGER NOT NULL CHECK (workDays >= 1 and workDays <= 7), /*use 1-7 to represents 7 options of work days*/
+	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
+
+	UNIQUE (riderId, startDate),
+	PRIMARY KEY (workId),
+	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
+	CHECK (endDate >= startDate)
 );
 
 CREATE TABLE WWS_Schedules (

@@ -46,7 +46,7 @@ CREATE OR REPLACE FUNCTION check_total_work_hour () RETURNS TRIGGER AS $$
 DECLARE
 	total_work_hour		INTEGER;
 BEGIN
-	SELECT sum(endTime - startTime) INTO total_work_hour
+	SELECT sum (endTime - startTime) INTO total_work_hour
 	FROM WWS_Schedules W
 	WHERE NEW.workId = W.workId;
 
@@ -62,7 +62,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS check_total_work_hour_trigger ON WWS_Schedules CASCADE;
 CREATE CONSTRAINT TRIGGER check_total_work_hour_trigger
-	AFTER UPDATE startTime, endTime OR INSERT
+	AFTER UPDATE OF workId, startTime, endTime OR INSERT
 	ON WWS_Schedules
 	DEFERRABLE INITIALLY DEFERRED
 	FOR EACH ROW
@@ -71,13 +71,64 @@ CREATE CONSTRAINT TRIGGER check_total_work_hour_trigger
 /*ensure there is a break between two slots*/
 CREATE OR REPLACE FUNCTION check_break() RETURNS TRIGGER AS $$
 DECLARE
-	startTime		SMALLINT;
-	endTime			SMALLINT;
+	slot_start	WWS_Schedules%ROWTYPE;
+	slot_end	WWS_Schedules%ROWTYPE;
 BEGIN
-	SELECT W.startTime, W.endTime INTO 
+	SELECT * INTO slot_start
+	FROM WWS_Schedules W, WWS_Schedules W2
+	WHERE NEW.workId = W.workId AND NEW.workId = W2.workId
+	AND NEW.weekday = W.weekday AND NEW.weekday = W2.weekday
+	AND NEW.startTime = W.startTime AND NEW.startTime >= W2.endTime;
 
+	SELECT * INTO slot_end
+	FROM WWS_Schedules W, WWS_Schedules W2
+	WHERE NEW.workId = W.workId AND NEW.workId = W2.workId
+	AND NEW.weekday = W.weekday AND NEW.weekday = W2.weekday
+	AND NEW.endTime = W.endTime AND NEW.endTime <= W2.startTime;
+
+	IF slot_start IS NOT NULL THEN
+		RAISE exception 'There is no break between two slots %:00-%:00 and %:00-%:00 on %', 
+		slot_start.startTime, slot_start.endTime, NEW.startTime, NEW.endTime, NEW.weekday;
+	END IF;
+
+	IF slot_end IS NOT NULL THEN
+		RAISE exception 'There is no break between two slots %:00-%:00 and %:00-%:00 on %',
+		NEW.startTime, NEW.endTime, slot_end.startTime, slot_end.endTime, NEW.weekday;
+	END IF;
+
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_break_trigger ON WWS_Schedules CASCADE;
+CREATE CONSTRAINT TRIGGER check_break_trigger
+	AFTER UPDATE OF weekday, startTime, endTime OR INSERT
+	ON WWS_Schedules
+	DEFERRABLE INITIALLY DEFERRED
+	FOR EACH ROW
+	EXECUTE FUNCTION check_break();
 
 /*ensure every hour interval has at least 5 riders*/
 CREATE OR REPLACE FUNCTION check_num_of_riders RETURNS TRIGGER AS $$
+DECLARE
+	weekday			WWS_Schedules.weekday%TYPE
+BEGIN
+	
+END;
+$$ LANGUAGE plpgsql;	
 
+DROP TRIGGER IF EXISTS check_num_of_riders_trigger_part ON WWS_Schedules CASCADE;
+CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_part
+	AFTER UPDATE OF weekday, startTime, endTime OR DELETE
+	ON WWS_Schedules
+	DEFERRABLE INITIALLY DEFERRED
+	FOR EACH ROW
+	EXECUTE FUNCTION check_num_of_riders();
+
+DROP TRIGGER IF EXISTS check_num_of_riders_trigger_full ON MWS CASCADE;
+CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
+	AFTER UPDATE OF workDays, shifts OR DELETE
+	ON MWS
+	DEFERRABLE INITIALLY DEFERRED
+	FOR EACH ROW
+	EXECUTE FUNCTION check_num_of_riders();
 
