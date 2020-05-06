@@ -11,10 +11,23 @@ class PaymentMethods extends React.Component {
     this.state = {
       uid: props.userId,
       creditCards: [],
+
+      add_cc_no: "",
+      add_cc_type: "",
+      add_cc_name: "",
+      add_cc_expiry: "",
+      add_cc_cvv: "",
     };
 
     this.displayCreditCards = this.displayCreditCards.bind(this);
+    //this.handleAddPaymentMethod = this.handleAddPaymentMethod.bind(this);
     this.getPaymentMethods();
+
+    this.handleAddCvvChange = this.handleAddCvvChange.bind(this);
+    this.handleAddExpiryChange = this.handleAddExpiryChange.bind(this);
+    this.handleAddNoChange = this.handleAddNoChange.bind(this);
+    this.handleAddTypeChange = this.handleAddTypeChange.bind(this);
+    this.handleAddNameChange = this.handleAddNameChange.bind(this);
   }
 
   initPage(data) {
@@ -35,6 +48,18 @@ class PaymentMethods extends React.Component {
       });
   }
 
+  handleAddPaymentMethod() {
+    console.log("ADD PRESSED");
+    let data = {
+      uid: this.state.uid,
+      card_no: this.state.add_cc_no,
+      card_cvv: this.state.add_cc_cvv,
+      card_name: this.state.add_cc_name,
+      card_type: this.state.add_cc_type,
+      card_expiry: this.state.add_cc_expiry,
+    };
+  }
+
   handleDeletePaymentMethod(cc_no) {
     console.log("UID IS : " + this.state.uid + " CC IS : " + cc_no);
     axios
@@ -52,6 +77,26 @@ class PaymentMethods extends React.Component {
         // Display error.
         alert(err);
       });
+  }
+
+  handleAddCvvChange(e) {
+    this.setState({ add_cc_cvv: e.target.value });
+  }
+
+  handleAddExpiryChange(e) {
+    this.setState({ add_cc_expiry: e.target.value });
+  }
+
+  handleAddNameChange(e) {
+    this.setState({ add_cc_name: e.target.value });
+  }
+
+  handleAddNoChange(e) {
+    this.setState({ add_cc_no: e.target.value });
+  }
+
+  handleAddTypeChange(e) {
+    this.setState({ add_cc_type: e.target.value });
   }
 
   displayCreditCards(creditCards) {
@@ -105,9 +150,58 @@ class PaymentMethods extends React.Component {
             <UncontrolledCollapse toggler="#addPayment">
               <Card>
                 <CardBody>
-                  Card number : <br></br>
-                  Name : <br></br>
-                  Expiry date : Card type : <br></br>
+                  <FormGroup>
+                    <Input
+                      type="text"
+                      required
+                      placeholder="Card Number"
+                      value={this.state.add_cc_no}
+                      onChange={this.handleAddNoChange}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Input
+                      type="text"
+                      required
+                      placeholder="Type"
+                      value={this.state.add_cc_type}
+                      onChange={this.handleAddTypeChange}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Input
+                      type="text"
+                      required
+                      placeholder="Enter name on card"
+                      value={this.state.add_cc_name}
+                      onChange={this.handleAddNameChange}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Input
+                      type="text"
+                      required
+                      placeholder="Expiry date"
+                      value={this.state.add_cc_expiry}
+                      onChange={this.handleAddExpiryChange}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Input
+                      type="password"
+                      required
+                      placeholder="Enter CVV"
+                      value={this.state.add_cc_cvv}
+                      onChange={this.handleAddCvvChange}
+                    />
+                  </FormGroup>
+                  <Button
+                    color="primary"
+                    style={{ float: "right", marginRight: "5px" }}
+                    onClick={() => this.handleAddPaymentMethod()}
+                  >
+                    Add
+                  </Button>
                 </CardBody>
               </Card>
             </UncontrolledCollapse>

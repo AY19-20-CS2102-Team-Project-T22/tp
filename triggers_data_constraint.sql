@@ -1,3 +1,7 @@
+/*ensures that 
+
+
+
 /*ensure one customer can only choose food in one retaurant*/
 CREATE OR REPLACE FUNCTION check_restaurant () RETURNS TRIGGER AS $$
 DECLARE
