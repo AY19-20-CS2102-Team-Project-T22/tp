@@ -32,11 +32,12 @@ CREATE TABLE Users (
 	phoneNumber     	INTEGER NOT NULL,
 	registrationDate	TIMESTAMP NOT NULL,
 	email				VARCHAR NOT NULL,
-	active          	BOOLEAN NOT NULL
+	active          	BOOLEAN NOT NULL,
 
 	PRIMARY KEY (userId),
 	UNIQUE (phoneNumber),
 	UNIQUE (email),
+	UNIQUE (userName),
 	CHECK (phoneNumber >= 10000000 and phoneNumber <= 99999999)
 );
 
@@ -110,7 +111,7 @@ CREATE TABLE Carts (
 
 	PRIMARY KEY (carId, foodId),
 	FOREIGN KEY (carId) REFERENCES Customers(customerId) ON DELETE CASCADE,
-	FOREIGN KEY (foodId, restaurantId) REFERENCES Foods (foodId, restaurantId) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (foodId, restaurantId) REFERENCES Foods (foodId, restaurantId) ON DELETE CASCADE ON UPDATE CASCADE
 	/*Order in only one restaurant*/
 
 );
@@ -130,12 +131,13 @@ CREATE TABLE WWS (
 	startDate			DATE NOT NULL,
 	endDate				DATE,
 	isUsed				BOOLEAN NOT NULL DEFAULT 't',
+	workDays			INTEGER NOT NULL CHECK (workDays >= 1 and workDays <= 7), /*use 1-7 to represents 7 options of work days*/
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
 
 	UNIQUE (riderId, startDate),
 	PRIMARY KEY (workId),
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
-	CHECK (endDate >= startDate),
+	CHECK (endDate >= startDate)
 )
 
 CREATE TABLE WWS_Schedules (
