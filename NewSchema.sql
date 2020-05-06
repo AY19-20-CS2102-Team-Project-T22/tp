@@ -1,44 +1,25 @@
 DROP TABLE IF EXISTS Users CASCADE;
-
 DROP TABLE IF EXISTS Customers CASCADE;
-
 DROP TABLE IF EXISTS RecentLocations CASCADE;
-
 DROP TABLE IF EXISTS CreditCards CASCADE;
-
 DROP TABLE IF EXISTS Restaurants CASCADE;
-
 DROP TABLE IF EXISTS Foods CASCADE;
-
 DROP TABLE IF EXISTS FoodCategories CASCADE;
-
 DROP TABLE IF EXISTS Carts CASCADE;
-
 DROP TABLE IF EXISTS DeliveryRiders CASCADE;
-
 DROP TABLE IF EXISTS WWS CASCADE;
 DROP TABLE IF EXISTS WWS_Schedules CASCADE;
-
 DROP TABLE IF EXISTS MWS CASCADE;
-
 DROP TABLE IF EXISTS FullTimers CASCADE;
-
 DROP TABLE IF EXISTS PartTimers CASCADE;
-
 DROP TABLE IF EXISTS Salaries CASCADE;
-
 DROP TABLE IF EXISTS RestaurantStaffs CASCADE;
-
 DROP TABLE IF EXISTS FDSManagers CASCADE;
-
 DROP TABLE IF EXISTS Promotions CASCADE;
-
 DROP TABLE IF EXISTS FDSPromotions CASCADE;
-
 DROP TABLE IF EXISTS RestaurantPromotions CASCADE;
-
+DROP TABLE IF EXISTS Orderlogs CASCADE;
 DROP TABLE IF EXISTS Orders CASCADE;
-
 DROP TABLE IF EXISTS Reviews CASCADE;
 
 
@@ -84,29 +65,29 @@ CREATE TABLE RecentLocations (
 
 
 CREATE TABLE CreditCards (
-    cardNo integer,
-    customerId integer NOT NULL,
-    bank varchar(20) NOT NULL,
+    cardNo INTEGER,
+    customerId INTEGER NOT NULL,
+    bank VARCHAR(20) NOT NULL,
     PRIMARY KEY (cardNo),
     FOREIGN KEY (customerId) REFERENCES Customers (customerId) ON DELETE CASCADE
 );
 
 CREATE TABLE Restaurants (
-    restaurantId serial,
-    name varchar(30) NOT NULL,
-    minOrderCost integer DEFAULT 0,
+    restaurantId SERIAL,
+    name VARCHAR(30) NOT NULL,
+    minOrderCost INTEGER DEFAULT 0,
     PRIMARY KEY (restaurantId),
     CHECK (minOrderCost > 0)
 );
 
 CREATE TABLE Foods (
-    foodId serial,
-    name varchar(30) NOT NULL,
-    restaurantId integer NOT NULL,
-    dailyLimit integer DEFAULT 0,
-    quantity integer DEFAULT 0,
+    foodId SERIAL,
+    name VARCHAR(30) NOT NULL,
+    restaurantId INTEGER NOT NULL,
+    dailyLimit INTEGER DEFAULT 0,
+    quantity INTEGER DEFAULT 0,
     price DECIMAL DEFAULT 0,
-    isSold boolean DEFAULT 't',
+    isSold BOOLEAN DEFAULT 't',
     PRIMARY KEY (foodId),
     FOREIGN KEY (restaurantId) REFERENCES Restaurants (restaurantId) ON DELETE CASCADE,
     UNIQUE (name, restaurantId),
@@ -123,7 +104,7 @@ CREATE TABLE FoodCategories (
 
 CREATE TABLE Carts (
 	cartId				INTEGER,
-	quantity			INTEGER DEFAULT 1,
+	quantity			INTEGER DEFAULT 1 CHECK (quantity > 0),
 	foodId				INTEGER NOT NULL,
 	restaurantId		INTEGER NOT NULL,
 
@@ -159,8 +140,8 @@ CREATE TABLE WWS (
 CREATE TABLE WWS_Schedules (
 	workId				INTEGER,
 	weekday				VARCHAR(10),
-	startTime			SMALLINT CHECK (startTime >= 0 AND startTime < 24),
-	endTime				SMALLINT CHECK (endTime > 0 AND endTime <= 24 ),
+	startTime			SMALLINT CHECK (startTime >= 10 AND startTime < 22),
+	endTime				SMALLINT CHECK (endTime > 10 AND endTime <= 2),
 
 	PRIMARY KEY (workId, weekday, startTime),
 	FOREIGN KEY (workId) REFERENCES WWS (workId) ON DELETE CASCADE,
@@ -198,7 +179,8 @@ CREATE TABLE PartTimers (
     riderId integer,
     workId integer NOT NULL,
     PRIMARY KEY (riderId),
-    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
+    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE,
+    FOREIGN KEY (workId) REFERENCES WWS (workId)
 );
 
 
@@ -258,12 +240,13 @@ CREATE TABLE FDSPromotions (
 	FOREIGN KEY (managerId) REFERENCES FDSManagers(managerId) ON DELETE SET NULL
 );
 
-CREATE TABLE Orders (
+CREATE TABLE Orderlogs (
 	orderId				SERIAL,
 	customerId			INTEGER,
 	riderId				INTEGER,
 	restaurantId		INTEGER,
-	orderTime			TIMESTAMP[5], /*five types of time*/
+	orderDate			DATE NOT NULL,
+	orderTime			TIME[5], /*five types of time*/
 	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 or paymentMethod = 2),
 	cardNo				BIGINT,
 	foodFee 			DECIMAL NOT NULL,
@@ -278,6 +261,17 @@ CREATE TABLE Orders (
 	FOREIGN KEY (promoId) REFERENCES Promotions(promoId),
 	CHECK (paymentMethod = 1 AND cardNo IS NOT NULL)
 
+);
+
+CREATE TABLE Orders (
+	orderId				INTEGER,
+	foodId				INTEGER,
+	quantity			INTEGER NOT NULL CHECK (quantity > 0),
+	uni_price			DECIMAL NOT NULL,
+
+	PRIMARY KEY (orderId, foodId),
+	FOREIGN KEY (orderId) REFERENCES Orderlogs (orderId),
+	FOREIGN KEY (foodId) REFERENCES Foods (foodId)
 );
 
 CREATE TABLE Reviews (
