@@ -3,12 +3,7 @@ const db = require('../db')
 
 // Get all rows from Restaurants table.
 router.route('/').get((req, res) => {
-  const query = 
-  `
-  SELECT rid, rname
-  FROM Restaurants
-  ORDER BY rid
-  `
+  const query = 'select * from Restaurants';
   db.query(query, null, (error, result) => {
     if (error) {
       console.log(error)

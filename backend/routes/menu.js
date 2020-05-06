@@ -5,8 +5,7 @@ const db = require('../db')
 router.route('/').get((req, res) => {
   const query = 
   `
-  SELECT fid,
-         rid, 
+  SELECT fid, 
 	       (SELECT rname FROM Restaurants r WHERE m.rid=r.rid),
          unit_price,
          is_available,
@@ -48,8 +47,6 @@ router.route('/filter').get((req, res) => {
       (SELECT rid FROM Restaurants r WHERE a.rname=r.rname) IN (` + req.query.rid + `)
       AND 
       (SELECT fcid FROM FoodCategories fc WHERE a.fcname=fc.fcname) IN (` + req.query.fcid + `)
-      AND
-      LOWER(a.fname) LIKE LOWER('%`+ req.query.fquery + `%')
       ORDER BY a.fname;
     `
     db.query(query, null, (error, result) => {

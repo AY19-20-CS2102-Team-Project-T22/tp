@@ -1,27 +1,48 @@
 DROP TABLE IF EXISTS Users CASCADE;
+
 DROP TABLE IF EXISTS Customers CASCADE;
+
 DROP TABLE IF EXISTS RecentLocations CASCADE;
+
 DROP TABLE IF EXISTS CreditCards CASCADE;
+
 DROP TABLE IF EXISTS Restaurants CASCADE;
+
 DROP TABLE IF EXISTS Foods CASCADE;
+
 DROP TABLE IF EXISTS FoodCategories CASCADE;
+
 DROP TABLE IF EXISTS Carts CASCADE;
+
 DROP TABLE IF EXISTS DeliveryRiders CASCADE;
+
 DROP TABLE IF EXISTS WWS CASCADE;
+DROP TABLE IF EXISTS WWS_Schedules CASCADE;
+
 DROP TABLE IF EXISTS MWS CASCADE;
+
 DROP TABLE IF EXISTS FullTimers CASCADE;
+
 DROP TABLE IF EXISTS PartTimers CASCADE;
+
 DROP TABLE IF EXISTS Salaries CASCADE;
+
 DROP TABLE IF EXISTS RestaurantStaffs CASCADE;
+
 DROP TABLE IF EXISTS FDSManagers CASCADE;
+
 DROP TABLE IF EXISTS Promotions CASCADE;
+
 DROP TABLE IF EXISTS FDSPromotions CASCADE;
+
 DROP TABLE IF EXISTS RestaurantPromotions CASCADE;
+
 DROP TABLE IF EXISTS Orders CASCADE;
+
 DROP TABLE IF EXISTS Reviews CASCADE;
 
-/*SET TIMEZONE = +8;*/
 
+/*SET TIMEZONE = +8;*/
 CREATE TABLE Users (
 	userId				SERIAL,
 	type 				INTEGER NOT NULL CHECK (type >= 1 and type <= 4),
@@ -41,7 +62,6 @@ CREATE TABLE Users (
 	CHECK (phoneNumber >= 10000000 and phoneNumber <= 99999999)
 );
 
-
 CREATE TABLE Customers (
 	customerId			INTEGER,
 	lastLoginDate	 	TIMESTAMP NOT NULL,
@@ -51,7 +71,7 @@ CREATE TABLE Customers (
 
 	PRIMARY KEY (customerId),
 	FOREIGN KEY (customerId) REFERENCES Users(userId) ON DELETE CASCADE
-);
+	);
 
 CREATE TABLE RecentLocations (
 	customerId			INTEGER,
@@ -64,35 +84,33 @@ CREATE TABLE RecentLocations (
 
 
 CREATE TABLE CreditCards (
-	cardNo				INTEGER,
-	customerId			INTEGER NOT NULL,
-	bank				VARCHAR(20) NOT NULL,
-
-	PRIMARY KEY (cardNo),
-	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE CASCADE
+    cardNo integer,
+    customerId integer NOT NULL,
+    bank varchar(20) NOT NULL,
+    PRIMARY KEY (cardNo),
+    FOREIGN KEY (customerId) REFERENCES Customers (customerId) ON DELETE CASCADE
 );
 
 CREATE TABLE Restaurants (
-	restaurantId		SERIAL,
-	name 				VARCHAR(30) NOT NULL,
-	minOrderCost		INTEGER DEFAULT 0,
-
-	PRIMARY KEY (restaurantId),
-	CHECK (minOrderCost > 0)
+    restaurantId serial,
+    name varchar(30) NOT NULL,
+    minOrderCost integer DEFAULT 0,
+    PRIMARY KEY (restaurantId),
+    CHECK (minOrderCost > 0)
 );
 
 CREATE TABLE Foods (
-	foodId				SERIAL,
-	name 				VARCHAR(30) NOT NULL,
-	restaurantId		INTEGER NOT NULL,
-	dailyLimit			INTEGER DEFAULT 0,
-	quantity			INTEGER DEFAULT 0,
-	price				DECIMAL DEFAULT 0,
-	isSold				BOOLEAN DEFAULT 't',
-
-	PRIMARY KEY (foodId),
-	FOREIGN KEY (restaurantId) REFERENCES Restaurants(restaurantId) ON DELETE CASCADE,
-	UNIQUE (name, restaurantId)
+    foodId serial,
+    name varchar(30) NOT NULL,
+    restaurantId integer NOT NULL,
+    dailyLimit integer DEFAULT 0,
+    quantity integer DEFAULT 0,
+    price DECIMAL DEFAULT 0,
+    isSold boolean DEFAULT 't',
+    PRIMARY KEY (foodId),
+    FOREIGN KEY (restaurantId) REFERENCES Restaurants (restaurantId) ON DELETE CASCADE,
+    UNIQUE (name, restaurantId),
+    UNIQUE (foodId, restaurantId)
 );
 
 CREATE TABLE FoodCategories (
@@ -111,18 +129,16 @@ CREATE TABLE Carts (
 
 	PRIMARY KEY (cartId, foodId),
 	FOREIGN KEY (cartId) REFERENCES Customers(customerId) ON DELETE CASCADE,
-	FOREIGN KEY (foodId, restaurantId) REFERENCES Foods (foodId, restaurantId) ON DELETE CASCADE ON UPDATE CASCADE
+	FOREIGN KEY (foodId) REFERENCES Foods (foodId) ON DELETE CASCADE
 	/*Order in only one restaurant*/
 
 );
 
-
 CREATE TABLE DeliveryRiders (
-	riderId				INTEGER,
-	type				INTEGER NOT NULL CHECK (type = 1 or type = 2),
-
-	PRIMARY KEY (riderId),
-	FOREIGN KEY (riderId) REFERENCES Users(userId) ON DELETE CASCADE
+    riderId integer,
+    type INTEGER NOT NULL CHECK (TYPE = 1 OR TYPE = 2),
+    PRIMARY KEY (riderId),
+    FOREIGN KEY (riderId) REFERENCES Users (userId) ON DELETE CASCADE
 );
 
 CREATE TABLE WWS (
@@ -138,7 +154,7 @@ CREATE TABLE WWS (
 	PRIMARY KEY (workId),
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
 	CHECK (endDate >= startDate)
-)
+);
 
 CREATE TABLE WWS_Schedules (
 	workId				INTEGER,
@@ -149,7 +165,7 @@ CREATE TABLE WWS_Schedules (
 	PRIMARY KEY (workId, weekday, startTime),
 	FOREIGN KEY (workId) REFERENCES WWS (workId) ON DELETE CASCADE,
 	CHECK (endTime > startTime)
-)
+);
 
 CREATE TABLE MWS (
 	workId				SERIAL,
@@ -166,58 +182,49 @@ CREATE TABLE MWS (
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
 	CHECK (endDate >= startDate)
 
-)
+);
 
 
 /* how to add base salary to daily salary?*/
 CREATE TABLE FullTimers (
-	riderId				INTEGER,
-	workId				INTEGER NOT NULL,
-
-	PRIMARY KEY (riderId),
-	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
-	FOREIGN KEY (workId) REFERENCES MWS(workId)
+    riderId integer,
+    workId integer NOT NULL,
+    PRIMARY KEY (riderId),
+    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE,
+    FOREIGN KEY (workId) REFERENCES MWS (workId)
 );
 
-
 CREATE TABLE PartTimers (
-	riderId				INTEGER,
-	workId				INTEGER NOT NULL,
-
-	PRIMARY KEY (riderId),
-	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE
+    riderId integer,
+    workId integer NOT NULL,
+    PRIMARY KEY (riderId),
+    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
 );
 
 
 /*salary will be calculated at the end of every month (no matter type of riders)*/
 /*CREATE TABLE Salaries (
-	riderId				INTEGER,
-	day					DATE,
-	amount				DECIMAL DEFAULT 0,
+riderId				INTEGER,
+day					DATE,
+amount				DECIMAL DEFAULT 0,
 
-	PRIMARY KEY (riderId, day),
-	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE
+PRIMARY KEY (riderId, day),
+FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE
 );
-*/
-
-
+ */
 CREATE TABLE RestaurantStaffs (
-	staffId				INTEGER,
-	restaurantId		INTEGER NOT NULL,
-
-	PRIMARY KEY (staffId),
-	FOREIGN KEY (staffId) REFERENCES Users(userId) ON DELETE CASCADE,
-	FOREIGN KEY (restaurantId) REFERENCES Restaurants(restaurantId) ON DELETE CASCADE
+    staffId integer,
+    restaurantId integer NOT NULL,
+    PRIMARY KEY (staffId),
+    FOREIGN KEY (staffId) REFERENCES Users (userId) ON DELETE CASCADE,
+    FOREIGN KEY (restaurantId) REFERENCES Restaurants (restaurantId) ON DELETE CASCADE
 );
-
 
 CREATE TABLE FDSManagers (
-	managerId				INTEGER,
-
-	PRIMARY KEY (managerId),
-	FOREIGN KEY (managerId) REFERENCES Users(userId) ON DELETE CASCADE
+    managerId integer,
+    PRIMARY KEY (managerId),
+    FOREIGN KEY (managerId) REFERENCES Users (userId) ON DELETE CASCADE
 );
-
 
 
 /*cannot delete any record*/
@@ -231,7 +238,7 @@ CREATE TABLE Promotions (
 	description			TEXT, /*how to use this description?*/
 
 	PRIMARY KEY (promoId)
-)
+);
 
 CREATE TABLE RestaurantPromotions(
 	promoId				INTEGER,
@@ -240,7 +247,7 @@ CREATE TABLE RestaurantPromotions(
 	PRIMARY KEY (promoId),
 	FOREIGN KEY (promoId) REFERENCES Promotions(promoId),
 	FOREIGN KEY (restaurantId) REFERENCES Restaurants(restaurantId) ON DELETE SET NULL
-)
+);
 
 CREATE TABLE FDSPromotions (
 	promoId				INTEGER,
@@ -249,7 +256,7 @@ CREATE TABLE FDSPromotions (
 	PRIMARY KEY (promoId),
 	FOREIGN KEY (promoId) REFERENCES Promotions(promoId),
 	FOREIGN KEY (managerId) REFERENCES FDSManagers(managerId) ON DELETE SET NULL
-)
+);
 
 CREATE TABLE Orders (
 	orderId				SERIAL,
@@ -269,15 +276,15 @@ CREATE TABLE Orders (
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE SET NULL,
 	FOREIGN KEY (restaurantId) REFERENCES Restaurants(restaurantId) ON DELETE SET NULL,
 	FOREIGN KEY (promoId) REFERENCES Promotions(promoId),
-	CHECK (paymentMethod = 1 && cardNo IS NOT NULL)
+	CHECK (paymentMethod = 1 AND cardNo IS NOT NULL)
 
-)
+);
 
 CREATE TABLE Reviews (
-	orderId				INTEGER,
-	reviewDate			DATE NOT NULL,
-	rating				INTEGER NOT NULL CHECK (rating >= 1 and rating <= 5), /*use points 1-5 to represent rating*/
-	feedback			TEXT NOT NULL DEFAULT '-NIL-', 
-
-	PRIMARY KEY (orderId)
-)
+    orderId integer,
+    reviewDate date NOT NULL,
+    rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    /*use points 1-5 to represent rating*/
+    feedback text NOT NULL DEFAULT '-NIL-',
+    PRIMARY KEY (orderId)
+);
