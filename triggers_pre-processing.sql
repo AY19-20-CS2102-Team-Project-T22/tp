@@ -21,18 +21,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS clean_email_trigger ON Users CASCADE;
 CREATE TRIGGER clean_email_trigger
 	BEFORE UPDATE OF email OR INSERT 
 	ON Users
 	FOR EACH ROW
 	EXECUTE FUNCTION clean_email();
-
+DROP TRIGGER IF EXISTS clean_username_trigger ON Users CASCADE;
 CREATE TRIGGER clean_username_trigger
 	BEFORE UPDATE OF userName OR INSERT
 	ON Users
 	FOR EACH ROW
 	EXECUTE FUNCTION clean_username();
-
+DROP TRIGGER IF EXISTS clean_realname_trigger ON Users CASCADE;
 CREATE TRIGGER clean_realname_trigger
 	BEFORE UPDATE OF lastName, firstName OR INSERT
 	ON Users
@@ -47,6 +48,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS clean_bankname_trigger ON CreditCards CASCADE;
 CREATE TRIGGER clean_bankname_trigger
 	BEFORE UPDATE OF bank OR INSERT
 	ON CreditCards
@@ -61,6 +63,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS clean_restaurantname_trigger ON Restaurants CASCADE;
 CREATE TRIGGER clean_restaurantname_trigger
 	BEFORE UPDATE OF name OR INSERT
 	ON Restaurants
@@ -75,20 +78,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER clean_foodname_trigger
-	BEFORE UPDATE OF name OR INSERT
-	ON Foods
-	FOR EACH ROW
-	EXECUTE clean_foodname();
-
-/*pre-processing name of food relation*/
-CREATE OR REPLACE FUNCTION clean_foodname () RETURN TRIGGER AS $$
-BEGIN
-	NEW.name = btrim(regexp_replace(NEW.name, '\s+', ' ', 'g'));
-	RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
+DROP TRIGGER IF EXISTS clean_foodname_trigger ON Foods CASCADE;
 CREATE TRIGGER clean_foodname_trigger
 	BEFORE UPDATE OF name OR INSERT
 	ON Foods
@@ -103,6 +93,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS clean_foodcategory_trigger ON FoodCategories CASCADE;
 CREATE TRIGGER clean_foodcategory_trigger
 	BEFORE UPDATE OF category OR INSERT
 	ON FoodCategories
@@ -117,6 +108,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS clean_feedback_trigger ON Reviews CASCADE;
 CREATE TRIGGER clean_feedback_trigger
 	BEFORE UPDATE OF feedback OR INSERT
 	ON Reviews

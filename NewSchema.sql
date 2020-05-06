@@ -124,7 +124,6 @@ CREATE TABLE DeliveryRiders (
 	FOREIGN KEY (riderId) REFERENCES Users(userId) ON DELETE CASCADE
 );
 
-/*how to make sure every hour interval has at least 5 riders?*/
 CREATE TABLE WWS (
 	workId				SERIAL,
 	riderId				INTEGER NOT NULL,
@@ -132,12 +131,22 @@ CREATE TABLE WWS (
 	endDate				DATE,
 	isUsed				BOOLEAN NOT NULL DEFAULT 't',
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
-	schedule			INTEGER[][3], /*every slot: starting time & end time*/
 
 	UNIQUE (riderId, startDate),
 	PRIMARY KEY (workId),
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
 	CHECK (endDate >= startDate),
+)
+
+CREATE TABLE WWS_Schedules (
+	workId				INTEGER,
+	weekday				VARCHAR(10),
+	startTime			SMALLINT CHECK (startTime >= 0 AND startTime < 24),
+	endTime				SMALLINT CHECK (endTime > 0 AND endTime <= 24 ),
+
+	PRIMARY KEY (workId, weekday, startTime),
+	FOREIGN KEY (workId) REFERENCES WWS (workId) ON DELETE CASCADE,
+	CHECK (endTime > startTime)
 )
 
 CREATE TABLE MWS (
