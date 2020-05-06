@@ -118,34 +118,41 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS check_food_availability_trigger
+DROP TRIGGER IF EXISTS check_food_availability_trigger ON Carts CASCADE;
+CREATE TRIGGER check_food_availability_trigger
 	BEFORE UPDATE OF foodId, quantity OR INSERT
 	ON Carts
 	FOR EACH ROW
 	EXECUTE FUNCTION check_food_availability ();
 
-/*ensure that every customer will have at most 5 recentlocations*/
-CREATE OR REPLACE FUNCTION check_location_num () RETURNS TRIGGER AS $$
+/*ensures each customer only has 5 location records*/
+CREATE OR REPLACE FUNCTION check_customer_locations () RETURNS TRIGGER AS $$
 DECLARE
-	num 		INTEGER;
+	location_count INTEGER;
 BEGIN
-	SELECT sum (location) INTO num
+	SELECT COUNT(*) INTO location_count
 	FROM RecentLocations R
-	WHERE NEW.customerId = R.customerId;
+	WHERE R.customerId = NEW.customerId;
 
-	IF sum > 5 THEN
-		RAISE exception 'There are already five locations that have been stored';
+	IF location_count > 5 THEN
+		DELETE FROM RecentLocations R
+		WHERE R.lastUsingTime <= ALL (
+		SELECT R1.lastUsingTime
+		FROM RecentLocations R1
+		WHERE R1.customerId = NEW.customerId
+		);
 	END IF;
-	RETURN NEW;
+	RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS check_location_num_trigger ON RecentLocations CASCADE;
-CREATE TRIGGER check_location_num_trigger
-	BEFORE INSERT
-	ON RecentLocations
-	FOR EACH ROW
-	EXECUTE check_location_num ();
+DROP TRIGGER IF EXISTS check_customer_locations ON RecentLocations;
+CREATE CONSTRAINT TRIGGER check_customer_locations
+	AFTER INSERT ON RecentLocations
+	DEFERRABLE INITIALLY DEFERRED
+	FOR EACH ROW 
+	EXECUTE FUNCTION check_customer_locations ();
+
 
 /*ensure every hour interval has at least 5 riders*/
 /*CREATE OR REPLACE FUNCTION check_num_of_riders RETURNS TRIGGER AS $$
@@ -172,39 +179,6 @@ CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
 	FOR EACH ROW
 	EXECUTE FUNCTION check_num_of_riders();
 */
-
-
-/*ensures each customer only has 5 location records*/
-REATE OR REPLACE FUNCTION check_customer_locations ()
-  RETURNS TRIGGER
-  AS $$
-    DECLARE
-      location_count INTEGER;
-    BEGIN
-      SELECT COUNT(*) INTO location_count
-      FROM RecentLocations R
-      WHERE R.customerId = NEW.customerId
-      ;
-      IF location_count > 5 THEN
-        DELETE FROM RecentLocations R
-        WHERE R.lastUsingTime <= ALL (
-          SELECT R1.lastUsingTime
-          FROM RecentLocations R1
-          WHERE R1.customerId = NEW.customerId
-        )
-        ;
-      END IF;
-      RETURN NULL;
-    END;
-  $$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS check_customer_locations ON RecentLocations;
-CREATE CONSTRAINT TRIGGER check_customer_locations
-  AFTER INSERT ON RecentLocations
-  DEFERRABLE INITIALLY DEFERRED
-  FOR EACH ROW 
-  EXECUTE FUNCTION check_customer_locations ();
-
 
 
 	
