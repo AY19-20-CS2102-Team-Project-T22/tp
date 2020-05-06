@@ -147,3 +147,32 @@ AS $$
         ;
     END;
 $$ LANGUAGE plpgsql;
+
+
+
+/* Helper Function that returns the total number of orders placed at each hour for a specific location*/
+CREATE OR REPLACE FUNCTION getLocationStatisticsByHr(lId INTEGER, hr INTEGER) RETURNS INTEGER
+AS $$
+    DECLARE
+        total_orders INTEGER := 0;
+    BEGIN
+        SELECT COALESCE(SUM(DISTINCT O.orderId),0) INTO total_orders
+        FROM Orders O
+        WHERE O.deliveryLocation = lId
+        AND (SELECT EXTRACT(HOUR FROM O.ordertime[1])) = hr
+        ;
+        RETURN total_orders;
+    END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION getLocationStatistics(lId INTEGER)
+RETURNS SETOF INTEGER
+AS $BODY$
+    BEGIN
+        FOR hrIterator IN 10..22 LOOP
+            RETURN QUERY SELECT * FROM getLocationStatisticsByHr(lId, hrIterator);
+        END LOOP;
+        RETURN;
+    END;
+$BODY$ LANGUAGE plpgsql STABLE STRICT;
