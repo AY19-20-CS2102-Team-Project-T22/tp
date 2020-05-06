@@ -21,20 +21,22 @@ class FDSManagersAccountInfo extends React.Component {
           <FormGroup>
             <Label>Username</Label>
             <Input
+              disabled
               type='text'
               required
-              placeholder='Enter first name'
+              placeholder=''
               value={this.state.firstName}
               onChange={this.handleFirstNameChange}
             />
-            <Button>Edit</Button>
+            <Button onClick={e => console.log(e)}>Edit</Button>
           </FormGroup>
           <FormGroup>
             <Label>Password</Label>
             <Input
+              disabled
               type='password'
               required
-              placeholder='Enter first name'
+              placeholder=''
               value={this.state.firstName}
               onChange={this.handleFirstNameChange}
             />
@@ -45,9 +47,10 @@ class FDSManagersAccountInfo extends React.Component {
           <FormGroup>
             <Label>First Name</Label>
             <Input
+              disabled
               type='text'
               required
-              placeholder='Enter first name'
+              placeholder=''
               value={this.state.firstName}
               onChange={this.handleFirstNameChange}
             />
@@ -56,9 +59,10 @@ class FDSManagersAccountInfo extends React.Component {
           <FormGroup>
             <Label>Last Name</Label>
             <Input
+              disabled
               type='text'
               required
-              placeholder='Enter last name'
+              placeholder=''
               value={this.state.lastName}
               onChange={this.handleLastNameChange}
             />
@@ -69,8 +73,9 @@ class FDSManagersAccountInfo extends React.Component {
           <FormGroup>
             <Label>Email</Label>
             <Input
+              disabled
               type='email'
-              placeholder='Enter email'
+              placeholder=''
               value={this.state.email}
               onChange={this.handleEmailChange}
             />
@@ -79,8 +84,9 @@ class FDSManagersAccountInfo extends React.Component {
           <FormGroup>
             <Label>Contact Number</Label>
             <Input
+              disabled
               type='text'
-              placeholder='Enter contact no.'
+              placeholder=''
               value={this.state.contactNo}
               onChange={this.handleContactChange}
             />
