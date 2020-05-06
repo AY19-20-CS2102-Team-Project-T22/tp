@@ -6,7 +6,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION clean_realname () RETURN TRIGGER AS $$
+CREATE OR REPLACE FUNCTION clean_realname () RETURNS TRIGGER AS $$
 BEGIN
 	NEW.lastName = btrim(regexp_replace(NEW.lastName, '\s+', ' ', 'g'));
 	NEW.firstName = btrim(regexp_replace(NEW.firstName, '\s+', ' ', 'g'));
@@ -14,7 +14,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION clean_email () RETURN TRIGGER AS $$
+CREATE OR REPLACE FUNCTION clean_email () RETURNS TRIGGER AS $$
 BEGIN
 	NEW.email = lower(regexp_replace(NEW.email, '\s', '', 'g'));
 	RETURN NEW;
@@ -41,7 +41,7 @@ CREATE TRIGGER clean_realname_trigger
 	EXECUTE FUNCTION clean_realname();
 
 /*pre-processing bank name of creditcards relation*/
-CREATE OR REPLACE FUNCTION clean_bankname () RETURN TRIGGER AS $$
+CREATE OR REPLACE FUNCTION clean_bankname () RETURNS TRIGGER AS $$
 BEGIN
 	NEW.bank = btrim(regexp_replace(NEW.bank, '\s+', ' ', 'g'));
 	RETURN NEW;
@@ -56,10 +56,10 @@ CREATE TRIGGER clean_bankname_trigger
 	EXECUTE FUNCTION clean_bankname();
 
 /*pre-processing restaurant name of restaurant relation*/
-CREATE OR REPLACE FUNCTION clean_restaurantname () RETURN TRIGGER AS $$
+CREATE OR REPLACE FUNCTION clean_restaurantname () RETURNS TRIGGER AS $$
 BEGIN
 	NEW.name = btrim(regexp_replace(NEW.name, '\s+', ' ', 'g'));
-	RETURN NEW
+	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -71,7 +71,7 @@ CREATE TRIGGER clean_restaurantname_trigger
 	EXECUTE FUNCTION clean_restaurantname();
 
 /*pre-processing name of food relation*/
-CREATE OR REPLACE FUNCTION clean_foodname () RETURN TRIGGER AS $$
+CREATE OR REPLACE FUNCTION clean_foodname () RETURNS TRIGGER AS $$
 BEGIN
 	NEW.name = btrim(regexp_replace(NEW.name, '\s+', ' ', 'g'));
 	RETURN NEW;
@@ -83,10 +83,10 @@ CREATE TRIGGER clean_foodname_trigger
 	BEFORE UPDATE OF name OR INSERT
 	ON Foods
 	FOR EACH ROW
-	EXECUTE clean_foodname();
+	EXECUTE FUNCTION clean_foodname ();
 
 /*pre-processing category of foodcategory relation*/
-CREATE OR REPLACE FUNCTION clean_foodcategory () RETURN TRIGGER AS $$
+CREATE OR REPLACE FUNCTION clean_foodcategory () RETURNS TRIGGER AS $$
 BEGIN
 	NEW.category = btrim(regexp_replace(NEW.category, '\s+', ' ', 'g'));
 	RETURN NEW;
@@ -98,10 +98,10 @@ CREATE TRIGGER clean_foodcategory_trigger
 	BEFORE UPDATE OF category OR INSERT
 	ON FoodCategories
 	FOR EACH ROW
-	EXECUTE clean_foodcategory();
+	EXECUTE FUNCTION clean_foodcategory ();
 
 /*pre-processing feedback of reviews relation*/
-CREATE OR REPLACE FUNCTION clean_feedback () RETURN TRIGGER AS $$
+CREATE OR REPLACE FUNCTION clean_feedback () RETURNS TRIGGER AS $$
 BEGIN
 	NEW.feedback = btrim(NEW.feedback);
 	RETURN NEW;
