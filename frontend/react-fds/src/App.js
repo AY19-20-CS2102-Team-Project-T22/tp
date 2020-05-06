@@ -14,11 +14,8 @@ import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
 import CreditCard from './components/CreditCard'
 import './App.css'
-<<<<<<< HEAD
 import PaymentMethods from './components/PaymentMethods'
 import StaffHomePage from './components/StaffHomePage'
-=======
->>>>>>> c1e8238038b2ad12abfb0fcb52dede2f425eaa33
 
 class App extends React.Component {
 
