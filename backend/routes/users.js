@@ -21,7 +21,7 @@ router.route('/login').post((req, res) => {
           default:
             break;
         }
-        res.status(200).json(true);
+        res.status(200).json(result.rows[0]);
       }else{
         res.status(200).json(false);
       }
@@ -82,7 +82,6 @@ router.route('/registration').post((req, res) => {
   let userId = 0;
   db.query(getUserId, getUserIdValues, (error, result) => {
     if (error) {
-      console.log("something is error");
       res.status(400).json('Error: ' + error)
     } else {
       userId = result.rows[0].userid;
@@ -91,7 +90,6 @@ router.route('/registration').post((req, res) => {
       
       db.query(query2, values2, (error, result) => {
         if (error) {
-          console.log("something is error");
           res.status(400).json('Error: ' + error)
         } else {
           res.status(200).json(true);

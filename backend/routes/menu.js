@@ -2,18 +2,18 @@ const router = require('express').Router()
 const db = require('../db')
 
 // Get all rows from Menu table.
+
 router.route('/').get((req, res) => {
   const query = 
   `
-  SELECT fid, 
-	       (SELECT rname FROM Restaurants r WHERE m.rid=r.rid),
-         unit_price,
-         is_available,
-         fname,
-         (SELECT fcname FROM FoodCategories fc WHERE f.category=fc.fcid)
-  from Menu m NATURAL JOIN Foods f
-  ORDER BY fname
-  `
+  select foodId as fid,
+        (select name as rname from Restaurants r where Foods.restaurantId=r.restaurantId),
+        price as unit_price,
+        (quantity>0) as is_available,
+        name,
+        (select category as fcname from FoodCategories fc where Foods.foodId=fc.foodId)
+  from Foods Foods order by name
+  `;
   db.query(query, null, (error, result) => {
     if (error) {
       console.log(error)
