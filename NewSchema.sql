@@ -49,7 +49,7 @@ CREATE TABLE Customers (
 	orderCount		 	INTEGER DEFAULT 0,
 	rewardPoints     	INTEGER DEFAULT 0,
 
-	PRIMARY KEY (customerId)，
+	PRIMARY KEY (customerId),
 	FOREIGN KEY (customerId) REFERENCES Users(userId) ON DELETE CASCADE
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE RecentLocations (
 
 	PRIMARY KEY (customerId, lastUsingTime),
 	FOREIGN KEY (customerId) REFERENCES Users(userId) ON DELETE CASCADE ON UPDATE CASCADE
-)
+);
 
 
 CREATE TABLE CreditCards (
@@ -101,7 +101,7 @@ CREATE TABLE FoodCategories (
 
 	PRIMARY KEY (foodId, category),
 	FOREIGN KEY (foodId) REFERENCES Foods(foodId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE Carts (
 	cartId				INTEGER,
@@ -109,8 +109,8 @@ CREATE TABLE Carts (
 	foodId				INTEGER NOT NULL,
 	restaurantId		INTEGER NOT NULL,
 
-	PRIMARY KEY (carId, foodId),
-	FOREIGN KEY (carId) REFERENCES Customers(customerId) ON DELETE CASCADE,
+	PRIMARY KEY (cartId, foodId),
+	FOREIGN KEY (cartId) REFERENCES Customers(customerId) ON DELETE CASCADE,
 	FOREIGN KEY (foodId, restaurantId) REFERENCES Foods (foodId, restaurantId) ON DELETE CASCADE ON UPDATE CASCADE
 	/*Order in only one restaurant*/
 
