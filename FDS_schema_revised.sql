@@ -474,6 +474,32 @@ CREATE TABLE Carts
   /*Order in only one restaurant, handled by logic*/
 );
 
+CREATE OR REPLACE FUNCTION check_num_of_riders
+()
+RETURNS TRIGGER
+AS $$
+  DECLARE
+      todays_date date;
+      valid integer := 0;
+      riderCount INTEGER;
+  BEGIN
+    SELECT NOW()
+    ::TIMESTAMP::DATE INTO todays_date;
+
+  FOR checkTime IN 10..22 LOOP
+    SELECT COUNT(DISTINCT W.workId) INTO riderCount
+    FROM  WWS_Schedules W
+    WHERE (SELECT W.date::timestamp::date) = todays_date
+    AND checkTime >= W.startTime
+    AND checkTime <= W.endTime
+    ;
+    IF riderCount < 5 THEN
+      RAISE EXCEPTION 'DAY: % | TIME : % HAS NOT ENOUGH RIDERS', todays_date, checkTime;
+    END IF;
+  END LOOP;
+  END;
+$$ LANGUAGE plpgsql;
+
 
 
 

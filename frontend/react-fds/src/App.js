@@ -14,6 +14,7 @@ import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
 import './App.css'
 import PaymentMethods from './components/PaymentMethods'
+import StaffHomePage from './components/StaffHomePage'
 
 class App extends React.Component {
 
@@ -275,6 +276,11 @@ class App extends React.Component {
     // this.updateItemsDisplayed()
     return (
       <div className='App'>
+        <Router>
+          <Route path='/StaffHomePage' exact>
+            <StaffHomePage></StaffHomePage>
+          </Route>
+        </Router>
         <Router>
           <Route path='/login' exact>
             <Login

@@ -1,7 +1,3 @@
-/*ensures that 
-
-
-
 /*ensure one customer can only choose food in one retaurant*/
 CREATE OR REPLACE FUNCTION check_restaurant () RETURNS TRIGGER AS $$
 DECLARE
@@ -134,5 +130,42 @@ CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
 
 /*ensure that food in cart has enough availability*/
 CREATE OR REPLACE FUNCTION check_food_availability () RETURNS TRIGGER AS $$
+
+
+
+/*ensures each customer only has 5 location records*/
+REATE OR REPLACE FUNCTION check_customer_locations ()
+  RETURNS TRIGGER
+  AS $$
+    DECLARE
+      location_count INTEGER;
+    BEGIN
+      SELECT COUNT(*) INTO location_count
+      FROM RecentLocations R
+      WHERE R.customerId = NEW.customerId
+      ;
+      IF location_count > 5 THEN
+        DELETE FROM RecentLocations R
+        WHERE R.lastUsingTime <= ALL (
+          SELECT R1.lastUsingTime
+          FROM RecentLocations R1
+          WHERE R1.customerId = NEW.customerId
+        )
+        ;
+      END IF;
+      RETURN NULL;
+    END;
+  $$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_customer_locations ON RecentLocations;
+CREATE CONSTRAINT TRIGGER check_customer_locations
+  AFTER INSERT ON RecentLocations
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW 
+  EXECUTE FUNCTION check_customer_locations ();
+
+
+
+	
 
 

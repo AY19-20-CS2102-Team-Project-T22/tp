@@ -7051,6 +7051,12 @@ a.text-dark:hover, a.text-dark:focus {
       height: calc(100vh - 50px);
       display: flex;
     }
+
+    .bodyNH {
+      width: 100%;
+      height: 100%;
+      display: flex;
+    }
     
     .footer {
       width: 100%;
