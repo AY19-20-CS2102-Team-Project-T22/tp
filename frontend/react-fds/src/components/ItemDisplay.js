@@ -11,7 +11,6 @@ class ItemDisplay extends React.Component {
   }
 
   displayItems(items) {
-    
     let menu = items.map((eachItem, i) => {
       // Find real array index of item from `this.state.items`.
       let itemIdx = 0

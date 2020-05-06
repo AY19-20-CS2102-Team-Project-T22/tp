@@ -2,12 +2,14 @@ const router = require('express').Router()
 const db = require('../db')
 
 // Get all rows from Menu table.
+
 router.route('/').get((req, res) => {
   const query = 
   `
   select foodId as fid,
         (select name as rname from Restaurants r where Foods.restaurantId=r.restaurantId),
-        (select quantity > 0 from Foods),
+        price as unit_price,
+        (quantity>0) as is_available,
         name,
         (select category as fcname from FoodCategories fc where Foods.foodId=fc.foodId)
   from Foods Foods order by name
