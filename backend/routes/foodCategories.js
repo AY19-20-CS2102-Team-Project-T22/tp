@@ -5,10 +5,12 @@ const db = require('../db')
 router.route('/').get((req, res) => {
   const query = 
   `
-  SELECT fcid, fcname
+  SELECT foodId, 
+  category,
+  (SELECT name as fcname from Foods where Foods.foodId=FoodCategories.foodId)
   FROM FoodCategories
-  ORDER BY fcid
-  `
+  ORDER BY foodId
+  `;
   db.query(query, null, (error, result) => {
     if (error) {
       console.log(error)

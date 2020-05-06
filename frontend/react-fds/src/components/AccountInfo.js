@@ -68,18 +68,18 @@ class AccountInfo extends React.Component {
     console.log("before:");
     console.log(this.state);
     this.setState({ old_username: data.username });
-    this.setState({ old_password: data.password});
-    this.setState({ old_firstName: data.first_name });
-    this.setState({ old_lastName: data.last_name });
+    this.setState({ old_password: data.userpassword});
+    this.setState({ old_firstName: data.firstname });
+    this.setState({ old_lastName: data.lastname });
     this.setState({ old_email: data.email});
-    this.setState({ old_contactNo: data.contact_no});
+    this.setState({ old_contactNo: data.phonenumber});
     
     this.setState({ username: data.username });
-    this.setState({ password: data.password});
-    this.setState({ firstName: data.first_name });
-    this.setState({ lastName: data.last_name });
+    this.setState({ password: data.userpassword});
+    this.setState({ firstName: data.firstname });
+    this.setState({ lastName: data.lastname });
     this.setState({ email: data.email});
-    this.setState({ contactNo: data.contact_no});
+    this.setState({ contactNo: data.phonenumber});
     console.log("after");
     console.log(this.state);
   }
@@ -105,14 +105,14 @@ class AccountInfo extends React.Component {
     // Send account information over HTTP (Non-secure).
     let url = 'http://localhost:5000/account_info/modify';
     let data = {
-      uid: this.state.uid,
+      userId: this.state.uid,
       type: this.state.accountType,
       firstName: this.state.firstName,
       lastName: this.state.lastName,
-      username: this.state.username,
+      userName: this.state.username,
       email: this.state.email,
-      password: this.state.password,
-      contactNo: parseInt(this.state.contactNo)
+      userPassword: this.state.password,
+      phoneNumber: parseInt(this.state.contactNo)
     };
     axios.post(url, data)
       .then(res => {

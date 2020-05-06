@@ -27,20 +27,21 @@ class Login extends React.Component {
   handleSubmit(e) {
     e.preventDefault()
 
+    const data = {
+      userName:this.state.username,
+      userPassword: this.state.password
+    };
     // HTTP GET request to backend.
     // Check if input user info exists in database.
-    axios.get('http://localhost:5000/users/login/?username=' + this.state.username)
+    axios.post('http://localhost:5000/users/login', data)
       .then(res => {
         if (res.data) {
           // Check if password matches.
-          if (this.state.password === res.data.password) {
-            alert('You are logged in as ' + res.data.first_name)
-            this.props.updateUser(res.data.uid, 'customers', res.data.first_name) //FIXME: here should be res.data.type. return user_type attribute in Users table
-          } else {
-            alert('Error: You have entered an incorrect password.')
-          }
+            alert('You are logged in');
+            console.log(res.data);
+            this.props.updateUser(res.data.userid, res.data.type) //FIXME: here should be res.data.type. return user_type attribute in Users table
         } else {
-          alert('Error: No such user found.')
+          alert('Error: No such user found or Wrong password');
         }
       })
       .catch(err => {

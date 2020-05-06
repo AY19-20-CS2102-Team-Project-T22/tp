@@ -55,23 +55,29 @@ class Registration extends React.Component {
   }
 
   handleSubmit(e) {
-    e.preventDefault()
-
+    e.preventDefault();
+    const data = {
+      type: this.state.accountType,
+      userName: this.state.username,
+      userPassword: this.state.password,
+      lastName: this.state.lastName,
+      firstName: this.state.firstName,
+      phoneNumber: this.state.contactNo,
+      email: this.state.email
+    }
+    const url = 'http://localhost:5000/users/registration';
     // HTTP POST request to backend.
     // Send account information over HTTP (Non-secure).
-    axios.post(
-      'http://localhost:5000/users/'
-      + this.state.accountType
-      + '/add',
-      this.state)
-      .then(res => {
-        alert('You have successfully registered.')
-        window.location = '/'
-      })
-      .catch(err => {
-        // Display error.
-        alert(err)
-      })
+    axios.post(url, data)
+    .then(res => {
+      alert('You have successfully modified.')
+      window.location = '/'
+    })
+    .catch(err => {
+      // Display error.
+      alert(err)
+    })
+    
   }
 
   render() {
@@ -140,7 +146,7 @@ class Registration extends React.Component {
 
           { /* Email and Phone number */}
           <FormGroup>
-            <Label>Email (Optional)</Label>
+            <Label>Email</Label>
             <Input
               type='email'
               placeholder='Enter email'
@@ -149,7 +155,7 @@ class Registration extends React.Component {
             />
           </FormGroup>
           <FormGroup>
-            <Label>Contact Number (Optional)</Label>
+            <Label>Contact Number</Label>
             <Input type='text'
               placeholder='Enter contact no.'
               value={this.state.contactNo}

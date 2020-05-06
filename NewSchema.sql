@@ -253,6 +253,7 @@ CREATE TABLE Orderlogs (
 	deliveryFee			DECIMAL NOT NULL,
 	deliveryLocation	INTEGER NOT NULL,
 	promoId				INTEGER,
+	ratings 			INTEGER,
 
 	PRIMARY KEY (orderId),
 	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE SET NULL,
