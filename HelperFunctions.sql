@@ -123,3 +123,27 @@ $$ LANGUAGE plpgsql;
         ;
     END;
  $$ LANGUAGE plpgsql;
+
+ /*Helper function that retrieves the promotion duration and average num of orders given a promo*/
+ CREATE OR REPLACE FUNCTION getRestaurantStatistics (pId INTEGER)
+ RETURNS TABLE (
+     total_duration INTEGER,
+     average_orders REAL
+ )
+AS $$
+    BEGIN
+        SELECT SUM((SELECT EXTRACT(DAY FROM P.endDate)) - (SELECT EXTRACT(DAY FROM P.startDate))) INTO total_duration
+        FROM Promotions P
+        WHERE P.promoId = pId
+        ;
+        
+        IF total_duration <= 0 THEN
+            total_duration := 1;
+        END IF;
+
+        SELECT (COUNT(DISTINCT O.orderId) / total_duration) INTO average_orders
+        FROM Orders O
+        WHERE O.promoId = pId
+        ;
+    END;
+$$ LANGUAGE plpgsql;
