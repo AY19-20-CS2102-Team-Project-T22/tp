@@ -14,6 +14,7 @@ import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
 import './App.css'
 import PaymentMethods from './components/PaymentMethods'
+import FDSManagersHomepage from './components/FDSManagersHomepage'
 
 class App extends React.Component {
 
@@ -22,9 +23,9 @@ class App extends React.Component {
 
     this.state = {
       // States for application login status.
-      isLoggedIn: false,
-      userId: null,
-      userType: null,
+      isLoggedIn: true,
+      userId: 1,
+      userType: 1,
       firstName: null,
 
       // State for full list of items on the Menu table.
@@ -229,7 +230,7 @@ class App extends React.Component {
         this.initItems(res.data)
       })
       .catch(err => {
-        alert(err)
+        // alert(err)
       })
 
     // Retrieve all restaurant information from the database.
@@ -245,7 +246,7 @@ class App extends React.Component {
         })
       })
       .catch(err => {
-        alert(err)
+        // alert(err)
       })
 
     // Retrieve all food categories from the database.
@@ -261,7 +262,7 @@ class App extends React.Component {
         })
       })
       .catch(err => {
-        alert(err)
+        // alert(err)
       })
 
       this.setState({ fquery : ''})
@@ -350,7 +351,8 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/' exact>
-            <Header
+            <FDSManagersHomepage />
+            {/* <Header
               isLoggedIn={this.state.isLoggedIn}
               handleLogout={this.handleLogout}
               toggleFilterPanel={this.toggleFilterPanel}
@@ -378,7 +380,7 @@ class App extends React.Component {
               handleClearBtn={this.handleClearBtn}
               handleAddToCart={this.handleAddToCart}
               handleRemoveFromCart={this.handleRemoveFromCart}
-            />
+            /> */}
           </Route>
         </Router>
       </div>
