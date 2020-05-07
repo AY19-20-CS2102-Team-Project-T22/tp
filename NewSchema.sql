@@ -130,7 +130,6 @@ CREATE TABLE WWS (
 	riderId				INTEGER NOT NULL,
 	startDate			DATE NOT NULL,
 	endDate				DATE,
-	isUsed				BOOLEAN NOT NULL DEFAULT 't',
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
 
 	UNIQUE (riderId, startDate),
@@ -143,7 +142,7 @@ CREATE TABLE WWS_Schedules (
 	workId				INTEGER,
 	weekday				VARCHAR(10),
 	startTime			SMALLINT CHECK (startTime >= 10 AND startTime < 22),
-	endTime				SMALLINT CHECK (endTime > 10 AND endTime <= 2),
+	endTime				SMALLINT CHECK (endTime > 10 AND endTime <= 22),
 
 	PRIMARY KEY (workId, weekday, startTime),
 	FOREIGN KEY (workId) REFERENCES WWS (workId) ON DELETE CASCADE,
