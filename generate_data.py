@@ -57,7 +57,7 @@ for i in range(50):
 
 
 for i in range(50):
-    s = "insert into FoodCategories values ({}, '{}');\n".format(i, ran_letters(1))
+    s = "insert into FoodCategories values ({}, {}, '{}');\n".format(i, 49-i, str(i)+ran_letters(5))
     f.write(s)
 
 f.close()

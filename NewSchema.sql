@@ -95,10 +95,12 @@ CREATE TABLE Foods (
 );
 
 CREATE TABLE FoodCategories (
+    fcid                INTEGER,
 	foodId				INTEGER,
 	category			VARCHAR(20),
 
-	PRIMARY KEY (foodId, category),
+	PRIMARY KEY (fcid),
+    UNIQUE (fcid, category),
 	FOREIGN KEY (foodId) REFERENCES Foods(foodId) ON DELETE CASCADE
 );
 
