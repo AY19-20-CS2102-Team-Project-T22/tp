@@ -66,16 +66,17 @@ CREATE TABLE RecentLocations (
 
 
 CREATE TABLE CreditCards (
-    cardNo INTEGER,
+    cardNo BIGINT,
     customerId INTEGER NOT NULL,
-    bank VARCHAR(20) NOT NULL,
+    bank VARCHAR(30) NOT NULL,
+	expiryDate TIMESTAMP NOT NULL,
     PRIMARY KEY (cardNo),
     FOREIGN KEY (customerId) REFERENCES Customers (customerId) ON DELETE CASCADE
 );
 
 CREATE TABLE Restaurants (
     restaurantId SERIAL,
-    name VARCHAR(30) NOT NULL,
+    name VARCHAR(50) NOT NULL,
     minOrderCost INTEGER DEFAULT 0,
     PRIMARY KEY (restaurantId),
     CHECK (minOrderCost > 0)
@@ -83,7 +84,7 @@ CREATE TABLE Restaurants (
 
 CREATE TABLE Foods (
     foodId SERIAL,
-    name VARCHAR(30) NOT NULL,
+    name VARCHAR(40) NOT NULL,
     restaurantId INTEGER NOT NULL,
     dailyLimit INTEGER DEFAULT 0,
     quantity INTEGER DEFAULT 0,
@@ -98,7 +99,7 @@ CREATE TABLE Foods (
 CREATE TABLE FoodCategories (
     fcid                INTEGER,
 	foodId				INTEGER,
-	category			VARCHAR(20) NOT NULL,
+	category			VARCHAR(30) NOT NULL,
 
 	PRIMARY KEY (fcid, foodId),
 	FOREIGN KEY (foodId) REFERENCES Foods(foodId) ON DELETE CASCADE
@@ -170,18 +171,14 @@ CREATE TABLE MWS (
 /* how to add base salary to daily salary?*/
 CREATE TABLE FullTimers (
     riderId integer,
-    workId integer NOT NULL,
     PRIMARY KEY (riderId),
-    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE,
-    FOREIGN KEY (workId) REFERENCES MWS (workId)
+    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
 );
 
 CREATE TABLE PartTimers (
     riderId integer,
-    workId integer NOT NULL,
     PRIMARY KEY (riderId),
-    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE,
-    FOREIGN KEY (workId) REFERENCES WWS (workId)
+    FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
 );
 
 
@@ -214,7 +211,7 @@ CREATE TABLE FDSManagers (
 CREATE TABLE Promotions (
 	promoId 			SERIAL,
 	type				INTEGER NOT NULL CHECK (type = 1 or type = 2), /*use integer(1, 2) to represent type*/
-	value				INTEGER, /*what does this mean?*/
+	discountValue		INTEGER, /*what does this mean?*/
 	startDate			DATE,
 	endDate				DATE,
 	condition			TEXT, /*how to use this condition?*/

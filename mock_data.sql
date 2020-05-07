@@ -511,7 +511,40 @@ AS $$
     END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION create_parttimers_db()
+RETURNS VOID
+AS $$
+    DECLARE
+        mId RECORD;
+    BEGIN
+        FOR mId IN
+        SELECT * FROM DELIVERYRIDERS D WHERE D.type = 2
+        LOOP
+            INSERT INTO PartTimers(riderId) VALUES (mId.riderId);
+        END LOOP;
+    
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION create_fulltimers_db()
+RETURNS VOID
+AS $$
+    DECLARE
+        mId RECORD;
+    BEGIN
+        FOR mId IN
+        SELECT * FROM DELIVERYRIDERS D WHERE D.type = 1
+        LOOP
+            INSERT INTO FullTimers(riderId) VALUES (mId.riderId);
+        END LOOP;
+    
+    END;
+$$ LANGUAGE plpgsql;
+
 SELECT create_riders_db();
+SELECT create_parttimers_db();
+SELECT create_fulltimers_db();
+
 
 /*CREDIT CARDS*/
 insert into CreditCards (cardNo, customerId, bank, expirydate) values ('50184056503785821', 75, 'maestro', '2021-06-20 15:12:49');
