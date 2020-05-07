@@ -8,7 +8,7 @@ AS $$
 
     BEGIN
         SELECT SUM(O.deliveryfee) INTO deliveryFee
-        FROM Orders O
+        FROM Orderlogs O
         WHERE O.riderid = rId
         AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
         AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
@@ -53,7 +53,7 @@ AS $$
         ;
 
         SELECT COALESCE(COUNT(DISTINCT O.orderid),0), COALESCE(SUM(O.foodfee + O.deliveryfee),0) INTO cust_count, total_cost
-        FROM Orders O
+        FROM Orderlogs O
         WHERE (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
         AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
         ;
@@ -71,7 +71,7 @@ RETURNS TABLE (
 AS $$
     BEGIN
         SELECT COALESCE(COUNT(DISTINCT O.orderId),0), COALESCE(SUM(O.foodfee + O.deliveryfee),0) INTO order_count, total_cost
-        FROM Orders O
+        FROM Orderlogs O
         WHERE O.customerid = cId
         AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
         AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
@@ -95,7 +95,7 @@ $$ LANGUAGE plpgsql;
  AS $$
     BEGIN
         SELECT COALESCE(COUNT(DISTINCT O.orderId),0), COALESCE(AVG(O.ordertime[5] - O.ordertime[4]),0) INTO order_count, average_del_time
-        FROM Orders O
+        FROM Orderlogs O
         WHERE O.riderid = rId
         AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
         AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
@@ -104,7 +104,7 @@ $$ LANGUAGE plpgsql;
         SELECT totalMthSalary(rId, mth, year) INTO total_salary;
 
         SELECT COALESCE(COUNT(O.ratings),0), COALESCE(AVG(O.ratings), 0) INTO rating_count, average_rating
-        FROM Orders O
+        FROM Orderlogs O
         WHERE O.riderid = rId
         AND O.ratings <> 0
         AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
@@ -142,7 +142,7 @@ AS $$
         END IF;
 
         SELECT (COUNT(DISTINCT O.orderId) / total_duration) INTO average_orders
-        FROM Orders O
+        FROM Orderlogs O
         WHERE O.promoId = pId
         ;
     END;
@@ -157,7 +157,7 @@ AS $$
         total_orders INTEGER := 0;
     BEGIN
         SELECT COALESCE(SUM(DISTINCT O.orderId),0) INTO total_orders
-        FROM Orders O
+        FROM Orderlogs O
         WHERE O.deliveryLocation = lId
         AND (SELECT EXTRACT(HOUR FROM O.ordertime[1])) = hr
         ;

@@ -1,6 +1,144 @@
 const router = require('express').Router()
 const db = require('../db')
 
+/* promotion part
+    promotions => view promotions
+    promotions/add => add promotion
+    promotions/delete => delete promotion
+    promotions/modify => modity promotion
+*/
+
+router.route('/promotions').get((req, res) => {
+    const query = 'select *, rp.restaurantId from Promotions NATURAL JOIN RestaurantPromotions rp NATURAL JOIN FDSPromotions where managerId=$1';
+    const values = [req.query.mid];
+    db.query(query, values, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        } else {
+          res.status(200).json(result.rows)
+        }
+        // db.end()
+    })
+})
+
+router.route('/promotions/add').get((req, res) => {
+    console.log(req);
+    const query1 = 'insert into promotions values (DEFAULT, $1, $2, $3, $4, $5, $6)';
+    const values1 = [req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description];
+    db.query(query1, values1, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        } else {
+            console.log(result);
+         console.log('insert success');
+        }
+        // db.end()
+    })
+    const get_pid = 'select count(*)-1 as pid from promotions';
+    const get_pid_values = []
+    db.query(get_pid, get_pid_values, (error, result) => {
+        if(error){
+            console.log(error);
+            res.status(400).json('Error: ' + error);
+        }
+        const pid = result.rows[0].pid;
+        console.log("pid:"+pid);
+        const query2 = 'insert into RestaurantPromotions values ($1, $2)';
+        const values2 = [pid, req.query.rid];
+        db.query(query2, values2, (error, result) => {
+            if (error) {
+              console.log(error)
+              res.status(400).json('Error: ' + error)
+            } else {
+                console.log('insert success');
+            }
+            // db.end()
+        })
+        const query3 = 'insert into FDSPromotions values ($1, $2)';
+        const values3 = [pid, req.query.mid];
+        db.query(query3, values3, (error, result) => {
+            if (error) {
+              console.log(error)
+              res.status(400).json('Error: ' + error)
+            } else {
+                res.status(200).json(true);
+            }
+            // db.end()
+        })
+    })
+})
+
+router.route('/promotions/update').get((req, res) => {
+    console.log(req);
+    const query1 = 'update promotions SET type=$1, value=$2, startDate=$3, endDate=$4, condition=$5, description=$6 where promoId=$7';
+    const values1 = [req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description, req.query.pid];
+    db.query(query1, values1, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        } else {
+            console.log(result);
+         console.log('insert success');
+        }
+        // db.end()
+    })
+
+
+    const query2 = 'update RestaurantPromotions set restaurantId=$2 where promoId=$1';
+    const values2 = [req.query.pid, req.query.rid];
+    db.query(query2, values2, (error, result) => {
+        if (error) {
+            console.log(error)
+            res.status(400).json('Error: ' + error)
+        } else {
+            console.log('insert success');
+            res.status(200).json(true);
+        }
+        // db.end()
+    })
+})
+
+router.route('/promotions/delete').get((req, res) => {
+    const query1 = 'delete from FDSPromotions where promoId=$1';
+    const values1 = [req.query.pid];
+    db.query(query1, values1, (error, result) => {
+        if (error) {
+          console.log(error)
+          res.status(400).json('Error: ' + error)
+        } else {
+            console.log(result);
+         console.log('insert success');
+        }
+        // db.end()
+    })
+    const query2 = 'delete from RestaurantPromotions where promoId=$1';
+    const values2 = [req.query.pid];
+    db.query(query2, values2, (error, result) => {
+        if (error) {
+            console.log(error)
+            res.status(400).json('Error: ' + error)
+        } else {
+            console.log('insert success');
+        }
+        // db.end()
+    })
+    const query3 = 'delete from promotions where promoId=$1';
+    const values3 = [req.query.pid];
+    db.query(query3, values3, (error, result) => {
+        if (error) {
+            console.log(error)
+            res.status(400).json('Error: ' + error)
+        } else {
+            console.log('insert success');
+            res.status(200).json(true);
+        }
+        // db.end()
+    })
+})
+
+
 // For each month, the total number of new customers, the total number of orders, and the total cost of all orders.
 
 //total number of nem customers
