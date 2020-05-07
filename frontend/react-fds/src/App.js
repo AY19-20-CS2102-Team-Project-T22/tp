@@ -1,4 +1,3 @@
-
 import React from 'react'
 import {
   BrowserRouter as Router,
@@ -13,7 +12,7 @@ import Login from './components/Login'
 import Registration from './components/Registration'
 import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
-//import CreditCard from './components/CreditCard'
+import CreditCard from './components/CreditCard'
 import './App.css'
 import PaymentMethods from './components/PaymentMethods'
 import StaffHomePage from './components/StaffHomePage'
@@ -29,6 +28,7 @@ class App extends React.Component {
       isLoggedIn: false,
       userId: null,
       userType: null,
+      userTypeStr: null,
 
       // State for full list of items on the Menu table.
       items: [],
@@ -98,8 +98,8 @@ class App extends React.Component {
     this.setState({ cart: tempCart })
   }
 
-  updateUser(uid, type) {
-    this.setState({ userId: uid, isLoggedIn: true, userType: type })
+  updateUser(uid, type, typeStr) {
+    this.setState({ userId: uid, isLoggedIn: true, userType: type, userTypeStr: typeStr })
   }
 
   handleLogout() {
@@ -283,7 +283,7 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/accountinfo/credit_card' exact>
-            <PaymentMethods 
+            <CreditCard 
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               userType={this.state.userType}
@@ -302,6 +302,7 @@ class App extends React.Component {
               isLoggedIn={this.state.isLoggedIn}
               handleLogout={this.handleLogout}
               toggleFilterPanel={this.toggleFilterPanel}
+              userTypeStr={this.state.userTypeStr}
             />
             <Body
               isLoggedIn={this.state.isLoggedIn}

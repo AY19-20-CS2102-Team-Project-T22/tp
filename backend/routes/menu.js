@@ -10,7 +10,7 @@ router.route('/').get((req, res) => {
         (select name as rname from Restaurants r where Foods.restaurantId=r.restaurantId),
         price as unit_price,
         (quantity>0) as is_available,
-        name,
+        name as fname,
         (select category as fcname from FoodCategories fc where Foods.foodId=fc.foodId)
   from Foods Foods order by name
   `;
@@ -35,7 +35,7 @@ router.route('/filter').get((req, res) => {
         (select name as rname from Restaurants r where Foods.restaurantId=r.restaurantId),
         price as unit_price,
         (quantity>0) as is_available,
-        name,
+        name as fname,
         (select category as fcname from FoodCategories fc where Foods.foodId=fc.foodId)
       from Foods Foods order by name
       )

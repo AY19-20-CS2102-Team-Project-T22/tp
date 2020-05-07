@@ -39,7 +39,24 @@ class Login extends React.Component {
           // Check if password matches.
             alert('You are logged in');
             console.log(res.data);
-            this.props.updateUser(res.data.userid, res.data.type) //FIXME: here should be res.data.type. return user_type attribute in Users table
+            let typeStr = '';
+            switch(res.data.type){
+              case 1:
+                typeStr = 'customers';
+                break;
+              case 2:
+                typeStr = 'riders';
+                break;
+              case 3:
+                typeStr = 'staff';
+                break;
+              case 4:
+                typeStr = 'fdsmanagers';
+                break;
+              default:
+                console.log("unexpected type");
+            }
+            this.props.updateUser(res.data.userid, res.data.type, typeStr) //FIXME: here should be res.data.type. return user_type attribute in Users table
         } else {
           alert('Error: No such user found or Wrong password');
         }
