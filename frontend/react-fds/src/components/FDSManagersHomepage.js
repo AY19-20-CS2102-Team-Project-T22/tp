@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import { ListGroup, ListGroupItem } from 'reactstrap'
 import FDSManagersAccountInfo from './FDSManagersAccountInfo'
+import FDSStatistics from './FDSStatistics'
 
 class FDSManagersHomepage extends React.Component {
   constructor(props) {
@@ -17,6 +18,11 @@ class FDSManagersHomepage extends React.Component {
     }
     this.renderMainPanel = this.renderMainPanel.bind(this)
     this.handleListItem = this.handleListItem.bind(this)
+  }
+
+  componentDidMount() {
+    // Get FDS manager info.
+
   }
 
   renderMainPanel(page) {
@@ -33,9 +39,7 @@ class FDSManagersHomepage extends React.Component {
         )
       case 2: // statistics
         return (
-          <div>
-            Statistics
-          </div>
+          <FDSStatistics />
         )
     }
   }

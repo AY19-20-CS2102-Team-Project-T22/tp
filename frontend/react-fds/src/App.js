@@ -265,12 +265,7 @@ class App extends React.Component {
     }
   }
 
-  componentDidUpdate() {
-    // this.updateItemsDisplayed()
-  }
-
   render() {
-    // this.updateItemsDisplayed()
     return (
       <div className='App'>
         <Router>
