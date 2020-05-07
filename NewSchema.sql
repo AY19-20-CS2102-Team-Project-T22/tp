@@ -59,7 +59,8 @@ CREATE TABLE RecentLocations (
 	location 			INTEGER NOT NULL, /*postal code*/
 	lastUsingTime		TIMESTAMP NOT NULL,
 
-	PRIMARY KEY (customerId, lastUsingTime),
+	PRIMARY KEY (customerId, location),
+	UNIQUE (customerId, lastUsingTime),
 	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -97,9 +98,9 @@ CREATE TABLE Foods (
 CREATE TABLE FoodCategories (
     fcid                INTEGER,
 	foodId				INTEGER,
-	category			VARCHAR(20),
+	category			VARCHAR(20) NOT NULL,
 
-	PRIMARY KEY (fcid),
+	PRIMARY KEY (fcid, foodId),
     UNIQUE (fcid, category),
 	FOREIGN KEY (foodId) REFERENCES Foods(foodId) ON DELETE CASCADE
 );
@@ -130,7 +131,6 @@ CREATE TABLE WWS (
 	startDate			DATE NOT NULL,
 	endDate				DATE,
 	isUsed				BOOLEAN NOT NULL DEFAULT 't',
-	workDays			INTEGER NOT NULL CHECK (workDays >= 1 and workDays <= 7), /*use 1-7 to represents 7 options of work days*/
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
 
 	UNIQUE (riderId, startDate),
