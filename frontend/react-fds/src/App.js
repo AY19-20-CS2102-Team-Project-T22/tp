@@ -2,10 +2,9 @@ import React from 'react'
 import {
   BrowserRouter as Router,
   Route,
+  Redirect,
 } from 'react-router-dom'
 import axios from 'axios'
-import Header from './components/Header'
-import Body from './components/Body'
 // import Footer from './components/Footer'
 import Checkout from './components/Checkout'
 import Login from './components/Login'
@@ -15,6 +14,8 @@ import OrderHistory from './components/OrderHistory'
 import CreditCard from './components/CreditCard'
 import './App.css'
 import PaymentMethods from './components/PaymentMethods'
+
+import CustomersHomepage from './components/CustomersHomepage'
 import StaffHomePage from './components/StaffHomePage'
 import FDSManagersHomepage from './components/FDSManagersHomepage'
 
@@ -25,10 +26,10 @@ class App extends React.Component {
 
     this.state = {
       // States for application login status.
-      isLoggedIn: false,
-      userId: null,
-      userType: null,
-      userTypeStr: null,
+      isLoggedIn: true,
+      userId: 4,
+      userType: 1,
+      userTypeStr: 'customers',
 
       // State for full list of items on the Menu table.
       items: [],
@@ -103,7 +104,7 @@ class App extends React.Component {
   }
 
   handleLogout() {
-    this.setState({ isLoggedIn: false, userId: null, userType: null })
+    this.setState({ isLoggedIn: false, userId: null, userType: null, userTypeStr: null })
     alert('You have been logged out.')
   }
 
@@ -240,6 +241,14 @@ class App extends React.Component {
       })
   }
 
+  renderHomepage() {
+    if (this.state.isLoggedIn) {
+      return <Redirect to={'/' + this.state.userTypeStr} />
+    } else {
+      return <Redirect to='/login' />
+    }
+  }
+
   componentDidUpdate() {
     // this.updateItemsDisplayed()
   }
@@ -276,14 +285,14 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/accountinfo' exact>
-            <AccountInfo 
+            <AccountInfo
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               userType={this.state.userType}
             />
           </Route>
           <Route path='/accountinfo/credit_card' exact>
-            <CreditCard 
+            <CreditCard
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               userType={this.state.userType}
@@ -297,25 +306,28 @@ class App extends React.Component {
               cart={this.state.cart}
             />
           </Route>
-          <Route path='/' exact>
-            <Header
-              isLoggedIn={this.state.isLoggedIn}
-              handleLogout={this.handleLogout}
-              toggleFilterPanel={this.toggleFilterPanel}
-              userTypeStr={this.state.userTypeStr}
-            />
-            <Body
+
+          <Route path='/customers' exact>
+            <CustomersHomepage
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
+              userTypeStr={this.state.userTypeStr}
+              handleLogout={this.handleLogout}
+
               items={this.state.items}
-              itemsOnDisplay={this.state.itemsOnDisplay}
               cart={this.state.cart}
-              updateItemsDisplayed={this.updateItemsDisplayed}
+              
               showFilterPanel={this.state.showFilterPanel}
+              toggleFilterPanel={this.toggleFilterPanel}
+              updateItemsDisplayed={this.updateItemsDisplayed}
+              itemsOnDisplay={this.state.itemsOnDisplay}
+              
               restaurants={this.state.restaurants}
               restaurantsFilter={this.state.restaurantsFilter}
+
               foodCategories={this.state.foodCategories}
               foodCategoriesFilter={this.state.foodCategoriesFilter}
+
               handleRChange={this.handleRChange}
               handleFCChange={this.handleFCChange}
               handleAllBtn={this.handleAllBtn}
@@ -324,6 +336,20 @@ class App extends React.Component {
               handleRemoveFromCart={this.handleRemoveFromCart}
             />
           </Route>
+          <Route path='/riders' exact>
+            <div>HELLO RIDERS</div>
+            {/* <Riders /> */}
+          </Route>
+          <Route path='/staffs' exact>
+            <StaffHomePage />
+          </Route>
+          <Route path='/fdsmanagers' exact >
+            <FDSManagersHomepage />
+          </Route>
+
+          <Route path='/' exact>
+            {this.renderHomepage()}
+          </Route>
         </Router>
       </div>
     )
@@ -331,3 +357,5 @@ class App extends React.Component {
 }
 
 export default App
+
+
