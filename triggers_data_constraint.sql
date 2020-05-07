@@ -103,7 +103,7 @@ CREATE CONSTRAINT TRIGGER check_break_trigger
 	FOR EACH ROW
 	EXECUTE FUNCTION check_break();
 
-/*ensure that food in cart has enough availability*/
+/*ensure that food in cart has enough availability, if 0 set availability to false*/
 CREATE OR REPLACE FUNCTION check_food_availability () RETURNS TRIGGER AS $$
 DECLARE
 	availability 		INTEGER;
@@ -115,6 +115,10 @@ BEGIN
 	IF availability < NEW.quantity THEN
 		RAISE exception 'There are only % available', availability;
 	END IF;
+
+	IF availability = 0 THEN
+		UPDATE Foods SET issold = FALSE WHERE foodid = NEW.foodId;
+	END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -124,6 +128,7 @@ CREATE TRIGGER check_food_availability_trigger
 	ON Carts
 	FOR EACH ROW
 	EXECUTE FUNCTION check_food_availability ();
+
 
 /*ensures each customer only has 5 location records*/
 CREATE OR REPLACE FUNCTION check_customer_locations () RETURNS TRIGGER AS $$
@@ -181,6 +186,85 @@ CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
 */
 
 
-	
+/* checks whether there are atleast 5 riders for every hour on the current day*/
+DROP FUNCTION IF EXISTS check_num_of_riders();
+CREATE OR REPLACE FUNCTION check_num_of_riders()
+RETURNS TRIGGER
+AS $$
+  DECLARE
+      todays_date date;
+      valid integer := 0;
+      riderCount INTEGER;
+  BEGIN
+    SELECT NOW()::TIMESTAMP::DATE INTO todays_date;
 
+  FOR checkTime IN 10..22 LOOP
+    SELECT COUNT(DISTINCT WS.workId) INTO riderCount
+    FROM  WWS_Schedules WS
+    WHERE (SELECT W.date::timestamp::date FROM WWS W WHERE W.workid = WS.workid) = todays_date
+    AND checkTime >= WS.startTime
+    AND checkTime <= WS.endTime
+    ;
+    IF riderCount < 5 THEN
+      RAISE EXCEPTION 'DAY: % | TIME : % HAS NOT ENOUGH RIDERS', todays_date, checkTime;
+    END IF;
+  END LOOP;
+  END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_num_of_riders ON WWS_Schedules;
+CREATE CONSTRAINT TRIGGER check_num_of_riders
+	AFTER INSERT OR DELETE OR UPDATE ON WWS_Schedules DEFERRABLE INITIALLY DEFERRED
+	FOR EACH ROW
+	EXECUTE FUNCTION check_num_of_riders();
+
+/*Adds reward points to customers upon order*/
+CREATE OR REPLACE FUNCTION customer_add_points()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		curr_points INTEGER := 0;
+		total_points INTEGER;
+	BEGIN
+		SELECT C.rewardPoints INTO curr_points
+		FROM Customers C
+		WHERE C.customerId = NEW.customerId
+		;
+		total_points := curr_points + FLOOR(NEW.foodFee);
+
+		UPDATE Customers SET rewardPoints = total_points WHERE customerId = NEW.customerId;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS customers_add_points ON Orders;
+CREATE TRIGGER customer_add_points
+	AFTER INSERT OR UPDATE ON Orders
+	FOR EACH ROW
+	EXECUTE FUNCTION customer_add_points();
+
+/* Checks whether order meets restaurants min */
+CREATE OR REPLACE FUNCTION check_min_fee()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		restaurant_min INTEGER := 0;
+	BEGIN
+		SELECT R.minOrderCost INTO restaurant_min
+		FROM Restaurants R
+		WHERE R.restaurantId = NEW.restaurantId
+		;
+
+		IF NEW.foodFee < restaurant_min THEN
+			RAISE EXCEPTION 'ORDER AMOUNT % DOES NOT MEET RESTAURANTS MIN ORDER OF %', NEW.foodFee, restaurant_min;
+		ELSE
+			RETURN NEW;
+		END IF;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_min_fee ON Orders;
+CREATE TRIGGER check_min_fee
+	BEFORE INSERT OR UPDATE ON Orders 
+	FOR EACH ROW
+	EXECUTE FUNCTION check_min_fee();
 

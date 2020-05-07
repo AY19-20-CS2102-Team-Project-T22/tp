@@ -1,4 +1,3 @@
-
 import React from 'react'
 import {
   BrowserRouter as Router,
@@ -17,7 +16,7 @@ import CreditCard from './components/CreditCard'
 import './App.css'
 import PaymentMethods from './components/PaymentMethods'
 import StaffHomePage from './components/StaffHomePage'
-
+import FDSManagersHomepage from './components/FDSManagersHomepage'
 
 class App extends React.Component {
 
@@ -29,6 +28,7 @@ class App extends React.Component {
       isLoggedIn: false,
       userId: null,
       userType: null,
+      userTypeStr: null,
 
       // State for full list of items on the Menu table.
       items: [],
@@ -98,8 +98,8 @@ class App extends React.Component {
     this.setState({ cart: tempCart })
   }
 
-  updateUser(uid, type) {
-    this.setState({ userId: uid, isLoggedIn: true, userType: type })
+  updateUser(uid, type, typeStr) {
+    this.setState({ userId: uid, isLoggedIn: true, userType: type, userTypeStr: typeStr })
   }
 
   handleLogout() {
@@ -254,6 +254,11 @@ class App extends React.Component {
           </Route>
         </Router>
         <Router>
+          <Route path='/fdsmanagerhomepage' exact>
+            <FDSManagersHomepage />
+          </Route>
+        </Router>
+        <Router>
           <Route path='/login' exact>
             <Login
               isLoggedIn={this.state.isLoggedIn}
@@ -297,6 +302,7 @@ class App extends React.Component {
               isLoggedIn={this.state.isLoggedIn}
               handleLogout={this.handleLogout}
               toggleFilterPanel={this.toggleFilterPanel}
+              userTypeStr={this.state.userTypeStr}
             />
             <Body
               isLoggedIn={this.state.isLoggedIn}

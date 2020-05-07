@@ -123,3 +123,75 @@ $$ LANGUAGE plpgsql;
         ;
     END;
  $$ LANGUAGE plpgsql;
+
+ /*Helper function that retrieves the promotion duration and average num of orders given a promo*/
+ CREATE OR REPLACE FUNCTION getRestaurantStatistics (pId INTEGER)
+ RETURNS TABLE (
+     total_duration INTEGER,
+     average_orders REAL
+ )
+AS $$
+    BEGIN
+        SELECT SUM((SELECT EXTRACT(DAY FROM P.endDate)) - (SELECT EXTRACT(DAY FROM P.startDate))) INTO total_duration
+        FROM Promotions P
+        WHERE P.promoId = pId
+        ;
+        
+        IF total_duration <= 0 THEN
+            total_duration := 1;
+        END IF;
+
+        SELECT (COUNT(DISTINCT O.orderId) / total_duration) INTO average_orders
+        FROM Orders O
+        WHERE O.promoId = pId
+        ;
+    END;
+$$ LANGUAGE plpgsql;
+
+
+
+/* Helper Function that returns the total number of orders placed at each hour for a specific location*/
+CREATE OR REPLACE FUNCTION getLocationStatisticsByHr(lId INTEGER, hr INTEGER) RETURNS INTEGER
+AS $$
+    DECLARE
+        total_orders INTEGER := 0;
+    BEGIN
+        SELECT COALESCE(SUM(DISTINCT O.orderId),0) INTO total_orders
+        FROM Orders O
+        WHERE O.deliveryLocation = lId
+        AND (SELECT EXTRACT(HOUR FROM O.ordertime[1])) = hr
+        ;
+        RETURN total_orders;
+    END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION getLocationStatistics(lId INTEGER)
+RETURNS SETOF INTEGER
+AS $BODY$
+    BEGIN
+        FOR hrIterator IN 10..22 LOOP
+            RETURN QUERY SELECT * FROM getLocationStatisticsByHr(lId, hrIterator);
+        END LOOP;
+        RETURN;
+    END;
+$BODY$ LANGUAGE plpgsql STABLE STRICT;
+
+
+
+/*Helper Function to retrieve top 5 favourite food items for a given restaurant, mth,yr*/
+/*
+CREATE OR REPLACE FUNCTION getTop5(rId INTEGER, mth INTEGER, yr INTEGER) 
+RETURNS TABLE (
+    fId INTEGER,
+    fName VARCHAR(30)
+)
+AS $BODY$
+    BEGIN
+        SELECT O.ordersid, F.foodName INTO fId, fName
+        FROM Orders O NATURAL JOIN Foods F
+        ;
+
+    END;
+$BODY$ LANGUAGE plpgsql;
+*/

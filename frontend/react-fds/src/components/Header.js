@@ -64,7 +64,7 @@ class Header extends React.Component {
             Account
           </Link>
           <Link
-            to='/orderHistory'
+            to={'/'+this.props.userTypeStr}
             style={{
               fontSize: '18px',
               textAlign: 'center',
@@ -74,7 +74,7 @@ class Header extends React.Component {
               fontWeight: 'bold'
             }}
           >
-            Order
+            {this.props.userTypeStr + " Center"}
           </Link>
           </div>
           :
