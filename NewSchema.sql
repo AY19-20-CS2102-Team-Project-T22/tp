@@ -20,6 +20,9 @@ DROP TABLE IF EXISTS RestaurantPromotions CASCADE;
 DROP TABLE IF EXISTS Orderlogs CASCADE;
 DROP TABLE IF EXISTS Orders CASCADE;
 DROP TABLE IF EXISTS Reviews CASCADE;
+DROP TABLE IF EXISTS MWS_Schedules_Times CASCADE;
+DROP TABLE IF EXISTS MWS_Schedules_Days CASCADE;
+
 
 
 /*SET TIMEZONE = +8;*/
@@ -120,13 +123,13 @@ CREATE TABLE WWS (
 	workId				SERIAL,
 	riderId				INTEGER NOT NULL,
 	startDate			DATE NOT NULL,
-	endDate				DATE,
-	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
+	endDate				DATE DEFAULT NULL, 
+	baseSalary			DECIMAL NOT NULL CHECK (baseSalary >= 0),
 
 	UNIQUE (riderId, startDate),
 	PRIMARY KEY (workId),
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
-	CHECK (endDate >= startDate)
+	CHECK (endDate > startDate AND (endDate - startDate) % 7 = 0)
 );
 
 CREATE TABLE WWS_Schedules (
@@ -140,22 +143,38 @@ CREATE TABLE WWS_Schedules (
 	CHECK (endTime > startTime AND endTime - startTime <= 4)
 );
 
-CREATE TABLE MWS (
-	workId				SERIAL,
-	riderId				INTEGER NOT NULL,
-	startDate			DATE NOT NULL,
-	endDate				DATE,
-	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
-	workDays			INTEGER NOT NULL CHECK (workDays >= 1 and workDays <= 7), /*use 1-7 to represents 7 options of work days*/
-	shifts				INTEGER[5] CHECK (1 <= ALL(shifts) and 4 >= ALL(shifts)), /*use 1-4 to represents 4 shifts*/
+CREATE TABLE MWS_Schedules_times (
+	shiftId				INTEGER CHECK(1 <= shiftId and 4>= shiftId),
+	startTime			SMALLINT[2] CHECK (10 <= ALL(startTime) AND 22 > ALL(startTime)),
+	endTime				SMALLINT[2] CHECK (10 < ALL(endTime) AND 22>= ALL(endTime)),
 
-	UNIQUE (riderId, startDate),
-	PRIMARY KEY (workId),
-	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
-	CHECK (endDate >= startDate)
+	PRIMARY KEY(shiftId)
+);
+
+CREATE TABLE MWS_Schedules_days (
+	workWeekId	INTEGER CHECK( workWeekId >= 1 AND workWeekId <= 7),
+	workDays VARCHAR(10)[5] NOT NULL,
+
+	PRIMARY KEY(workWeekId)
 
 );
 
+
+
+CREATE TABLE MWS (
+	riderId				INTEGER NOT NULL,
+	startDate 			DATE NOT NULL,
+	endDate 			DATE DEFAULT NULL,
+	baseSalary 			DECIMAL NOT NULL CHECK (baseSalary >= 0) ,
+	workWeekId			SMALLINT CHECK (workWeekId >= 1 AND workWeekId <= 7),
+	shifts				INTEGER[5] CHECK (1 <= ALL(shifts) and 4 >= ALL(shifts)), /*use 1-4 to represents 4 shifts*/
+
+	PRIMARY KEY (riderId, startDate),
+	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
+	FOREIGN KEY (workWeekId) REFERENCES MWS_Schedules_Days(workWeekId),
+	CHECK (endDate > startDate AND (endDate - startDate) % 28 = 0)
+
+);
 
 /* how to add base salary to daily salary?*/
 CREATE TABLE FullTimers (
