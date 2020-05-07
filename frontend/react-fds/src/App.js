@@ -53,6 +53,8 @@ class App extends React.Component {
     }
 
     // Function bindings.
+    this.renderHomepage = this.renderHomepage.bind(this)
+
     this.initItems = this.initItems.bind(this)
     this.updateUser = this.updateUser.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
