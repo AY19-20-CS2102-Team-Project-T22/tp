@@ -31,23 +31,22 @@ router.route('/filter').get((req, res) => {
     const query = 
     `
     WITH AllMenuTable as (
-      SELECT fid, 
-             (SELECT rname FROM Restaurants r WHERE m.rid=r.rid),
-             unit_price,
-             is_available,
-             fname,
-             (SELECT fcname FROM FoodCategories fc WHERE f.category=fc.fcid)
-      FROM Menu m NATURAL JOIN Foods f
-      ORDER BY fname
+      select foodId as fid,
+        (select name as rname from Restaurants r where Foods.restaurantId=r.restaurantId),
+        price as unit_price,
+        (quantity>0) as is_available,
+        name,
+        (select category as fcname from FoodCategories fc where Foods.foodId=fc.foodId)
+      from Foods Foods order by name
       )
       
       SELECT *
       FROM AllMenuTable a
       WHERE 
-      (SELECT rid FROM Restaurants r WHERE a.rname=r.rname) IN (` + req.query.rid + `)
+      (SELECT restaurantId FROM Restaurants r WHERE a.rname=r.name) IN (` + req.query.rid + `)
       AND 
-      (SELECT fcid FROM FoodCategories fc WHERE a.fcname=fc.fcname) IN (` + req.query.fcid + `)
-      ORDER BY a.fname;
+      (SELECT fcid FROM FoodCategories fc WHERE a.fcname=fc.category) IN (` + req.query.fcid + `)
+      ORDER BY a.name;
     `
     db.query(query, null, (error, result) => {
       if (error) {

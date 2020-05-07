@@ -13,12 +13,11 @@ import Login from './components/Login'
 import Registration from './components/Registration'
 import AccountInfo from './components/AccountInfo'
 import OrderHistory from './components/OrderHistory'
-import CreditCard from './components/CreditCard'
+//import CreditCard from './components/CreditCard'
 import './App.css'
 import PaymentMethods from './components/PaymentMethods'
 import StaffHomePage from './components/StaffHomePage'
 import FDSManagersHomepage from './components/FDSManagersHomepage'
-
 
 class App extends React.Component {
 
@@ -284,7 +283,7 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/accountinfo/credit_card' exact>
-            <CreditCard 
+            <PaymentMethods 
               isLoggedIn={this.state.isLoggedIn}
               userId={this.state.userId}
               userType={this.state.userType}
