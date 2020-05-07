@@ -156,7 +156,6 @@ CREATE TABLE MWS (
 
 );
 
-
 /* how to add base salary to daily salary?*/
 CREATE TABLE FullTimers (
     riderId				INTEGER,
@@ -172,17 +171,6 @@ CREATE TABLE PartTimers (
     FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
 );
 
-
-/*salary will be calculated at the end of every month (no matter type of riders)*/
-/*CREATE TABLE Salaries (
-riderId				INTEGER,
-day					DATE,
-amount				DECIMAL DEFAULT 0,
-
-PRIMARY KEY (riderId, day),
-FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE
-);
- */
 CREATE TABLE RestaurantStaffs (
     staffId 			INTEGER,
     restaurantId 		INTEGER NOT NULL,
