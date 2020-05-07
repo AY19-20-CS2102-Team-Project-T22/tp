@@ -60,7 +60,7 @@ CREATE TABLE RecentLocations (
 	lastUsingTime		TIMESTAMP NOT NULL,
 
 	PRIMARY KEY (customerId, lastUsingTime),
-	FOREIGN KEY (customerId) REFERENCES Users(userId) ON DELETE CASCADE ON UPDATE CASCADE
+	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
