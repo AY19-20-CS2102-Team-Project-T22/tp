@@ -10,6 +10,7 @@ router.route('/login').post((req, res) => {
     if (error) {
       res.status(400).json('Error: ' + error);
     } else {
+      console.log(result);
       if(result.rows[0].userpassword === req.body.userPassword){
         switch(result.rows[0].type){
           case 1:
@@ -42,9 +43,9 @@ router.route('/registration').post((req, res) => {
       break;
     case 'riders':
       query = 'INSERT INTO Users VALUES (DEFAULT, 2, $1, $2, $3, $4, $5, NOW(), $6, true)';
-      query2 = 'INSERT INTO DeliveryRiders($1, 1)'; //default full time
+      query2 = 'INSERT INTO DeliveryRiders VALUES ($1, 1)'; //default full time
       break;
-    case 'staff':
+    case 'staffs':
       query = 'INSERT INTO Users VALUES (DEFAULT, 3, $1, $2, $3, $4, $5, NOW(), $6, true)';
       query2 = 'INSERT INTO RestaurantStaffs VALUES ($1, -1)';
       break;

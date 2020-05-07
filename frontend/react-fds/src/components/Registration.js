@@ -96,7 +96,7 @@ class Registration extends React.Component {
             >
               <option value={'customers'}>Customer</option>
               <option value={'riders'}>Delivery Rider</option>
-              <option value={'staff'}>Restaurant Staff</option>
+              <option value={'staffs'}>Restaurant Staff</option>
               <option value={'fdsmanagers'}>FDS Manager</option>
             </Input>
           </FormGroup>
