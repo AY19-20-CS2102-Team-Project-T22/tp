@@ -18,6 +18,7 @@ import PaymentMethods from './components/PaymentMethods'
 import CustomersHomepage from './components/CustomersHomepage'
 import StaffHomePage from './components/StaffHomePage'
 import FDSManagersHomepage from './components/FDSManagersHomepage'
+import RiderHomePage from './components/RiderHomePage'
 
 class App extends React.Component {
 
@@ -339,8 +340,13 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/riders' exact>
-            <div>HELLO RIDERS</div>
+            {console.log(this.state)}
             {/* <Riders /> */}
+            <RiderHomePage
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
+              userTypeStr={this.state.userTypeStr}
+            />
           </Route>
           <Route path='/staffs' exact>
             <StaffHomePage />
