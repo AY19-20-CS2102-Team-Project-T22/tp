@@ -26,10 +26,10 @@ class App extends React.Component {
 
     this.state = {
       // States for application login status.
-      isLoggedIn: true,
-      userId: 4,
-      userType: 1,
-      userTypeStr: 'customers',
+      isLoggedIn: false,
+      userId: null,
+      userType: null,
+      userTypeStr: null,
 
       // State for full list of items on the Menu table.
       items: [],
