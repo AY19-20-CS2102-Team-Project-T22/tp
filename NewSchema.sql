@@ -31,7 +31,7 @@ CREATE TABLE Users (
 	userPassword     	VARCHAR(30) NOT NULL,
 	lastName         	VARCHAR(20) NOT NULL,
 	firstName       	VARCHAR(20) NOT NULL,
-	phoneNumber     	BIGINT NOT NULL,
+	phoneNumber     	INTEGER NOT NULL,
 	registrationDate	TIMESTAMP NOT NULL,
 	email				VARCHAR NOT NULL,
 	active          	BOOLEAN NOT NULL,
@@ -59,23 +59,23 @@ CREATE TABLE RecentLocations (
 	location 			INTEGER NOT NULL, /*postal code*/
 	lastUsingTime		TIMESTAMP NOT NULL,
 
-	PRIMARY KEY (customerId, lastUsingTime),
-	FOREIGN KEY (customerId) REFERENCES Users(userId) ON DELETE CASCADE ON UPDATE CASCADE
+	PRIMARY KEY (customerId, location),
+	UNIQUE (customerId, lastUsingTime),
+	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
 CREATE TABLE CreditCards (
-    cardNo BIGINT,
+    cardNo INTEGER,
     customerId INTEGER NOT NULL,
-    bank VARCHAR(30) NOT NULL,
-	expirydate TIMESTAMP NOT NULL,
+    bank VARCHAR(20) NOT NULL,
     PRIMARY KEY (cardNo),
     FOREIGN KEY (customerId) REFERENCES Customers (customerId) ON DELETE CASCADE
 );
 
 CREATE TABLE Restaurants (
     restaurantId SERIAL,
-    name VARCHAR(60) NOT NULL,
+    name VARCHAR(30) NOT NULL,
     minOrderCost INTEGER DEFAULT 0,
     PRIMARY KEY (restaurantId),
     CHECK (minOrderCost > 0)
@@ -83,7 +83,7 @@ CREATE TABLE Restaurants (
 
 CREATE TABLE Foods (
     foodId SERIAL,
-    name VARCHAR(40) NOT NULL,
+    name VARCHAR(30) NOT NULL,
     restaurantId INTEGER NOT NULL,
     dailyLimit INTEGER DEFAULT 0,
     quantity INTEGER DEFAULT 0,
@@ -98,10 +98,9 @@ CREATE TABLE Foods (
 CREATE TABLE FoodCategories (
     fcid                INTEGER,
 	foodId				INTEGER,
-	category			VARCHAR(20),
+	category			VARCHAR(20) NOT NULL,
 
-	PRIMARY KEY (fcid),
-    UNIQUE (fcid, category),
+	PRIMARY KEY (fcid, foodId),
 	FOREIGN KEY (foodId) REFERENCES Foods(foodId) ON DELETE CASCADE
 );
 
@@ -131,7 +130,6 @@ CREATE TABLE WWS (
 	startDate			DATE NOT NULL,
 	endDate				DATE,
 	isUsed				BOOLEAN NOT NULL DEFAULT 't',
-	workDays			INTEGER NOT NULL CHECK (workDays >= 1 and workDays <= 7), /*use 1-7 to represents 7 options of work days*/
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
 
 	UNIQUE (riderId, startDate),
@@ -216,9 +214,9 @@ CREATE TABLE FDSManagers (
 CREATE TABLE Promotions (
 	promoId 			SERIAL,
 	type				INTEGER NOT NULL CHECK (type = 1 or type = 2), /*use integer(1, 2) to represent type*/
-	discountValue		INTEGER, /*what does this mean?*/
+	value				INTEGER, /*what does this mean?*/
 	startDate			DATE,
-	endDate				DATE DEFAULT NULL,
+	endDate				DATE,
 	condition			TEXT, /*how to use this condition?*/
 	description			TEXT, /*how to use this description?*/
 
@@ -279,12 +277,10 @@ CREATE TABLE Orders (
 );
 
 CREATE TABLE Reviews (
-	reviewId integer,
     orderId integer,
     reviewDate date NOT NULL,
     rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
     /*use points 1-5 to represent rating*/
     feedback text NOT NULL DEFAULT '-NIL-',
-    PRIMARY KEY (reviewId),
-	FOREIGN KEY (orderId) REFERENCES Orderlogs (orderId)
+    PRIMARY KEY (orderId)
 );

@@ -158,34 +158,6 @@ CREATE CONSTRAINT TRIGGER check_customer_locations
 	FOR EACH ROW 
 	EXECUTE FUNCTION check_customer_locations ();
 
-
-/*ensure every hour interval has at least 5 riders*/
-/*CREATE OR REPLACE FUNCTION check_num_of_riders RETURNS TRIGGER AS $$
-DECLARE
-	weekday			WWS_Schedules.weekday%TYPE;
-BEGIN
-	
-END;
-$$ LANGUAGE plpgsql;	
-
-DROP TRIGGER IF EXISTS check_num_of_riders_trigger_part ON WWS_Schedules CASCADE;
-CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_part
-	AFTER UPDATE OF weekday, startTime, endTime OR DELETE
-	ON WWS_Schedules
-	DEFERRABLE INITIALLY DEFERRED
-	FOR EACH ROW
-	EXECUTE FUNCTION check_num_of_riders();
-
-DROP TRIGGER IF EXISTS check_num_of_riders_trigger_full ON MWS CASCADE;
-CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
-	AFTER UPDATE OF workDays, shifts OR DELETE
-	ON MWS
-	DEFERRABLE INITIALLY DEFERRED
-	FOR EACH ROW
-	EXECUTE FUNCTION check_num_of_riders();
-*/
-
-
 /* checks whether there are atleast 5 riders for every hour on the current day*/
 DROP FUNCTION IF EXISTS check_num_of_riders();
 CREATE OR REPLACE FUNCTION check_num_of_riders()
