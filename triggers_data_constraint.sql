@@ -236,9 +236,9 @@ AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS customers_add_points ON Orders;
+DROP TRIGGER IF EXISTS customers_add_points ON Orderlogs;
 CREATE TRIGGER customer_add_points
-	AFTER INSERT OR UPDATE ON Orders
+	AFTER INSERT OR UPDATE ON Orderlogs
 	FOR EACH ROW
 	EXECUTE FUNCTION customer_add_points();
 
@@ -262,9 +262,9 @@ AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS check_min_fee ON Orders;
+DROP TRIGGER IF EXISTS check_min_fee ON Orderlogs;
 CREATE TRIGGER check_min_fee
-	BEFORE INSERT OR UPDATE ON Orders 
+	BEFORE INSERT OR UPDATE ON Orderlogs 
 	FOR EACH ROW
 	EXECUTE FUNCTION check_min_fee();
 

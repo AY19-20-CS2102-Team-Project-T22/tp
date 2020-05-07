@@ -65,16 +65,17 @@ CREATE TABLE RecentLocations (
 
 
 CREATE TABLE CreditCards (
-    cardNo INTEGER,
+    cardNo BIGINT,
     customerId INTEGER NOT NULL,
-    bank VARCHAR(20) NOT NULL,
+    bank VARCHAR(30) NOT NULL,
+	expirydate TIMESTAMP NOT NULL,
     PRIMARY KEY (cardNo),
     FOREIGN KEY (customerId) REFERENCES Customers (customerId) ON DELETE CASCADE
 );
 
 CREATE TABLE Restaurants (
     restaurantId SERIAL,
-    name VARCHAR(30) NOT NULL,
+    name VARCHAR(60) NOT NULL,
     minOrderCost INTEGER DEFAULT 0,
     PRIMARY KEY (restaurantId),
     CHECK (minOrderCost > 0)
@@ -82,7 +83,7 @@ CREATE TABLE Restaurants (
 
 CREATE TABLE Foods (
     foodId SERIAL,
-    name VARCHAR(30) NOT NULL,
+    name VARCHAR(40) NOT NULL,
     restaurantId INTEGER NOT NULL,
     dailyLimit INTEGER DEFAULT 0,
     quantity INTEGER DEFAULT 0,
@@ -215,9 +216,9 @@ CREATE TABLE FDSManagers (
 CREATE TABLE Promotions (
 	promoId 			SERIAL,
 	type				INTEGER NOT NULL CHECK (type = 1 or type = 2), /*use integer(1, 2) to represent type*/
-	value				INTEGER, /*what does this mean?*/
+	discountValue		INTEGER, /*what does this mean?*/
 	startDate			DATE,
-	endDate				DATE,
+	endDate				DATE DEFAULT NULL,
 	condition			TEXT, /*how to use this condition?*/
 	description			TEXT, /*how to use this description?*/
 
@@ -278,10 +279,12 @@ CREATE TABLE Orders (
 );
 
 CREATE TABLE Reviews (
+	reviewId integer,
     orderId integer,
     reviewDate date NOT NULL,
     rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
     /*use points 1-5 to represent rating*/
     feedback text NOT NULL DEFAULT '-NIL-',
-    PRIMARY KEY (orderId)
+    PRIMARY KEY (reviewId),
+	FOREIGN KEY (orderId) REFERENCES Orderlogs (orderId)
 );
