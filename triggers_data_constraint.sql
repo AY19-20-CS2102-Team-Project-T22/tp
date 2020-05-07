@@ -23,7 +23,7 @@ CREATE TRIGGER check_restaurant_trigger
 /*ensure every slot does not exceed 4 hours*/
 CREATE OR REPLACE FUNCTION check_work_slot() RETURNS TRIGGER AS $$
 BEGIN
-	IF NEW.endTime > NEW.startTime THEN
+	IF NEW.endTime - NEW.startTime > 4 THEN
 		RAISE exception 'Working slot on % from %:00 to %:00 exceeds 4 hours', NEW.weekday, NEW.startTime, NEW.endTime;
 	END IF;
 	RETURN NEW;
@@ -32,13 +32,12 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS check_work_slot_trigger ON WWS_Schedules CASCADE;
 CREATE TRIGGER check_work_slot_trigger
-	BEFORE UPDATE OF startTime, endTime OR INSERT
-	ON WWS_Schedules
+	BEFORE UPDATE OF startTime, endTime OR INSERT ON WWS_Schedules
 	FOR EACH ROW
 	EXECUTE FUNCTION check_work_slot();
 
-/*ensure total working hour >= 10 and <= 48*/
-CREATE OR REPLACE FUNCTION check_total_work_hour () RETURNS TRIGGER AS $$
+/*ensure total working hour > 48*/
+CREATE OR REPLACE FUNCTION check_total_work_hour_upper () RETURNS TRIGGER AS $$
 DECLARE
 	total_work_hour		INTEGER;
 BEGIN
@@ -46,9 +45,7 @@ BEGIN
 	FROM WWS_Schedules W
 	WHERE NEW.workId = W.workId;
 
-	IF total_work_hour < 10 THEN
-		RAISE exception 'Total working hour within one week is less than 10 hours';
-	ELSIF total_work_hour > 48 THEN
+	IF total_work_hour > 48 THEN
 		RAISE exception 'Total working hour within one week is larger than 48 hours';
 	ELSE
 		RETURN NULL;
@@ -56,16 +53,41 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS check_total_work_hour_trigger ON WWS_Schedules CASCADE;
-CREATE CONSTRAINT TRIGGER check_total_work_hour_trigger
+DROP TRIGGER IF EXISTS check_total_work_hour_trigger_upper ON WWS_Schedules CASCADE;
+CREATE CONSTRAINT TRIGGER check_total_work_hour_trigger_upper
 	AFTER UPDATE OF workId, startTime, endTime OR INSERT
 	ON WWS_Schedules
 	DEFERRABLE INITIALLY DEFERRED
 	FOR EACH ROW
-	EXECUTE FUNCTION check_total_work_hour();
+	EXECUTE FUNCTION check_total_work_hour_upper();
+
+/*ensures that working hour < 10*/
+CREATE OR REPLACE FUNCTION check_total_work_hour_lower () RETURNS TRIGGER AS $$
+DECLARE
+	total_work_hour		INTEGER;
+BEGIN
+	SELECT sum (endTime - startTime) INTO total_work_hour
+	FROM WWS_Schedules W
+	WHERE NEW.workId = W.workId;
+
+	IF total_work_hour < 48 THEN
+		RAISE exception 'Total working hour within one week is less than 10 hours';
+	ELSE
+		RETURN NULL;
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_total_work_hour_trigger_lower ON WWS_Schedules CASCADE;
+CREATE CONSTRAINT TRIGGER check_total_work_hour_trigger_lower
+	AFTER UPDATE OF workId, startTime, endTime OR DELETE
+	ON WWS_Schedules
+	DEFERRABLE INITIALLY DEFERRED
+	FOR EACH ROW
+	EXECUTE FUNCTION check_total_work_hour_lower();
 
 /*ensure there is a break between two slots*/
-CREATE OR REPLACE FUNCTION check_break() RETURNS TRIGGER AS $$
+/*CREATE OR REPLACE FUNCTION check_break() RETURNS TRIGGER AS $$
 DECLARE
 	slot_start	WWS_Schedules%ROWTYPE;
 	slot_end	WWS_Schedules%ROWTYPE;
@@ -92,14 +114,36 @@ BEGIN
 		NEW.startTime, NEW.endTime, slot_end.startTime, slot_end.endTime, NEW.weekday;
 	END IF;
 
+	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;*/
+
+CREATE OR REPLACE FUNCTION check_break() RETURNS TRIGGER AS $$
+DECLARE
+	invalidSchedule BOOLEAN := false;
+BEGIN
+	SELECT TRUE INTO invalidSchedule
+	FROM WWS_Schedules WS
+	WHERE WS.workId = NEW.workId
+	AND WS.startTime <> NEW.startTime
+	AND WS.endTime <> NEW.endTime
+	AND WS.weekday = NEW.weekday
+	AND ((WS.startTime = WS.endTime)
+	OR (WS.endTime = NEW.startTime))
+	;
+
+	IF invalidSchedule THEN
+		RAISE EXCEPTION 'There is no break between existing slots';
+	ELSE
+		RETURN NEW;
+	END IF;
 END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS check_break_trigger ON WWS_Schedules CASCADE;
-CREATE CONSTRAINT TRIGGER check_break_trigger
-	AFTER UPDATE OF weekday, startTime, endTime OR INSERT
-	ON WWS_Schedules
-	DEFERRABLE INITIALLY DEFERRED
+CREATE TRIGGER check_break_trigger
+	BEFORE UPDATE OF weekday, startTime, endTime OR INSERT ON WWS_Schedules
 	FOR EACH ROW
 	EXECUTE FUNCTION check_break();
 
@@ -158,34 +202,6 @@ CREATE CONSTRAINT TRIGGER check_customer_locations
 	FOR EACH ROW 
 	EXECUTE FUNCTION check_customer_locations ();
 
-
-/*ensure every hour interval has at least 5 riders*/
-/*CREATE OR REPLACE FUNCTION check_num_of_riders RETURNS TRIGGER AS $$
-DECLARE
-	weekday			WWS_Schedules.weekday%TYPE;
-BEGIN
-	
-END;
-$$ LANGUAGE plpgsql;	
-
-DROP TRIGGER IF EXISTS check_num_of_riders_trigger_part ON WWS_Schedules CASCADE;
-CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_part
-	AFTER UPDATE OF weekday, startTime, endTime OR DELETE
-	ON WWS_Schedules
-	DEFERRABLE INITIALLY DEFERRED
-	FOR EACH ROW
-	EXECUTE FUNCTION check_num_of_riders();
-
-DROP TRIGGER IF EXISTS check_num_of_riders_trigger_full ON MWS CASCADE;
-CREATE CONSTRAINT TRIGGER check_num_of_riders_trigger_full
-	AFTER UPDATE OF workDays, shifts OR DELETE
-	ON MWS
-	DEFERRABLE INITIALLY DEFERRED
-	FOR EACH ROW
-	EXECUTE FUNCTION check_num_of_riders();
-*/
-
-
 /* checks whether there are atleast 5 riders for every hour on the current day*/
 DROP FUNCTION IF EXISTS check_num_of_riders();
 CREATE OR REPLACE FUNCTION check_num_of_riders()
@@ -214,7 +230,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS check_num_of_riders ON WWS_Schedules;
 CREATE CONSTRAINT TRIGGER check_num_of_riders
-	AFTER INSERT OR DELETE OR UPDATE ON WWS_Schedules DEFERRABLE INITIALLY DEFERRED
+	AFTER DELETE ON WWS_Schedules DEFERRABLE INITIALLY DEFERRED
 	FOR EACH ROW
 	EXECUTE FUNCTION check_num_of_riders();
 
@@ -268,3 +284,88 @@ CREATE TRIGGER check_min_fee
 	FOR EACH ROW
 	EXECUTE FUNCTION check_min_fee();
 
+/* Ensues that there are no overlapping schedules upon insertion/update of WWS_Schedules*/
+CREATE OR REPLACE FUNCTION check_schedule_overlap()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		invalidSchedule BOOLEAN := FALSE;
+	BEGIN
+		SELECT TRUE INTO invalidSchedule
+		FROM WWS_Schedules WS
+		WHERE WS.workId = NEW.workId
+		AND (WS.weekday = NEW.weekday AND NEW.startTime >= WS.startTime AND NEW.startTime < WS.endTime)
+		OR (WS.weekday = NEW.weekday AND NEW.endTime > WS.startTime AND NEW.endTime <= WS.endTime)
+		;
+
+		IF invalidSchedule THEN
+			RAISE EXCEPTION 'SCHEDULE OVERLAP DETECTED';
+		ELSE
+			RETURN NEW;
+		END IF;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_schedule_overlap ON WWS_Schedules;
+CREATE TRIGGER check_schedule_overlap
+	BEFORE INSERT ON WWS_Schedules
+	FOR EACH ROW
+	EXECUTE FUNCTION check_schedule_overlap();
+
+
+/* Ensures that when adding to WWS, adding schedule to FUTURE(no schedule yet) not PAST */
+CREATE OR REPLACE FUNCTION check_wws_future_1()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		invalidSchedule BOOLEAN := FALSE;
+	BEGIN
+		SELECT TRUE INTO invalidSchedule
+		FROM WWS W
+		WHERE W.workId <> NEW.workId
+		AND W.riderId = NEW.riderId
+		AND (NEW.startDate < NOW() OR NEW.startDate < W.endDate)
+		;
+
+		IF invalidSchedule THEN
+			RAISE EXCEPTION 'StartDate invalid due to an already existing schedule';
+		ELSE
+			RETURN NEW;
+		END IF;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_wws_future_1 ON WWS;
+CREATE TRIGGER check_wws_future_1
+	BEFORE INSERT OR UPDATE OF startDate ON WWS
+	FOR EACH ROW
+	EXECUTE FUNCTION check_wws_future_1();
+
+/*Adds an end date to the last entry in WWS*/
+CREATE OR REPLACE FUNCTION valid_wws_addition()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		pId INTEGER;
+	BEGIN
+		SELECT W.workId INTO pId
+		FROM WWS W
+		WHERE W.workId <> NEW.workId
+		AND W.riderId = NEW.riderId
+		AND W.endDate IS NULL
+		;
+
+		IF pid IS NOT NULL THEN
+			UPDATE WWS SET endDate = NEW.startDate - 1 WHERE workId = pId;
+			
+		END IF;
+
+		RETURN NEW;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS valid_wws_addition ON WWS;
+CREATE TRIGGER valid_wws_addition
+	AFTER INSERT ON WWS
+	FOR EACH ROW
+	EXECUTE FUNCTION valid_wws_addition();
