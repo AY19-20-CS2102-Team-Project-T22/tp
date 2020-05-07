@@ -7,11 +7,13 @@ import {
 } from 'react-router-dom'
 import { ListGroup, ListGroupItem } from 'reactstrap'
 import FDSManagersAccountInfo from './FDSManagersAccountInfo'
+import FDSPromotions from './FDSPromotions'
 
 class FDSManagersHomepage extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      mid: this.props.userId,
       name: 'Placeholder Name',
       renderedPage: 0
     }
@@ -27,9 +29,9 @@ class FDSManagersHomepage extends React.Component {
         )
       case 1: // promotions
         return (
-          <div>
-            Promotions
-          </div>
+          <FDSPromotions 
+            userId = {this.state.mid}
+          />
         )
       case 2: // statistics
         return (

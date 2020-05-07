@@ -104,7 +104,7 @@ class Checkout extends React.Component {
         let ccNo = null
         let paymentMethod = parseInt(this.state.paymentMethod)
         if (paymentMethod !== 0) {
-          ccNo = this.state.cc[paymentMethod - 1].card_no
+          ccNo = this.state.cc[paymentMethod - 1].cardNo
         }
 
         // Construct information details to be inserted to database.
@@ -230,8 +230,8 @@ class Checkout extends React.Component {
     return this.state.cc.map((eachItem, i) => {
       // Extract last 4 digits of card number.
       let lastFourDigits =
-        eachItem.card_no.
-          substring(eachItem.card_no.length - 4, eachItem.card_no.length)
+        eachItem.cardNo.
+          substring(eachItem.cardNo.length - 4, eachItem.cardNo.length)
       return (
         <option value={i + 1}>Credit card ending with {lastFourDigits}</option>
       )
@@ -241,9 +241,8 @@ class Checkout extends React.Component {
   componentDidMount() {
     // Retrieve credit cards registered for user (if any).
     axios.get(
-      'http://localhost:5000/users/customers/'
-      + this.props.userId
-      + '/creditcards'
+      'http://localhost:5000/customers/creditcard_info'
+      + '?customerId=' + this.props.userId
     )
       .then(res => {
         this.setState({ cc: res.data })

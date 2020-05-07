@@ -142,7 +142,7 @@ router.route('/promotions/delete').get((req, res) => {
 // For each month, the total number of new customers, the total number of orders, and the total cost of all orders.
 
 //total number of nem customers
-//  xxx/managers/new_customers?y=2020&m=1
+//  xxx/managers/new_customers?year=2020&month=1
 router.route('/num_of_customers').get((req, res) => {
     let start_time_str = req.query.year + "-" + req.query.month + "-01 00:00:00+8";          // "yyyy-mm-01 00:00:00"
     let end_time_str = '';

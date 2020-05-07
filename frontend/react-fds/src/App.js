@@ -18,6 +18,7 @@ import PaymentMethods from './components/PaymentMethods'
 import CustomersHomepage from './components/CustomersHomepage'
 import StaffHomePage from './components/StaffHomePage'
 import FDSManagersHomepage from './components/FDSManagersHomepage'
+import RiderHomePage from './components/RiderHomePage'
 
 class App extends React.Component {
 
@@ -61,6 +62,7 @@ class App extends React.Component {
     this.toggleFilterPanel = this.toggleFilterPanel.bind(this)
     this.handleAddToCart = this.handleAddToCart.bind(this)
     this.handleRemoveFromCart = this.handleRemoveFromCart.bind(this)
+    this.clearCart = this.clearCart.bind(this)
     this.updateItemsDisplayed = this.updateItemsDisplayed.bind(this)
 
     this.handleAllBtn = this.handleAllBtn.bind(this)
@@ -101,12 +103,25 @@ class App extends React.Component {
     this.setState({ cart: tempCart })
   }
 
+  clearCart() {
+    this.setState({ cart: [] })
+  }
+
   updateUser(uid, type, typeStr) {
     this.setState({ userId: uid, isLoggedIn: true, userType: type, userTypeStr: typeStr })
   }
 
   handleLogout() {
-    this.setState({ isLoggedIn: false, userId: null, userType: null, userTypeStr: null })
+    this.setState({ 
+      isLoggedIn: false, 
+      userId: null, 
+      userType: null, 
+      userTypeStr: null,
+
+      // Clear item display filters.
+      restaurantsFilter: [],
+      foodCategoriesFilter: []
+    })
     alert('You have been logged out.')
   }
 
@@ -251,24 +266,9 @@ class App extends React.Component {
     }
   }
 
-  componentDidUpdate() {
-    // this.updateItemsDisplayed()
-  }
-
   render() {
-    // this.updateItemsDisplayed()
     return (
       <div className='App'>
-        <Router>
-          <Route path='/StaffHomePage' exact>
-            <StaffHomePage></StaffHomePage>
-          </Route>
-        </Router>
-        <Router>
-          <Route path='/fdsmanagerhomepage' exact>
-            <FDSManagersHomepage />
-          </Route>
-        </Router>
         <Router>
           <Route path='/login' exact>
             <Login
@@ -306,6 +306,7 @@ class App extends React.Component {
               userId={this.state.userId}
               items={this.state.items}
               cart={this.state.cart}
+              clearCart={this.clearCart}
             />
           </Route>
 
@@ -318,12 +319,12 @@ class App extends React.Component {
 
               items={this.state.items}
               cart={this.state.cart}
-              
+
               showFilterPanel={this.state.showFilterPanel}
               toggleFilterPanel={this.toggleFilterPanel}
               updateItemsDisplayed={this.updateItemsDisplayed}
               itemsOnDisplay={this.state.itemsOnDisplay}
-              
+
               restaurants={this.state.restaurants}
               restaurantsFilter={this.state.restaurantsFilter}
 
@@ -339,14 +340,24 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/riders' exact>
-            <div>HELLO RIDERS</div>
+            {console.log(this.state)}
             {/* <Riders /> */}
+            <RiderHomePage
+              isLoggedIn={this.state.isLoggedIn}
+              userId={this.state.userId}
+              userTypeStr={this.state.userTypeStr}
+            />
           </Route>
           <Route path='/staffs' exact>
             <StaffHomePage />
           </Route>
           <Route path='/fdsmanagers' exact >
-            <FDSManagersHomepage />
+            <FDSManagersHomepage
+              userId={this.state.userId}
+              userType={this.state.userType}
+              userTypeStr={this.state.userType}
+              isLoggedIn={this.state.isLoggedIn}
+            />
           </Route>
 
           <Route path='/' exact>
