@@ -1,8 +1,4 @@
 import React from 'react'
-import axios from 'axios'
-import { Button, Form, FormGroup, Label, Input, ListGroup, ListGroupItem } from 'reactstrap'
-import { Link } from 'react-router-dom'
-import UserSidebar from './UserSideBar'
 import Header from './Header'
 import Body from './Body'
 
