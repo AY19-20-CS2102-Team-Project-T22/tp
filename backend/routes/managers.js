@@ -142,37 +142,36 @@ router.route('/promotions/delete').get((req, res) => {
 // For each month, the total number of new customers, the total number of orders, and the total cost of all orders.
 
 //total number of nem customers
-//  xxx/managers/new_customers?y=2020&m=1
+//  xxx/managers/new_customers?year=2020&month=1
 router.route('/num_of_customers').get((req, res) => {
-    let start_time_str = req.query.year + "-" + req.query.month + "-1";          // "yyyy-mm-01 00:00:00"
-    let end_time_str = req.query.year + "-" + req.query.month + "-1"; 
-
-    // switch(req.query.month){
-    //     case '01':
-    //     case '03':
-    //     case '05':
-    //     case '07':
-    //     case '08':
-    //     case '10':
-    //     case '12':
-    //         end_time_str = req.query.year + "-" + req.query.month +"-31 23:59:59";
-    //         break;
-    //     case '04':
-    //     case '06':
-    //     case '09':
-    //     case '11':
-    //         console.log("yes");
-    //         end_time_str = req.query.year + "-" + req.query.month+ "-30 23:59:59";
-    //         break;
-    //     case '02':
-    //         end_time_str = req.query.year + "-" + req.query.month + "-28 23:59:59";    //FIXME: ignore leap year here
-    //         break;
-    //     default:
-    //         console.log(req.query.month);
-    //         console.log("error");
-    //         break;
-    // }
-    const query = 'select count(userId) as num from users where registrationDate>=$1::timestamp AND registrationDate<=$2::timestamp + interval \'1 month\' - interval \'1 day\' AND type=1';
+    let start_time_str = req.query.year + "-" + req.query.month + "-01 00:00:00+8";          // "yyyy-mm-01 00:00:00"
+    let end_time_str = '';
+    switch(req.query.month){
+        case '01':
+        case '03':
+        case '05':
+        case '07':
+        case '08':
+        case '10':
+        case '12':
+            end_time_str = req.query.year + "-" + req.query.month +"-31 23:59:59+8";
+            break;
+        case '04':
+        case '06':
+        case '09':
+        case '11':
+            console.log("yes");
+            end_time_str = req.query.year + "-" + req.query.month+ "-30 23:59:59+8";
+            break;
+        case '02':
+            end_time_str = req.query.year + "-" + req.query.month + "-28 23:59:59+8";    //FIXME: ignore leap year here
+            break;
+        default:
+            console.log(req.query.month);
+            console.log("error");
+            break;
+    }
+    const query = 'select count(uid) as num from customers where registration_date>=$1 AND registration_date<=$2';
     const values = [start_time_str, end_time_str];
     
     // db.connect()
@@ -181,30 +180,10 @@ router.route('/num_of_customers').get((req, res) => {
           console.log(error)
           res.status(400).json('Error: ' + error)
         } else {
-          res.status(200).json(result.rows[0])
+          res.status(200).json(result.rows)
         }
         // db.end()
       })
-})
-
-router.route('/num_of_customers/range').get((req, res) => {
-  let start_time_str = req.query.from_year + "-" + req.query.from_month + "-" + req.query.from_day;          // "yyyy-mm-01 00:00:00"
-  let end_time_str = req.query.to_year + "-" + req.query.to_month + "-" + req.query.to_day; 
-
-  const query = 'select count(userId) as num from users where registrationDate>=$1::timestamp AND registrationDate<=$2::timestamp AND type=1';
-  console.log(query)
-  const values = [start_time_str, end_time_str];
-  
-  // db.connect()
-  db.query(query, values, (error, result) => {
-      if (error) {
-        console.log(error)
-        res.status(400).json('Error: ' + error)
-      } else {
-        res.status(200).json(result.rows[0])
-      }
-      // db.end()
-    })
 })
 
 //total number of order
