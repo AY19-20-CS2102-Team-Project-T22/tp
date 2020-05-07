@@ -48,7 +48,7 @@ class Login extends React.Component {
                 typeStr = 'riders';
                 break;
               case 3:
-                typeStr = 'staff';
+                typeStr = 'staffs';
                 break;
               case 4:
                 typeStr = 'fdsmanagers';
