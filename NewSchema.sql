@@ -31,7 +31,7 @@ CREATE TABLE Users (
 	userPassword     	VARCHAR(30) NOT NULL,
 	lastName         	VARCHAR(20) NOT NULL,
 	firstName       	VARCHAR(20) NOT NULL,
-	phoneNumber     	INTEGER NOT NULL,
+	phoneNumber     	BIGINT NOT NULL,
 	registrationDate	TIMESTAMP NOT NULL,
 	email				VARCHAR NOT NULL,
 	active          	BOOLEAN NOT NULL,
