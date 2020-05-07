@@ -65,30 +65,33 @@ CREATE TABLE RecentLocations (
 
 
 CREATE TABLE CreditCards (
-    cardNo BIGINT,
-    customerId INTEGER NOT NULL,
-    bank VARCHAR(30) NOT NULL,
-	expiryDate TIMESTAMP NOT NULL,
+    cardNo				BIGINT,
+    customerId 			INTEGER NOT NULL,
+    bank				VARCHAR(30) NOT NULL,
+	expiryDate			TIMESTAMP NOT NULL,
+    
     PRIMARY KEY (cardNo),
     FOREIGN KEY (customerId) REFERENCES Customers (customerId) ON DELETE CASCADE
 );
 
 CREATE TABLE Restaurants (
-    restaurantId SERIAL,
-    name VARCHAR(50) NOT NULL,
-    minOrderCost INTEGER DEFAULT 0,
+    restaurantId		SERIAL,
+    name 				VARCHAR(50) NOT NULL,
+    minOrderCost 		INTEGER DEFAULT 0,
+    
     PRIMARY KEY (restaurantId),
     CHECK (minOrderCost > 0)
 );
 
 CREATE TABLE Foods (
-    foodId SERIAL,
-    name VARCHAR(40) NOT NULL,
-    restaurantId INTEGER NOT NULL,
-    dailyLimit INTEGER DEFAULT 0,
-    quantity INTEGER DEFAULT 0,
-    price DECIMAL DEFAULT 0,
-    isSold BOOLEAN DEFAULT 't',
+    foodId 				SERIAL,
+    name 				VARCHAR(40) NOT NULL,
+    restaurantId 		INTEGER NOT NULL,
+    dailyLimit 			INTEGER DEFAULT 0,
+    quantity 			INTEGER DEFAULT 0,
+    price 				DECIMAL DEFAULT 0,
+    isSold 				BOOLEAN DEFAULT 't',
+    
     PRIMARY KEY (foodId),
     FOREIGN KEY (restaurantId) REFERENCES Restaurants (restaurantId) ON DELETE CASCADE,
     UNIQUE (name, restaurantId),
@@ -96,17 +99,19 @@ CREATE TABLE Foods (
 );
 
 CREATE TABLE FoodCategories (
-    fcid                INTEGER,
+    fcid				INTEGER,
 	foodId				INTEGER,
 	category			VARCHAR(30) NOT NULL,
 
 	PRIMARY KEY (fcid, foodId),
+	UNIQUE (category, foodId),
 	FOREIGN KEY (foodId) REFERENCES Foods(foodId) ON DELETE CASCADE
 );
 
 CREATE TABLE DeliveryRiders (
-    riderId integer,
-    type INTEGER NOT NULL CHECK (TYPE = 1 OR TYPE = 2),
+    riderId 			INTEGER,
+    type 				INTEGER NOT NULL CHECK (TYPE = 1 OR TYPE = 2),
+    
     PRIMARY KEY (riderId),
     FOREIGN KEY (riderId) REFERENCES Users (userId) ON DELETE CASCADE
 );
@@ -116,7 +121,6 @@ CREATE TABLE WWS (
 	riderId				INTEGER NOT NULL,
 	startDate			DATE NOT NULL,
 	endDate				DATE,
-	isUsed				BOOLEAN NOT NULL DEFAULT 't',
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
 
 	UNIQUE (riderId, startDate),
@@ -129,11 +133,11 @@ CREATE TABLE WWS_Schedules (
 	workId				INTEGER,
 	weekday				VARCHAR(10),
 	startTime			SMALLINT CHECK (startTime >= 10 AND startTime < 22),
-	endTime				SMALLINT CHECK (endTime > 10 AND endTime <= 2),
+	endTime				SMALLINT CHECK (endTime > 10 AND endTime <= 22),
 
 	PRIMARY KEY (workId, weekday, startTime),
 	FOREIGN KEY (workId) REFERENCES WWS (workId) ON DELETE CASCADE,
-	CHECK (endTime > startTime)
+	CHECK (endTime > startTime AND endTime - startTime <= 4)
 );
 
 CREATE TABLE MWS (
@@ -141,7 +145,6 @@ CREATE TABLE MWS (
 	riderId				INTEGER NOT NULL,
 	startDate			DATE NOT NULL,
 	endDate				DATE,
-	isUsed				BOOLEAN NOT NULL DEFAULT 't',
 	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
 	workDays			INTEGER NOT NULL CHECK (workDays >= 1 and workDays <= 7), /*use 1-7 to represents 7 options of work days*/
 	shifts				INTEGER[5] CHECK (1 <= ALL(shifts) and 4 >= ALL(shifts)), /*use 1-4 to represents 4 shifts*/
@@ -156,13 +159,15 @@ CREATE TABLE MWS (
 
 /* how to add base salary to daily salary?*/
 CREATE TABLE FullTimers (
-    riderId integer,
+    riderId				INTEGER,
+    
     PRIMARY KEY (riderId),
     FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
 );
 
 CREATE TABLE PartTimers (
-    riderId integer,
+    riderId 			INTEGER,
+    
     PRIMARY KEY (riderId),
     FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
 );
@@ -179,15 +184,17 @@ FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE
 );
  */
 CREATE TABLE RestaurantStaffs (
-    staffId integer,
-    restaurantId integer NOT NULL,
+    staffId 			INTEGER,
+    restaurantId 		INTEGER NOT NULL,
+    
     PRIMARY KEY (staffId),
     FOREIGN KEY (staffId) REFERENCES Users (userId) ON DELETE CASCADE,
     FOREIGN KEY (restaurantId) REFERENCES Restaurants (restaurantId) ON DELETE CASCADE
 );
 
 CREATE TABLE FDSManagers (
-    managerId integer,
+    managerId 			INTEGER,
+    
     PRIMARY KEY (managerId),
     FOREIGN KEY (managerId) REFERENCES Users (userId) ON DELETE CASCADE
 );
@@ -259,10 +266,11 @@ CREATE TABLE Orders (
 );
 
 CREATE TABLE Reviews (
-    orderId integer,
-    reviewDate date NOT NULL,
-    rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    orderId 			INTEGER,
+    reviewDate 			DATE NOT NULL,
+    rating 				INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     /*use points 1-5 to represent rating*/
-    feedback text NOT NULL DEFAULT '-NIL-',
+    feedback 			TEXT NOT NULL DEFAULT '-NIL-',
+    
     PRIMARY KEY (orderId)
 );
