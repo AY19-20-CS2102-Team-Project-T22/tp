@@ -5,10 +5,72 @@ class FDSManagersAccountInfo extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      username: '',
+      password: '',
       firstName: '',
       lastName: '',
+      email: '',
+      contactNo: '',
 
+      editUsername: false,
+      editPassword: false,
+      editFirstName: false,
+      editLastName: false,
+      editEmail: false,
+      editContactNo: false
+    }
 
+    this.handleFirstNameChange = this.handleFirstNameChange.bind(this)
+    this.handleLastNameChange = this.handleLastNameChange.bind(this)
+    this.handleUsernameChange = this.handleUsernameChange.bind(this)
+    this.handlePasswordChange = this.handlePasswordChange.bind(this)
+    this.handleEmailChange = this.handleEmailChange.bind(this)
+    this.handleContactChange = this.handleContactChange.bind(this)
+    this.toggleEdit = this.toggleEdit.bind(this)
+  }
+
+  handleFirstNameChange(e) {
+    this.setState({ firstName: e.target.value })
+  }
+
+  handleLastNameChange(e) {
+    this.setState({ lastName: e.target.value })
+  }
+
+  handleUsernameChange(e) {
+    this.setState({ username: e.target.value })
+  }
+
+  handlePasswordChange(e) {
+    this.setState({ password: e.target.value })
+  }
+
+  handleEmailChange(e) {
+    this.setState({ email: e.target.value })
+  }
+
+  handleContactChange(e) {
+    this.setState({ contactNo: e.target.value })
+  }
+
+  toggleEdit(e) {
+    let field = parseInt(e.target.value)
+    switch (field) {
+      case 0:
+        this.setState(prev => ({ editUsername: !prev.editUsername}))
+        break
+      case 1:
+        break
+      case 2:
+        break
+      case 3:
+        break
+      case 4:
+        break
+      case 5:
+        break
+      default:
+        // nothing
     }
   }
 
@@ -17,18 +79,23 @@ class FDSManagersAccountInfo extends React.Component {
       <div className='managers-page-body-mainbody-accountinfo'>
         <div style={{ flex: '1' }} />
         <Form style={{ flex: '1' }}>
-          <h2 style={{ marginTop: '10px', marginBottom: '35px' }}>Create an account</h2>
+          <h2 style={{ marginTop: '10px', marginBottom: '35px' }}>Profile</h2>
           <FormGroup>
             <Label>Username</Label>
             <Input
-              disabled
+              disabled={!this.state.editUsername}
               type='text'
-              required
+              required={!this.state.editUsername}
               placeholder=''
-              value={this.state.firstName}
-              onChange={this.handleFirstNameChange}
+              value={this.state.username}
+              onChange={this.handleUsernameChange}
             />
-            <Button onClick={e => console.log(e)}>Edit</Button>
+            <Button
+              value={0}
+              onClick={this.toggleEdit}
+            >
+              Edit
+            </Button>
           </FormGroup>
           <FormGroup>
             <Label>Password</Label>
@@ -42,8 +109,6 @@ class FDSManagersAccountInfo extends React.Component {
             />
             <Button>Edit</Button>
           </FormGroup>
-
-          { /* First name and Last name */}
           <FormGroup>
             <Label>First Name</Label>
             <Input
@@ -68,8 +133,6 @@ class FDSManagersAccountInfo extends React.Component {
             />
             <Button>Edit</Button>
           </FormGroup>
-
-          { /* Email and Phone number */}
           <FormGroup>
             <Label>Email</Label>
             <Input

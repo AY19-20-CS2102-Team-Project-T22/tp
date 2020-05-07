@@ -16,6 +16,7 @@ import CreditCard from './components/CreditCard'
 import './App.css'
 import PaymentMethods from './components/PaymentMethods'
 import StaffHomePage from './components/StaffHomePage'
+import FDSManagersHomepage from './components/FDSManagersHomepage'
 
 class App extends React.Component {
 
@@ -250,6 +251,11 @@ class App extends React.Component {
         <Router>
           <Route path='/StaffHomePage' exact>
             <StaffHomePage></StaffHomePage>
+          </Route>
+        </Router>
+        <Router>
+          <Route path='/fdsmanagerhomepage' exact>
+            <FDSManagersHomepage />
           </Route>
         </Router>
         <Router>
