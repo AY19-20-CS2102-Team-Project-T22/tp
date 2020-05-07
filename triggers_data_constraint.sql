@@ -20,23 +20,6 @@ CREATE TRIGGER check_restaurant_trigger
 	FOR EACH ROW
 	EXECUTE FUNCTION check_restaurant();
 
-/*ensure every slot does not exceed 4 hours*/
-CREATE OR REPLACE FUNCTION check_work_slot() RETURNS TRIGGER AS $$
-BEGIN
-	IF NEW.endTime > NEW.startTime THEN
-		RAISE exception 'Working slot on % from %:00 to %:00 exceeds 4 hours', NEW.weekday, NEW.startTime, NEW.endTime;
-	END IF;
-	RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS check_work_slot_trigger ON WWS_Schedules CASCADE;
-CREATE TRIGGER check_work_slot_trigger
-	BEFORE UPDATE OF startTime, endTime OR INSERT
-	ON WWS_Schedules
-	FOR EACH ROW
-	EXECUTE FUNCTION check_work_slot();
-
 /*ensure total working hour >= 10 and <= 48*/
 CREATE OR REPLACE FUNCTION check_total_work_hour () RETURNS TRIGGER AS $$
 DECLARE
