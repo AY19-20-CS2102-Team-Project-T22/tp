@@ -57,7 +57,7 @@ AS $$
         WHERE (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
         AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
         ;
-
+        RETURN QUERY SELECT cust_count, order_count, total_cost;
     END;
 
 $$ LANGUAGE plpgsql;
@@ -65,12 +65,12 @@ $$ LANGUAGE plpgsql;
 /*Helper function that returns the number of orders placed and total cost of orders per given customer,mth,year*/
 CREATE OR REPLACE FUNCTION mthlyCustomerStatistics (cId INTEGER, mth INTEGER, yr INTEGER)
 RETURNS TABLE (
-    order_count INTEGER,
+    order_count BIGINT,
     total_cost REAL
 )
 AS $$
     BEGIN
-        SELECT COALESCE(COUNT(DISTINCT O.orderId),0), COALESCE(SUM(O.foodfee + O.deliveryfee),0) INTO order_count, total_cost
+        RETURN QUERY SELECT COALESCE(COUNT(DISTINCT O.orderId),0), CAST(COALESCE(SUM(O.foodfee + O.deliveryfee),0) AS REAL)
         FROM Orderlogs O
         WHERE O.customerid = cId
         AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
@@ -85,23 +85,23 @@ $$ LANGUAGE plpgsql;
  *number of ratings and average ratings given a rider and month */
  CREATE OR REPLACE FUNCTION mthlyRiderStatistics (rId INTEGER, mth INTEGER, yr INTEGER)
  RETURNS TABLE (
-     order_count INTEGER,
-     total_hours INTEGER,
+     order_count BIGINT,
+     total_hours BIGINT,
      total_salary REAL,
      average_del_time REAL,
-     rating_count INTEGER,
+     rating_count BIGINT,
      average_rating REAL
  )
  AS $$
     BEGIN
-        SELECT COALESCE(COUNT(DISTINCT O.orderId),0), COALESCE(AVG(O.ordertime[5] - O.ordertime[4]),0) INTO order_count, average_del_time
+        SELECT COALESCE(COUNT(DISTINCT O.orderId),0), COALESCE(AVG((EXTRACT(epoch FROM (O.ordertime[5] - O.ordertime[4]))/60::REAL)),0) INTO order_count, average_del_time
         FROM Orderlogs O
         WHERE O.riderid = rId
         AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
         AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
         ;
 
-        SELECT totalMthSalary(rId, mth, year) INTO total_salary;
+        SELECT totalMthSalary(rId, mth, yr) INTO total_salary;
 
         SELECT COALESCE(COUNT(O.ratings),0), COALESCE(AVG(O.ratings), 0) INTO rating_count, average_rating
         FROM Orderlogs O
@@ -121,18 +121,20 @@ $$ LANGUAGE plpgsql;
         AND (SELECT EXTRACT(MONTH FROM WM.startdate)) = mth 
         AND (SELECT EXTRACT(YEAR FROM WM.startdate)) = yr
         ;
+
+        RETURN QUERY SELECT order_count, total_hours, total_salary, average_del_time, rating_count, average_rating;
     END;
  $$ LANGUAGE plpgsql;
 
  /*Helper function that retrieves the promotion duration and average num of orders given a promo*/
- CREATE OR REPLACE FUNCTION getRestaurantStatistics (pId INTEGER)
+ CREATE OR REPLACE FUNCTION getPromoStatistics (pId INTEGER)
  RETURNS TABLE (
      total_duration INTEGER,
      average_orders REAL
  )
 AS $$
     BEGIN
-        SELECT SUM((SELECT EXTRACT(DAY FROM P.endDate)) - (SELECT EXTRACT(DAY FROM P.startDate))) INTO total_duration
+        SELECT SUM((EXTRACT(DAY FROM P.endDate)) - (EXTRACT(DAY FROM P.startDate))) INTO total_duration
         FROM Promotions P
         WHERE P.promoId = pId
         ;
@@ -141,10 +143,20 @@ AS $$
             total_duration := 1;
         END IF;
 
-        SELECT (COUNT(DISTINCT O.orderId) / total_duration) INTO average_orders
+        RAISE NOTICE 'total_duration : %', total_duration;
+
+        SELECT COALESCE((COUNT(DISTINCT O.orderId) / total_duration),0) INTO average_orders
         FROM Orderlogs O
         WHERE O.promoId = pId
         ;
+
+        IF average_orders = NULL THEN
+            average_orders := 0;
+        END IF;
+
+        RAISE NOTICE 'average_orders : %', average_orders;
+
+        RETURN QUERY SELECT total_duration, average_orders;
     END;
 $$ LANGUAGE plpgsql;
 
