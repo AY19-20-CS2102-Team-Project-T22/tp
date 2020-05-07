@@ -5,7 +5,6 @@ DROP TABLE IF EXISTS CreditCards CASCADE;
 DROP TABLE IF EXISTS Restaurants CASCADE;
 DROP TABLE IF EXISTS Foods CASCADE;
 DROP TABLE IF EXISTS FoodCategories CASCADE;
-DROP TABLE IF EXISTS Carts CASCADE;
 DROP TABLE IF EXISTS DeliveryRiders CASCADE;
 DROP TABLE IF EXISTS WWS CASCADE;
 DROP TABLE IF EXISTS WWS_Schedules CASCADE;
@@ -103,19 +102,6 @@ CREATE TABLE FoodCategories (
 
 	PRIMARY KEY (fcid, foodId),
 	FOREIGN KEY (foodId) REFERENCES Foods(foodId) ON DELETE CASCADE
-);
-
-CREATE TABLE Carts (
-	cartId				INTEGER,
-	quantity			INTEGER DEFAULT 1 CHECK (quantity > 0),
-	foodId				INTEGER NOT NULL,
-	restaurantId		INTEGER NOT NULL,
-
-	PRIMARY KEY (cartId, foodId),
-	FOREIGN KEY (cartId) REFERENCES Customers(customerId) ON DELETE CASCADE,
-	FOREIGN KEY (foodId) REFERENCES Foods (foodId) ON DELETE CASCADE
-	/*Order in only one restaurant*/
-
 );
 
 CREATE TABLE DeliveryRiders (
@@ -251,7 +237,6 @@ CREATE TABLE Orderlogs (
 	deliveryFee			DECIMAL NOT NULL,
 	deliveryLocation	INTEGER NOT NULL,
 	promoId				INTEGER,
-	ratings 			INTEGER,
 
 	PRIMARY KEY (orderId),
 	FOREIGN KEY (customerId) REFERENCES Customers(customerId) ON DELETE SET NULL,
