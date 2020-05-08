@@ -9,7 +9,7 @@ ORDER BY foodId
 */
 // Get all rows from FoodCategories table.
 router.route('/').get((req, res) => {
-  const query = 'SELECT fcid, category as fcname FROM FoodCategories ORDER BY fcid';
+  const query = 'SELECT DISTINCT category as fcname FROM FoodCategories';
   db.query(query, null, (error, result) => {
     if (error) {
       console.log(error)

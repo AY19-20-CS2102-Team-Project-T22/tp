@@ -93,11 +93,16 @@ class Checkout extends React.Component {
               break
             }
           }
-          orderList.push({
+          orderList.push(
+            [this.props.items[idx].fid, quantity]
+
+            /*{
             fid: this.props.items[idx].fid,
             unitPrice: this.props.items[idx].unit_price,
             qty: quantity,
-          })
+          }
+            */
+          )
         }
 
         // Get credit card number.
@@ -109,14 +114,16 @@ class Checkout extends React.Component {
 
         // Construct information details to be inserted to database.
         const dataToSend = {
-          uid: this.props.userId,
-          rid: restaurantId,
-          orders: orderList,
-          address: this.state.address,
-          postalCode: this.state.postalCode,
-          deliveryCost: cost,
-          paymentMethod: this.state.paymentMethod,
-          cardNo: ccNo
+          cid: this.props.userId,
+          restid: restaurantId,
+          pay: 1,          // FIXME: this.state.paymentMethod =>0,
+          cardNo: 77778888,
+          foodFee: 888,     //FIXME: this.state.orderCost,
+          delFee: this.state.deliveryCost,
+          delLoc: this.state.postalCode,
+          promoId: null,
+          orderArr: orderList,
+          //address: this.state.address,
         }
 
         // Insert query request.
