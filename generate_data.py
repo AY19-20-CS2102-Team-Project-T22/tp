@@ -7,7 +7,7 @@
 # Distributed under terms of the MIT license.
 
 import random
-
+import csv
 import string
 
 """
@@ -34,9 +34,10 @@ insert into Reviews (orderId, reviewDate, rating, feedback) values
 """
 
 f=open("data.sql", "aw")
-    
-fulltimers = [3,5,17,20,26,31,42,44,67,69,79,87,91,95,97]
 
+
+parttimers = [13,20,25,26,31,36,39,42,53,67,71,87,90,91,97,107,109,111,113,114,119,120,121,123,124,126,131,133,134,135,136,137,138,141,144,145,146,149,150,152,155,157,158,160,161,163,166,167,169,172,173,174,175,177,178,179,180,182,184,186,187,189,190,193,194,197,199,200]
+fulltimers = [3,5,9,17,35,44,47,69,79,95,101,102,103,104,105,106,108,110,112,115,116,117,118,122,125,127,128,129,130,132,139,140,142,143,147,148,151,153,154,156,159,162,164,165,168,170,171,176,181,183,185,188,191,192,195,196,198]
 def ran_letters(digit):
     ran_str = ''.join(random.sample(string.ascii_letters, digit))
     return ran_str
@@ -62,7 +63,21 @@ for i in range(50):
     s = "insert into FoodCategories values ({}, {}, '{}');\n".format(i, 49-i, str(i)+ran_letters(5))
     f.write(s)
 
-for i in range(100):
+#insert into WWS (workId, riderId, startDate, endDate, baseSalary) values (1, 17, '5/8/2020', null, 115.36);
+
+for i in range(400):
+    s = "insert into WWS (workId, riderId, startDate, endDate, baseSalary) values ({}, {}, NOW()::date, null, {});\n ".format(i, random.choice(parttimers), float(random.randrange(10000,20000)/100))
+    f.write(s)
+
+for i in range(200):
+    s = "insert into WWS (workId, riderId, startDate, endDate, baseSalary) values ({}, {}, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, null, {});\n ".format(i, random.choice(parttimers), float(random.randrange(10000,20000)/100))
+    f.write(s)
+
+for i in range(400):
+    s = "SELECT * FROM new_mws({}, NOW()::date, {},{} , ARRAY[{},{},{},{},{}]);\n ".format(str(random.choice(fulltimers)), float(random.randrange(70000,90000)/100), random.randrange(1,5), random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4))
+    f.write(s)
+
+for i in range(200):
     s = "SELECT * FROM new_mws({}, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, {},{} , ARRAY[{},{},{},{},{}]);\n ".format(str(random.choice(fulltimers)), float(random.randrange(70000,90000)/100), random.randrange(1,5), random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4))
     f.write(s)
 

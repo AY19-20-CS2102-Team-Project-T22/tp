@@ -163,9 +163,10 @@ BEGIN
 		RAISE exception 'There are only % available for foodId %', availability, NEW.foodId;
 	ELSE
 		UPDATE Foods SET quantity = availability - NEW.quantity;
-		RAISE NOTICE 'Updated Food ID % qty from % to %', availability, availability - NEW.quantity;
+		RAISE NOTICE 'Updated Food ID % qty from % to %', NEW.foodId, availability, availability - NEW.quantity;
 	END IF;
-
+	
+	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -216,19 +217,27 @@ AS $$
       valid integer := 0;
       riderCount INTEGER;
   BEGIN
-    SELECT NOW()::TIMESTAMP::DATE INTO todays_date;
+    SELECT NOW()::DATE INTO todays_date;
 
-  FOR checkTime IN 10..22 LOOP
-    SELECT COUNT(DISTINCT WS.workId) INTO riderCount
-    FROM  WWS_Schedules WS
-    WHERE (SELECT W.date::timestamp::date FROM WWS W WHERE W.workid = WS.workid) = todays_date
-    AND checkTime >= WS.startTime
-    AND checkTime <= WS.endTime
-    ;
-    IF riderCount < 5 THEN
-      RAISE EXCEPTION 'DAY: % | TIME : % HAS NOT ENOUGH RIDERS', todays_date, checkTime;
-    END IF;
-  END LOOP;
+	FOR checkTime IN 10..22 LOOP
+		WITH active_ws AS( 
+			SELECT W.workId, W.riderId
+			FROM WWS W
+			WHERE W.startDate <= todays_date
+			AND (W.endDate >= todays_date OR W.endDate IS NULL)
+		)
+		SELECT COUNT(DISTINCT A.riderId) INTO riderCount
+		FROM active_ws A JOIN WWS_Schedules WS
+		ON A.workid = WS.workid
+		WHERE WS.weekday = TRIM(to_char(NOW(), 'DAY'))
+		AND WS.startTime <= checkTime
+		AND WS.endTime > checkTime
+		;
+		IF riderCount < 5 THEN
+      		RAISE EXCEPTION 'DAY: % | TIME : % HAS NOT ENOUGH RIDERS', todays_date, checkTime;
+    	END IF;
+	END LOOP;
+
   END;
 $$ LANGUAGE plpgsql;
 
@@ -252,7 +261,8 @@ AS $$
 		;
 		total_points := curr_points + FLOOR(NEW.foodFee);
 
-		UPDATE Customers SET rewardPoints = total_points WHERE customerId = NEW.customerId;
+		UPDATE Customers SET rewardPoints = total_points, orderCount = orderCount + 1  WHERE customerId = NEW.customerId;
+		RETURN NEW;
 	END;
 $$ LANGUAGE plpgsql;
 
@@ -329,7 +339,7 @@ AS $$
 		FROM WWS W
 		WHERE W.workId <> NEW.workId
 		AND W.riderId = NEW.riderId
-		AND (NEW.startDate < NOW() OR NEW.startDate < W.endDate)
+		AND (NEW.startDate < NOW()::DATE OR NEW.startDate < W.endDate)
 		;
 
 		IF invalidSchedule THEN
@@ -418,7 +428,7 @@ AS $$
 		FROM MWS M
 		WHERE M.startDate <> NEW.startDate
 		AND M.riderId = NEW.riderId
-		AND (NEW.startDate < NOW() OR NEW.startDate < M.endDate)
+		AND (NEW.startDate < NOW()::DATE OR NEW.startDate < M.endDate)
 		;
 
 		IF invalidSchedule THEN
@@ -435,6 +445,8 @@ CREATE TRIGGER check_mws_future_1
 	FOR EACH ROW
 	EXECUTE FUNCTION check_mws_future_1();
 
+
+/*checks whether a order can be created*/
 CREATE OR REPLACE FUNCTION check_order_validity()
 RETURNS TRIGGER
 AS $$
@@ -453,7 +465,7 @@ AS $$
 			RAISE EXCEPTION 'Invalid Credit card no % for customer %', NEW.cardNo, NEW.customerId;
 		END IF;
 
-		IF promoId IS NOT NULL THEN
+		IF NEW.promoId IS NOT NULL THEN
 			SELECT P.type INTO promoType
 			FROM Promotions P
 			WHERE P.promoId = NEW.promoId
@@ -476,9 +488,17 @@ AS $$
 			END IF;
 
 		END IF;
-	
+
+		RETURN NEW;
 	END;
 $$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_order_validity ON Orderlogs;
+CREATE TRIGGER check_order_validity
+	BEFORE INSERT OR UPDATE OF promoId, paymentMethod, cardNo ON OrderLogs
+	FOR EACH ROW
+	EXECUTE FUNCTION check_order_validity();
+
 
 
 /*
