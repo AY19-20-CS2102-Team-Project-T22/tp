@@ -1,36 +1,47 @@
 
 /*Helper function that returns total monthly salary for a rider given a month and year */
-CREATE OR REPLACE FUNCTION totalMthSalary (rId INTEGER, mth INTEGER, yr INTEGER) RETURNS REAL 
+DROP FUNCTION IF EXISTS totalMthSalary;
+CREATE OR REPLACE FUNCTION totalMthSalary (rId INTEGER, mth INTEGER, yr INTEGER) RETURNS DECIMAL
 AS $$
     DECLARE
-        deliveryFee REAL := 0;
-        baseSal REAL := 0;
+        deliveryFee DECIMAL := 0;
+        baseSal DECIMAL := 0;
 
     BEGIN
-        SELECT SUM(O.deliveryfee) INTO deliveryFee
+        SELECT COALESCE(SUM(O.deliveryfee),0) INTO deliveryFee
         FROM Orderlogs O
         WHERE O.riderid = rId
-        AND (SELECT EXTRACT(MONTH FROM O.ordertime[5])) = mth 
-        AND (SELECT EXTRACT(YEAR FROM O.ordertime[5])) = yr
+        AND (SELECT EXTRACT(MONTH FROM O.orderDate)) = mth 
+        AND (SELECT EXTRACT(YEAR FROM O.orderDate)) = yr
         ;
         
-        SELECT COALESCE(M.baseSalary, 0) INTO baseSal
-        FROM MWS M
-        WHERE M.riderid = rId
-        AND (SELECT EXTRACT(MONTH FROM M.startdate)) = mth
-        AND (SELECT EXTRACT(YEAR FROM M.startdate)) = yr
+        SELECT COALESCE(W.baseSalary, 0) INTO baseSal
+        FROM WWS W
+        WHERE W.riderid = rId
+        AND (SELECT EXTRACT(MONTH FROM W.startdate)) = mth
+        AND (SELECT EXTRACT(YEAR FROM W.startdate)) = yr
         ;
 
         IF baseSal = 0 THEN
-            SELECT SUM(W.basesalary) INTO baseSal
-            FROM WWS W
-            WHERE W.riderid = rId
-            AND (SELECT EXTRACT(MONTH FROM W.startdate)) = mth
-            AND (SELECT EXTRACT(YEAR FROM W.startdate)) = yr
+            SELECT SUM(M.basesalary) INTO baseSal
+            FROM MWS M
+            WHERE M.riderid = rId
+            AND (SELECT EXTRACT(MONTH FROM M.startdate)) = mth
+            AND (SELECT EXTRACT(YEAR FROM M.startdate)) = yr
             ;
         
         END IF;
-        RETURN (deliveryFee + baseSal);
+
+        IF baseSal IS NULL THEN
+            baseSal := 0;
+        END IF;
+
+        IF deliveryFee IS NULL THEN
+            deliveryFee := 0;
+        END IF;
+
+        RAISE NOTICE 'DELIVERYFEE IS % || BASESAL IS % ', deliveryFee, baseSal;
+        RETURN deliveryfee + baseSal;
     END;
 
 $$ LANGUAGE plpgsql;
@@ -52,10 +63,10 @@ AS $$
         AND (SELECT EXTRACT(YEAR FROM U.registrationdate)) = yr
         ;
 
-        SELECT COALESCE(COUNT(DISTINCT O.orderid),0), COALESCE(SUM(O.foodfee + O.deliveryfee),0) INTO cust_count, total_cost
+        SELECT COALESCE(COUNT(DISTINCT O.orderid),0), COALESCE(SUM(O.foodfee + O.deliveryfee),0) INTO order_count, total_cost
         FROM Orderlogs O
-        WHERE (SELECT EXTRACT(MONTH FROM O.ordertime[5])) = mth 
-        AND (SELECT EXTRACT(YEAR FROM O.ordertime[5])) = yr
+        WHERE (SELECT EXTRACT(MONTH FROM O.orderDate)) = mth 
+        AND (SELECT EXTRACT(YEAR FROM O.orderDate)) = yr
         ;
         RETURN QUERY SELECT cust_count, order_count, total_cost;
     END;
@@ -73,8 +84,8 @@ AS $$
         RETURN QUERY SELECT COALESCE(COUNT(DISTINCT O.orderId),0), CAST(COALESCE(SUM(O.foodfee + O.deliveryfee),0) AS REAL)
         FROM Orderlogs O
         WHERE O.customerid = cId
-        AND (SELECT EXTRACT(MONTH FROM O.ordertime[5])) = mth 
-        AND (SELECT EXTRACT(YEAR FROM O.ordertime[5])) = yr
+        AND (SELECT EXTRACT(MONTH FROM O.orderDate)) = mth 
+        AND (SELECT EXTRACT(YEAR FROM O.orderDate)) = yr
         ;
     END;
 
@@ -97,8 +108,8 @@ $$ LANGUAGE plpgsql;
         SELECT COALESCE(COUNT(DISTINCT O.orderId),0), COALESCE(AVG((EXTRACT(epoch FROM (O.ordertime[5] - O.ordertime[4]))/60::REAL)),0) INTO order_count, average_del_time
         FROM Orderlogs O
         WHERE O.riderid = rId
-        AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
-        AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
+        AND (SELECT EXTRACT(MONTH FROM O.orderDate)) = mth 
+        AND (SELECT EXTRACT(YEAR FROM O.orderDate)) = yr
         ;
 
         SELECT totalMthSalary(rId, mth, yr) INTO total_salary;
@@ -107,8 +118,8 @@ $$ LANGUAGE plpgsql;
         FROM Orderlogs O
         WHERE O.riderid = rId
         AND O.ratings <> 0
-        AND (SELECT EXTRACT(MONTH FROM O.ordertime[1])) = mth 
-        AND (SELECT EXTRACT(YEAR FROM O.ordertime[1])) = yr
+        AND (SELECT EXTRACT(MONTH FROM O.orderDate)) = mth 
+        AND (SELECT EXTRACT(YEAR FROM O.orderDate)) = yr
         ;
 
         WITH WWSMerged AS (
@@ -253,6 +264,35 @@ AS $$
         PERFORM create_mws_schedule(wId);
     END;
 $$ LANGUAGE plpgsql;
+
+
+/*Transaction to create a successful order*/
+CREATE OR REPLACE FUNCTION create_new_order_success ( cId INTEGER, rId INTEGER, 
+													  restId INTEGER, pay INTEGER, cardNo BIGINT, foodFee INTEGER, 
+													  delFee INTEGER, delLoc INTEGER, promoId INTEGER, orderArr int[])
+RETURNS VOID
+AS $$
+    DECLARE
+        availableRider INTEGER;
+        currTime TIME := NOW()::time;
+        ord INTEGER[];
+        fId INTEGER;
+        qty INTEGER;
+    BEGIN
+
+        INSERT INTO Orderlogs(customerId, riderId, restaurantId, orderDate, orderTime, paymentMethod, cardNo, foodFee, deliveryFee, deliveryLocation, promoId)
+        VALUES (cId, rId, restId, NOW()::date , ARRAY[currTime,null,null,null,null], pay, cardNo, foodFee, delFee, delLoc, promoId);
+
+        FOREACH ord SLICE 1 IN ARRAY orderArr 
+        LOOP
+            INSERT INTO Orders(foodId, quantity) VALUES (ord[1], ord[2]);
+        END LOOP;
+        
+        RAISE NOTICE 'Succesfully created new order';
+    END;
+$$ LANGUAGE plpgsql;
+
+
 
 
 

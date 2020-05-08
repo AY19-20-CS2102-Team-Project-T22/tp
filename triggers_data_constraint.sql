@@ -156,22 +156,26 @@ BEGIN
 	FROM Foods
 	WHERE NEW.foodId = Foods.foodId;
 
-	IF availability < NEW.quantity THEN
-		RAISE exception 'There are only % available', availability;
-	END IF;
-
 	IF availability = 0 THEN
 		UPDATE Foods SET issold = FALSE WHERE foodid = NEW.foodId;
+		RAISE exception 'Food item % is currently sold out', NEW.foodId;
+	ELSIF availability < NEW.quantity THEN
+		RAISE exception 'There are only % available for foodId %', availability, NEW.foodId;
+	ELSE
+		UPDATE Foods SET quantity = availability - NEW.quantity;
+		RAISE NOTICE 'Updated Food ID % qty from % to %', availability, availability - NEW.quantity;
 	END IF;
+
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS check_food_availability_trigger ON Carts CASCADE;
+DROP TRIGGER IF EXISTS check_food_availability_trigger ON Orders CASCADE;
 CREATE TRIGGER check_food_availability_trigger
 	BEFORE UPDATE OF foodId, quantity OR INSERT
-	ON Carts
+	ON Orders
 	FOR EACH ROW
 	EXECUTE FUNCTION check_food_availability ();
+
 
 
 /*ensures each customer only has 5 location records*/
@@ -430,6 +434,51 @@ CREATE TRIGGER check_mws_future_1
 	BEFORE INSERT OR UPDATE OF startDate ON MWS
 	FOR EACH ROW
 	EXECUTE FUNCTION check_mws_future_1();
+
+CREATE OR REPLACE FUNCTION check_order_validity()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		validCc BOOLEAN := FALSE;
+		promoType INTEGER;
+		validPromoRest BOOLEAN;
+	BEGIN
+		IF NEW.paymentMethod = 1 THEN
+			SELECT TRUE INTO validCc
+			FROM CreditCards C
+			WHERE C.customerId = NEW.customerId
+			AND C.cardNo = NEW.cardNo
+			;
+		ELSE 
+			RAISE EXCEPTION 'Invalid Credit card no % for customer %', NEW.cardNo, NEW.customerId;
+		END IF;
+
+		IF promoId IS NOT NULL THEN
+			SELECT P.type INTO promoType
+			FROM Promotions P
+			WHERE P.promoId = NEW.promoId
+			AND P.endDate >= NOW()::DATE
+			;
+
+			IF promoType = 1 THEN
+				SELECT TRUE into validPromoRest
+				FROM RestaurantPromotions RP
+				WHERE RP.promoId = NEW.promoId
+				AND RP.restaurantId = NEW.restaurantId
+				;
+
+				IF validPromoRest = FALSE THEN
+					RAISE EXCEPTION 'The promo id % does not apply for restaurant %', NEW.promoId, NEW.restaurantId;
+				END IF;
+
+			ELSIF promoType IS NULL THEN
+				RAISE EXCEPTION 'Promo % is invalid', NEW.promoId;
+			END IF;
+
+		END IF;
+	
+	END;
+$$ LANGUAGE plpgsql;
 
 
 /*
