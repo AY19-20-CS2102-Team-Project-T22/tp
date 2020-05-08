@@ -8,6 +8,20 @@ const db = require('../db')
     promotions/modify => modity promotion
 */
 
+router.route('/promotions/get_promoId').get((req, res) => {
+    const get_pid = 'select promoId as pid from promotions where type=$1 AND discountvalue=$2 AND startDate=$3 AND endDate=$4 AND condition=$5 AND description=$6';
+    const get_pid_values =  [req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description];
+    db.query(get_pid, get_pid_values, (error, result) => {
+        if(error){
+            console.log(error);
+            res.status(400).json('Error: ' + error);
+        }
+        else{
+            res.status(200).json(result.rows);
+        }
+    });
+})
+
 router.route('/promotions').get((req, res) => {
     const query = 'select *, rp.restaurantId from Promotions NATURAL JOIN RestaurantPromotions rp NATURAL JOIN FDSPromotions where managerId=$1';
     const values = [req.query.mid];
@@ -36,8 +50,8 @@ router.route('/promotions/add').get((req, res) => {
         }
         // db.end()
     })
-    const get_pid = 'select count(*)-1 as pid from promotions';
-    const get_pid_values = []
+    const get_pid = 'select promoId as pid from promotions where type=$1 AND discountvalue=$2 AND startDate=$3 AND endDate=$4 AND condition=$5 AND description=$6';
+    const get_pid_values =  [req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description];
     db.query(get_pid, get_pid_values, (error, result) => {
         if(error){
             console.log(error);
