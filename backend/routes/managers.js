@@ -30,59 +30,64 @@ router.route('/promotions').get((req, res) => {
           console.log(error)
           res.status(400).json('Error: ' + error)
         } else {
-          console.log(result.rows)
           res.status(200).json(result.rows)
         }
         // db.end()
     })
 })
 
-router.route('/promotions/add').get((req, res) => {
-    console.log(req);
-    const query1 = 'insert into promotions values (DEFAULT, $1, $2, $3, $4, $5, $6)';
-    const values1 = [req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description];
-    db.query(query1, values1, (error, result) => {
-        if (error) {
-          console.log(error)
-          res.status(400).json('Error: ' + error)
+router.route('/promotions/add').post((req, res) => {
+    const query1 = 'insert into promotions values (DEFAULT, 1, $1, $2::date, $3::date, $4, $5)';
+    const values1 = [req.body.value, req.body.startDate, req.body.endDate, req.body.condition, req.body.description];
+
+    db.query(query1, values1, (err1, res1) => {
+        if (err1) {
+          console.log(err1)
+          res.status(400).json('Error: ' + err1)
         } else {
-            console.log(result);
-         console.log('insert success');
-        }
-        // db.end()
-    })
-    const get_pid = 'select promoId as pid from promotions where type=$1 AND discountvalue=$2 AND startDate=$3 AND endDate=$4 AND condition=$5 AND description=$6';
-    const get_pid_values =  [req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description];
-    db.query(get_pid, get_pid_values, (error, result) => {
-        if(error){
-            console.log(error);
-            res.status(400).json('Error: ' + error);
-        }
-        const pid = result.rows[0].pid;
-        console.log("pid:"+pid);
-        const query2 = 'insert into RestaurantPromotions values ($1, $2)';
-        const values2 = [pid, req.query.rid];
-        db.query(query2, values2, (error, result) => {
-            if (error) {
-              console.log(error)
-              res.status(400).json('Error: ' + error)
+          // Get promoId of last row inserted into Promotions table.
+          const query2 = 'select promoId from promotions order by promoId desc limit 1'
+          db.query(query2, null, (err2, res2) => {
+            if (err2) {
+              console.log(err2)
+              res.status(400).json('Error: ' + err2)
             } else {
-                console.log('insert success');
+              const promoId = res2.rows[0].promoid
+              const query3 = 'insert into FDSPromotions values ($1, $2)'
+              const values3 = [promoId, req.body.mid]
+              db.query(query3, values3, (err3, res3) => {
+                if (err3) {
+                  console.log(err3)
+                  res.status(400).json('Error: ' + err3)
+                } else {
+                  res.status(200).json('success')
+                }
+              })
             }
-            // db.end()
-        })
-        const query3 = 'insert into FDSPromotions values ($1, $2)';
-        const values3 = [pid, req.query.mid];
-        db.query(query3, values3, (error, result) => {
-            if (error) {
-              console.log(error)
-              res.status(400).json('Error: ' + error)
-            } else {
-                res.status(200).json(true);
-            }
-            // db.end()
-        })
+          }) 
+        }
     })
+
+
+    // const get_pid = 'select promoId as pid from promotions where type=$1 AND discountvalue=$2 AND startDate=$3 AND endDate=$4 AND condition=$5 AND description=$6';
+    // const get_pid_values =  [req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description];
+    // db.query(get_pid, get_pid_values, (error, result) => {
+    //     if(error){
+    //         console.log(error);
+    //         res.status(400).json('Error: ' + error);
+    //     }
+    //     const query3 = 'insert into FDSPromotions values ($1, $2)';
+    //     const values3 = [pid, req.query.mid];
+    //     db.query(query3, values3, (error, result) => {
+    //         if (error) {
+    //           console.log(error)
+    //           res.status(400).json('Error: ' + error)
+    //         } else {
+    //             res.status(200).json(true);
+    //         }
+    //         // db.end()
+    //     })
+    // })
 })
 
 router.route('/promotions/update').get((req, res) => {
@@ -123,8 +128,8 @@ router.route('/promotions/delete').get((req, res) => {
           console.log(error)
           res.status(400).json('Error: ' + error)
         } else {
-            console.log(result);
-         console.log('insert success');
+          console.log(result);
+          console.log('insert success');
         }
         // db.end()
     })
