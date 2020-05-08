@@ -29,6 +29,7 @@ class FDSManagersAccountInfo extends React.Component {
     this.handleContactChange = this.handleContactChange.bind(this)
     this.toggleEdit = this.toggleEdit.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.props.getUserData()
   }
 
   handleFirstNameChange(e) {
@@ -150,7 +151,7 @@ class FDSManagersAccountInfo extends React.Component {
               disabled={!this.state.editPassword}
               type='password'
               required
-              placeholder={this.props.password}
+              placeholder={this.props.password.replace(/./g, '*')}
               value={this.state.newPassword}
               onChange={this.handlePasswordChange}
             />
