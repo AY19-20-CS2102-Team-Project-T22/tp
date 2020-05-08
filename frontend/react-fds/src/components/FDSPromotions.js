@@ -23,9 +23,11 @@ class FDSPromotions extends React.Component {
       new_promo_endDate: null,
       new_promo_condition: null,
       new_promo_description: null,
-      new_promo_restaurant: null
+      new_promo_restaurant: null,
+      new_promo_rid: null
     }
     this.getPromotions = this.getPromotions.bind(this);
+    this.updatePromotions = this.updatePromotions.bind(this);
     this.handleTypeChange = this.handleTypeChange.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
     this.handleStartDateChange = this.handleStartDateChange.bind(this);
@@ -33,11 +35,16 @@ class FDSPromotions extends React.Component {
     this.handleConditionChange = this.handleConditionChange.bind(this);
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.handleRestChange = this.handleRestChange.bind(this);
+    this.handleRidChange = this.handleRidChange.bind(this);
+    this.addPromotions = this.addPromotions.bind(this);
+    this.updatePromotions = this.updatePromotions.bind(this);
+    this.deletePromotions = this.deletePromotions.bind(this);
     this.getRid = this.getRid.bind(this);
     this.getPromotions();
   }
 
-  updatePromotions(){
+  updatePromotions(data){
+    this.setState({promotions: data});
   }
 
   handleTypeChange(e){
@@ -68,34 +75,54 @@ class FDSPromotions extends React.Component {
     this.setState({new_promo_restaurant: e.target.value});
   }
 
+  handleRidChange(data){
+    this.setState({new_promo_rid: data[0].rid});
+  }
+
   getPromotions(){
-    axios.get('http://localhost:5000/managers/promotions?mid='+this.state.uid).then(res => {
+    axios.get('http://localhost:5000/managers/promotions?mid='+this.state.mid).then(res => {
       this.updatePromotions(res.data);
     }).catch(err => {alert(err)});
   }
 
   getRid(rname){
-    axios.get('http://localhost:5000/restaurants/getRid?rname='+rname).then(res => {
-      console.log(res.data);
-      return res.data.rid;
+  axios.get('http://localhost:5000/restaurants/getRid?rname='+rname).then(res => {     
     }).catch(err => {alert(err)});
   }
 
-  addPromotions(){
-    const rid = this.getRid(this.state.new_promo_restaurant);
-    console.log("rid:"+rid);
-    const url = 'http://localhost:5000/managers/promotions/add?mid='+this.state.uid+'&type='+this.state.new_promo_type+'&value='+this.state.new_promo_value+'&startDate='+this.state.new_promo_startDate+'&endDate='+this.state.new_promo_endDate+'&condition='+this.state.new_promo_condition+'&description='+this.state.new_promo_description+'&rid='+rid;
-    axios.get('http://localhost:5000/managers/promotions/add?mid='+this.state.uid).then(res => {
-      this.updatePromotions(res.data);
+  addPromotions(e){
+    e.preventDefault()
+    alert('adding new promotion');
+    let rname = this.state.new_promo_restaurant;
+    axios.get('http://localhost:5000/restaurants/getRid?rname='+rname).then(res => {
+        let rid = res.data[0].rid;
+        const url = 'http://localhost:5000/managers/promotions/add?mid='+this.state.mid+'&type='+this.state.new_promo_type+'&value='+this.state.new_promo_value+'&startDate='+this.state.new_promo_startDate+'&endDate='+this.state.new_promo_endDate+'&condition='+this.state.new_promo_condition+'&description='+this.state.new_promo_description+'&rid='+rid;
+        axios.get(url).then(res => {
+          this.updatePromotions(res.data);
+        }).catch(err => {alert(err)});
     }).catch(err => {alert(err)});
+  }
+
+  updatePromotions(e){
+    //TODO
+    // 1. visit /promotions/get_promoId with old promotion information (req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description)
+    // 2. visit /promotions/update  with new promotion information and promoId
+  }
+
+  deletePromotions(e){
+    //TODO
+    // 1. visit /promotions/get_promoId with old promotion information (req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description)
+    // 2. visit /promotions/delete with promoId
   }
 
   render() {
     return (
       <div className=''>
         FDS Promotions Page
-        <Label>here are promotions managed by you</Label>
-        {this.state.promotions}
+
+        <h2 style={{ marginTop: '10px', marginBottom: '35px' }}>Promotions</h2>
+        
+        { console.log(this.state.promotions)/* TODO: show this.state.promotions here. */}
         
         <div className='modify'>
         <div style={{ flex: 1 }}></div>
@@ -149,7 +176,7 @@ class FDSPromotions extends React.Component {
           <FormGroup>
             <Label>promotion condition</Label>
             <Input
-              type='email'
+              type='text'
               placeholder
               value={this.state.new_promo_condition}
               onChange={this.handleConditionChange}
