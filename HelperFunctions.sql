@@ -420,8 +420,6 @@ AND WS.endTime > EXTRACT(HOUR FROM NOW())
 
 */
 
-
-
 /*Helper Function to retrieve top 5 favourite food items for a given restaurant, mth,yr*/
 /*
 CREATE OR REPLACE FUNCTION getTop5(rId INTEGER, mth INTEGER, yr INTEGER) 
@@ -438,3 +436,42 @@ AS $BODY$
     END;
 $BODY$ LANGUAGE plpgsql;
 */
+
+/*CREATE OR REPLACE FUNCTION totalMthWorkingHour (rid INTEGER, mth INTEGER, yr INTEGER) RETURNS INTEGER
+AS $$
+DECLARE
+
+BEGIN
+    WITH WWS_HOUR (startdate)
+    SELECT startdate, COALESCE(NOW()::DATE, endDate), 
+    CASE weekday
+    WHEN 'monday' THEN 1
+    WHEN 'tuesday'THEN 2
+    WHEN 'wednesday' THEN 3
+    WHEN 'thursday' THEN 4
+    WHEN 'friday' THEN 5
+    WHEN 'saturday' THEN 6
+    ELSE 7
+    END,
+    COALESCE(0, SUM(endTime - startTime))
+    FROM WWS W NATURAL JOIN WWS_Schedules S
+    WHERE W.riderid = rid
+    AND (startDate, COALESCE(current_date, endDate)) OVERLAPS
+        (mth_start, mth_end)
+    GROUP BY startDate, endDate, weekday;*/
+    
+    /*WITH MWS_HOUR ()
+    SELECT startDate, endDate, workweekid, 8
+    FROM MWS M
+    WHERE M.riderid = rid
+    AND (startDate, COALESCE(current_date, endDate)) OVERLAPS
+        (mth_start, mth_end)*/
+
+    /*WITH ALL_DAYS (daytime) AS (
+    SELECT * FROM GENERATE_SERIES(mth_start::DATE, mth_end, '1 DAY'));
+
+    SELECT *
+    FROM WWS_HOUR H JOIN ALL_DAYS A 
+    ON startDate <= daytime::DATE
+    AND endDate >= daytime::DATE
+    AND EXTRACT(isdow FROM daytime::DATE) = H.weekday;*/

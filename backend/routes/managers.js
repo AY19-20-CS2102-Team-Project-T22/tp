@@ -108,7 +108,7 @@ router.route('/num_of_customers').get((req, res) => {
   let end_time_str = req.query.year + "-" + req.query.month + "-1"
 
   const query =
-    'select count(userId) as num from users where registrationDate>=$1::timestamp AND registrationDate<=$2::timestamp + interval \'1 month\' - interval \'1 day\' AND type=1';
+    'select coalesce(count(userId), 0) as num from users where registrationDate>=$1::timestamp AND registrationDate<=$2::timestamp + interval \'1 month\' - interval \'1 day\' AND type=1';
   const values = [start_time_str, end_time_str];
 
   // db.connect()
@@ -128,7 +128,7 @@ router.route('/num_of_customers/range').get((req, res) => {
   let start_time_str = req.query.from_year + "-" + req.query.from_month + "-" + req.query.from_day;          // "yyyy-mm-01 00:00:00"
   let end_time_str = req.query.to_year + "-" + req.query.to_month + "-" + req.query.to_day;
 
-  const query = 'select count(userId) as num from users where registrationDate>=$1::timestamp AND registrationDate<=$2::timestamp AND type=1';
+  const query = 'select coalesce(count(userId), 0) as num from users where registrationDate>=$1::timestamp AND registrationDate<=$2::timestamp AND type=1';
   console.log(query)
   const values = [start_time_str, end_time_str];
 
@@ -147,80 +147,65 @@ router.route('/num_of_customers/range').get((req, res) => {
 //total number of order
 router.route('/num_of_orders').get((req, res) => {
   if (!req.query.year && !req.query.month) {
-    const query = 'select count(oid) from OrdersLog';
-    const values = [];
+    const query = 'select coalesce(count(orderId), 0) as num from OrdersLog';
 
-    // db.connect()
-    db.query(query, values, (error, result) => {
+    db.query(query, null, (error, result) => {
       if (error) {
         console.log(error)
         res.status(400).json('Error: ' + error)
       } else {
-        res.status(200).json(result.rows)
+        res.status(200).json(result.rows[0])
       }
-      // db.end()
     })
   }
   else {       // params: year, month, uid(optional)
-    let start_time_str = req.query.year + "-" + req.query.month + "-01 00:00:00+8";          // "yyyy-mm-01 00:00:00"
-    let end_time_str = '';
-    switch (req.query.month) {
-      case '01':
-      case '03':
-      case '05':
-      case '07':
-      case '08':
-      case '10':
-      case '12':
-        end_time_str = req.query.year + "-" + req.query.month + "-31 23:59:59+8";
-        break;
-      case '04':
-      case '06':
-      case '09':
-      case '11':
-        console.log("yes");
-        end_time_str = req.query.year + "-" + req.query.month + "-30 23:59:59+8";
-        break;
-      case '02':
-        end_time_str = req.query.year + "-" + req.query.month + "-28 23:59:59+8";    //FIXME: ignore leap year here
-        break;
-      default:
-        console.log(req.query.month);
-        console.log("error");
-        break;
-    }
-    const query = 'select count(oid) from OrdersLog where order_timestamp>=$1 AND order_timestamp<=$2';
+    let start_time_str = req.query.year + "-" + req.query.month + "-1"         // "yyyy-mm-01 00:00:00"
+    let end_time_str = req.query.year + "-" + req.query.month + "-1"
+
+    const query = 'select coalesce(count(orderId), 0) as num from orderlogs where orderdate>=$1::timestamp AND orderdate<=$2::timestamp + interval \'1 month\' - interval \'1 day\'';
     const values = [start_time_str, end_time_str];
 
-    // db.connect()
     db.query(query, values, (error, result) => {
       if (error) {
         console.log(error)
         res.status(400).json('Error: ' + error)
       } else {
-        res.status(200).json(result.rows)
+        res.status(200).json(result.rows[0])
       }
-      // db.end()
     })
   }
 })
 
 
-//total cost of all orders
+//total cost of orders
 router.route('/cost_of_orders').get((req, res) => {
-  const query = 'select SUM(order_cost) from OrdersLog';
-  const values = [];
+  if (!req.query.year && !req.query.month) {
+    const query = 'select coalesce(SUM(foodFee), 0) as num from orderlogs';
 
-  // db.connect()
-  db.query(query, values, (error, result) => {
-    if (error) {
-      console.log(error)
-      res.status(400).json('Error: ' + error)
-    } else {
-      res.status(200).json(result.rows)
-    }
-    // db.end()
-  })
+    db.query(query, null, (error, result) => {
+      if (error) {
+        console.log(error)
+        res.status(400).json('Error: ' + error)
+      } else {
+        res.status(200).json(result.rows[0])
+      }
+    })
+  } else {
+    let start_time_str = req.query.year + "-" + req.query.month + "-1"         // "yyyy-mm-01 00:00:00"
+    let end_time_str = req.query.year + "-" + req.query.month + "-1"
+
+    const query = 'select coalesce(SUM(foodFee), 0) as num from orderlogs where orderdate>=$1::timestamp AND orderdate<=$2::timestamp + interval \'1 month\' - interval \'1 day\'';
+    const values = [start_time_str, end_time_str]
+    db.query(query, values, (error, result) => {
+      if (error) {
+        console.log(error)
+        res.status(400).json('Error: ' + error)
+      } else {
+        console.log(result.rows)
+        res.status(200).json(result.rows[0])
+      }
+    })
+  }
 })
 
 
