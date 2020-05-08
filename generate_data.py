@@ -38,6 +38,7 @@ f=open("data.sql", "aw")
 
 parttimers = [13,20,25,26,31,36,39,42,53,67,71,87,90,91,97,107,109,111,113,114,119,120,121,123,124,126,131,133,134,135,136,137,138,141,144,145,146,149,150,152,155,157,158,160,161,163,166,167,169,172,173,174,175,177,178,179,180,182,184,186,187,189,190,193,194,197,199,200]
 fulltimers = [3,5,9,17,35,44,47,69,79,95,101,102,103,104,105,106,108,110,112,115,116,117,118,122,125,127,128,129,130,132,139,140,142,143,147,148,151,153,154,156,159,162,164,165,168,170,171,176,181,183,185,188,191,192,195,196,198]
+customers = [2,4,14,15,18,21,28,43,48,49,50,54,55,56,61,62,64,65,68,70,74,75,82,92,93,94,99]
 def ran_letters(digit):
     ran_str = ''.join(random.sample(string.ascii_letters, digit))
     return ran_str
@@ -80,6 +81,14 @@ for i in range(400):
 for i in range(200):
     s = "SELECT * FROM new_mws({}, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, {},{} , ARRAY[{},{},{},{},{}]);\n ".format(str(random.choice(fulltimers)), float(random.randrange(70000,90000)/100), random.randrange(1,5), random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4))
     f.write(s)
+
+##SELECT * FROM create_new_order_success(2,2,1, 4026224086262324, 197.45, 3, 521862, null, ARRAY[[36,5], [72,1]]);
+create_new_order_success ( cId INTEGER, 
+													  restId INTEGER, pay INTEGER, cardNo BIGINT, foodFee DECIMAL, 
+													  delFee DECIMAL, delLoc INTEGER, promoId INTEGER, orderArr int[])
+for i in range(20):
+    s= "SELECT * FROM create_new_order_success({},{},{}, {}, {}, {}, {}, {}, ARRAY[[36,5], [72,1]]);".format(random.choice(customers),)
+    
 
 f.close()
 ##SELECT * FROM new_mws(56, 20, '2020-06-02 00:00:00', '700.28',3 , ARRAY[3,2,4,1,2]);

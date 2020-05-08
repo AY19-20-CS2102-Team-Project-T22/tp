@@ -246,7 +246,7 @@ CREATE TABLE Orderlogs (
 	restaurantId		INTEGER,
 	orderDate			DATE NOT NULL,
 	orderTime			TIME[5] CHECK (orderTime[1] IS NOT NULL), /*order placed, time rider depart, arrive at restaurant, departs from rest, delivered*/
-	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 or paymentMethod = 2),
+	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 OR paymentMethod = 2),
 	cardNo				BIGINT,
 	foodFee 			DECIMAL NOT NULL,
 	deliveryFee			DECIMAL NOT NULL,
@@ -258,7 +258,6 @@ CREATE TABLE Orderlogs (
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE SET NULL,
 	FOREIGN KEY (restaurantId) REFERENCES Restaurants(restaurantId) ON DELETE SET NULL,
 	FOREIGN KEY (promoId) REFERENCES Promotions(promoId),
-	CHECK (paymentMethod = 1 AND cardNo IS NOT NULL),
 	CHECK (orderTime[1] < orderTime[2] AND orderTime[2] < orderTime[3] AND orderTime[3] < orderTime[4] AND orderTime[4] < orderTime[5])
 
 );

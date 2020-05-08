@@ -114,10 +114,11 @@ $$ LANGUAGE plpgsql;
 
         SELECT totalMthSalary(rId, mth, yr) INTO total_salary;
 
-        SELECT COALESCE(COUNT(O.ratings),0), COALESCE(AVG(O.ratings), 0) INTO rating_count, average_rating
-        FROM Orderlogs O
+        SELECT COALESCE(COUNT(R.rating),0), COALESCE(AVG(R.rating), 0) INTO rating_count, average_rating
+        FROM Orderlogs O JOIN Reviews R
+        ON O.orderId = R.orderId
         WHERE O.riderid = rId
-        AND O.ratings <> 0
+        AND R.rating <> 0
         AND (SELECT EXTRACT(MONTH FROM O.orderDate)) = mth 
         AND (SELECT EXTRACT(YEAR FROM O.orderDate)) = yr
         ;
@@ -156,7 +157,7 @@ AS $$
 
         RAISE NOTICE 'total_duration : %', total_duration;
 
-        SELECT COALESCE((COUNT(DISTINCT O.orderId) / total_duration),0) INTO average_orders
+        SELECT COALESCE((FLOAT(COUNT(DISTINCT O.orderId) / total_duration)),0) INTO average_orders
         FROM Orderlogs O
         WHERE O.promoId = pId
         ;
@@ -269,7 +270,7 @@ $$ LANGUAGE plpgsql;
 /*Transaction to create a successful order*/
 CREATE OR REPLACE FUNCTION create_new_order_success ( cId INTEGER, 
 													  restId INTEGER, pay INTEGER, cardNo BIGINT, foodFee DECIMAL, 
-													  delFee DECIMAL, delLoc INTEGER, promoId INTEGER, orderArr int[])
+													  delFee DECIMAL, delLoc INTEGER, promoId VARCHAR, orderArr int[])
 RETURNS VOID
 AS $$
     DECLARE
@@ -311,7 +312,7 @@ AS $$
         END IF;
 
         INSERT INTO Orderlogs(customerId, riderId, restaurantId, orderDate, orderTime, paymentMethod, cardNo, foodFee, deliveryFee, deliveryLocation, promoId)
-        VALUES (cId, rId, restId, NOW()::date , ARRAY[currTime,null,null,null,null], pay, cardNo, foodFee, delFee, delLoc, promoId)
+        VALUES (cId, rId, restId, NOW()::date , ARRAY[currTime,null,null,null,null], pay, CAST(cardNo AS BIGINT), foodFee, delFee, delLoc, CAST(promoId AS BIGINT))
         RETURNING orderId INTO ordId;
 
         FOREACH ord SLICE 1 IN ARRAY orderArr 
@@ -324,6 +325,53 @@ AS $$
         
     END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_num_of_riders_test()
+RETURNS TABLE(
+    TestDate VARCHAR,
+    TestTime INT,
+    Result INT,
+    Enough BOOLEAN
+)
+AS $$
+  DECLARE
+      todays_date date;
+      valid integer := 0;
+      riderCount INTEGER;
+	  dayList varchar[7] := ARRAY['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
+  BEGIN
+    SELECT NOW()::DATE INTO todays_date;
+
+	FOR dow IN 1..7 LOOP  
+		FOR checkTime IN 10..21 LOOP
+			WITH active_ws AS( 
+				SELECT W.workId, W.riderId
+				FROM WWS W
+				WHERE W.startDate <= todays_date
+				AND (W.endDate >= todays_date OR W.endDate IS NULL)
+			)
+			SELECT COUNT(DISTINCT A.riderId) INTO riderCount
+			FROM active_ws A JOIN WWS_Schedules WS
+			ON A.workid = WS.workid
+			WHERE WS.weekday = dayList[dow]
+			AND WS.startTime <= checkTime
+			AND WS.endTime > checkTime
+			;
+			IF riderCount < 5 THEN
+                RAISE NOTICE 'DAY: % | TIME : % HAS NOT ENOUGH RIDERS : %', todays_date, checkTime,riderCount;
+				RETURN QUERY SELECT dayList[dow], checkTime, riderCount, FALSE;
+            /*ELSE
+                RAISE NOTICE 'DAY: % | TIME : % HAS ENOUGH RIDERS : %', todays_date, checkTime,riderCount;
+                RETURN QUERY SELECT dayList[dow], checkTime, riderCount, TRUE;*/
+			END IF;
+
+		END LOOP;
+	END LOOP;
+
+  END;
+$$ LANGUAGE plpgsql;
+
+
 
 /*finds active riders at the current time
 WITH active_ws AS( 

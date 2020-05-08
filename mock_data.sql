@@ -3897,6 +3897,26 @@ SELECT * FROM new_mws(44, NOW()::date, 742.0,2 , ARRAY[3,1,1,3,3]);
  SELECT * FROM new_mws(151, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 792.0,3 , ARRAY[1,3,2,1,1]);
 
 
+/*NEW ORDER DB*/
+
+SELECT * FROM create_new_order_success(2,2,1, 4026224086262324, 197.45, 3, 521862, null, ARRAY[[36,5], [72,1]]);
+SELECT * FROM create_new_order_success(2,2,1, 4026224086262324, 197.45, 3, 521862, null, ARRAY[[36,5], [72,1]]);
+SELECT * FROM create_new_order_success(2,2,3, 4026224086262324, 197.45, 3, 521862, null, ARRAY[[36,5], [72,1]]);
+SELECT * FROM create_new_order_success(2,2,2, 4026224086262324, 197.45, 3, 521862, null, ARRAY[[36,5], [72,1]]);
+SELECT * FROM create_new_order_success(2,4,1, 4026224086262324, 197.45, 3, 521862, null, ARRAY[[36,5], [72,1]]);
+SELECT * FROM create_new_order_success(2,2,1, 4026224086262324, 197.45, 3, 521862, 4, ARRAY[[36,5], [72,1]]);
+SELECT * FROM create_new_order_success(2,2,1, 4026224086262324, 26.52, 3, 521862, 13, ARRAY[[381, 1]];
+SELECT * FROM create_new_order_success(2,2,1, 4026224086262324, 26.52, 3, 521862, 4, ARRAY[[301, 293]]);
+SELECT * FROM create_new_order_success(2,2,1, 4026224086262324, 26.52, 3, 521862, 4, ARRAY[[301, 1]]);
+
+
+
+
+
+
+
+
+
 /******** THIS SHOULD BE LAST. RESETS SERIAL POINTERS TO CORRECT POS **********/
 SELECT SETVAL('public.foods_foodid_seq', COALESCE(MAX(foodid), 1) ) FROM public.foods;
 SELECT SETVAL('public.orderlogs_orderid_seq', COALESCE(MAX(orderid), 1) ) FROM public.orderlogs;

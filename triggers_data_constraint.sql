@@ -157,12 +157,12 @@ BEGIN
 	WHERE NEW.foodId = Foods.foodId;
 
 	IF availability = 0 THEN
-		UPDATE Foods SET issold = FALSE WHERE foodid = NEW.foodId;
+		UPDATE Foods SET issold = FALSE WHERE foodid = NEW.foodId ;
 		RAISE exception 'Food item % is currently sold out', NEW.foodId;
 	ELSIF availability < NEW.quantity THEN
 		RAISE exception 'There are only % available for foodId %', availability, NEW.foodId;
 	ELSE
-		UPDATE Foods SET quantity = availability - NEW.quantity;
+		UPDATE Foods SET quantity = availability - NEW.quantity WHERE foodId = NEW.foodId;
 		RAISE NOTICE 'Updated Food ID % qty from % to %', NEW.foodId, availability, availability - NEW.quantity;
 	END IF;
 	
@@ -176,6 +176,59 @@ CREATE TRIGGER check_food_availability_trigger
 	ON Orders
 	FOR EACH ROW
 	EXECUTE FUNCTION check_food_availability ();
+
+CREATE OR REPLACE FUNCTION check_food_restaurant_validity () 
+RETURNS TRIGGER 
+AS $$
+	DECLARE
+		valid BOOLEAN;
+		rId INTEGER;
+	BEGIN
+		SELECT OL.restaurantid INTO rId
+		FROM Orderlogs OL
+		WHERE OL.orderId = NEW.orderId
+		;
+
+		RAISE NOTICE 'ORDER ID IS %, RESTAURANT ID IS %', NEW.orderId, rId;
+
+		SELECT TRUE INTO VALID
+		FROM Foods F
+		WHERE F.foodId = NEW.foodId
+		AND F.restaurantId = rId
+		;
+
+
+
+		/*WITH restFoodPair AS (
+			SELECT DISTINCT R.restaurantId, O.foodId 
+			FROM Orders O JOIN Orderlogs R 
+			ON R.orderid = NEW.orderid
+		)
+		SELECT TRUE INTO valid
+		FROM restFoodPair R
+		WHERE EXISTS ( SELECT 1
+			FROM Foods F
+			WHERE F.foodid = NEW.foodid
+			AND F.restaurantid = R.restaurantId
+		);*/
+
+		RAISE NOTICE 'IS RESTAURANT FOOD PAIR VALID? %', VALID; 
+
+		IF VALID IS NULL THEN
+			RAISE EXCEPTION 'INVALID FOOD RESTAURANT PAIR';
+		ELSIF VALID THEN
+			RETURN NEW;
+		END IF;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_food_restaurant_validity ON Orders CASCADE;
+CREATE TRIGGER check_food_restaurant_validity
+	BEFORE UPDATE OF foodId, quantity OR INSERT
+	ON Orders
+	FOR EACH ROW
+	EXECUTE FUNCTION check_food_restaurant_validity ();
+
 
 
 
@@ -207,6 +260,34 @@ CREATE CONSTRAINT TRIGGER check_customer_locations
 	FOR EACH ROW 
 	EXECUTE FUNCTION check_customer_locations ();
 
+CREATE OR REPLACE FUNCTION check_customer_locations_exists ()
+RETURNS TRIGGER 
+AS $$
+	DECLARE
+		locationExists BOOLEAN := FALSE;
+	BEGIN
+		SELECT TRUE INTO locationExists
+		FROM RecentLocations R
+		WHERE R.location = NEW.location
+		AND R.customerid = NEW.customerid
+		;
+
+		IF locationExists THEN
+			UPDATE RecentLocations SET lastUsingTime = NEW.lastUsingTime WHERE location = NEW.location and customerid = NEW.customerid;
+			RETURN NULL;
+		ELSE 
+			RETURN NEW;
+		END IF;
+	END;
+
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_customer_locations_exists ON RecentLocations;
+CREATE TRIGGER check_customer_locations_exists
+	BEFORE INSERT ON RecentLocations
+	FOR EACH ROW 
+	EXECUTE FUNCTION check_customer_locations_exists();
+
 /* checks whether there are atleast 5 riders for every hour on the current day*/
 DROP FUNCTION IF EXISTS check_num_of_riders() CASCADE;
 CREATE OR REPLACE FUNCTION check_num_of_riders()
@@ -216,26 +297,30 @@ AS $$
       todays_date date;
       valid integer := 0;
       riderCount INTEGER;
+	  dayList varchar[7] := ARRAY['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
   BEGIN
     SELECT NOW()::DATE INTO todays_date;
 
-	FOR checkTime IN 10..22 LOOP
-		WITH active_ws AS( 
-			SELECT W.workId, W.riderId
-			FROM WWS W
-			WHERE W.startDate <= todays_date
-			AND (W.endDate >= todays_date OR W.endDate IS NULL)
-		)
-		SELECT COUNT(DISTINCT A.riderId) INTO riderCount
-		FROM active_ws A JOIN WWS_Schedules WS
-		ON A.workid = WS.workid
-		WHERE WS.weekday = TRIM(to_char(NOW(), 'DAY'))
-		AND WS.startTime <= checkTime
-		AND WS.endTime > checkTime
-		;
-		IF riderCount < 5 THEN
-      		RAISE EXCEPTION 'DAY: % | TIME : % HAS NOT ENOUGH RIDERS', todays_date, checkTime;
-    	END IF;
+	FOR dow IN 1..7 LOOP  
+		FOR checkTime IN 10..22 LOOP
+			WITH active_ws AS( 
+				SELECT W.workId, W.riderId
+				FROM WWS W
+				WHERE W.startDate <= todays_date
+				AND (W.endDate >= todays_date OR W.endDate IS NULL)
+			)
+			SELECT COUNT(DISTINCT A.riderId) INTO riderCount
+			FROM active_ws A JOIN WWS_Schedules WS
+			ON A.workid = WS.workid
+			WHERE WS.weekday = TRIM(to_char(NOW(), 'DAY'))
+			AND WS.startTime <= checkTime
+			AND WS.endTime > checkTime
+			;
+			IF riderCount < 5 THEN
+				RAISE NOTICE 'DAY: % | TIME : % HAS NOT ENOUGH RIDERS', todays_date, checkTime;
+			END IF;
+
+		END LOOP;
 	END LOOP;
 
   END;
@@ -261,7 +346,7 @@ AS $$
 		;
 		total_points := curr_points + FLOOR(NEW.foodFee);
 
-		UPDATE Customers SET rewardPoints = total_points, orderCount = orderCount + 1  WHERE customerId = NEW.customerId;
+		UPDATE Customers SET rewardPoints = total_points, orderCount = orderCount + 1, totalexpenditure = totalexpenditure + NEW.foodFee  WHERE customerId = NEW.customerId;
 		RETURN NEW;
 	END;
 $$ LANGUAGE plpgsql;
@@ -455,21 +540,34 @@ AS $$
 		promoType INTEGER;
 		validPromoRest BOOLEAN;
 	BEGIN
+		RAISE NOTICE 'PAYMENT METHOD IS %', NEW.paymentMethod;
+		IF NEW.paymentMethod > 2 THEN
+			RAISE EXCEPTION 'INVALID PAYMENT METHOD';
+		ELSIF NEW.paymentMethod < 1 THEN
+			RAISE EXCEPTION 'INVALID PAYMENT METHOD';
+		END IF;
+
 		IF NEW.paymentMethod = 1 THEN
+			IF NEW.cardNo IS NULL THEN
+				RAISE EXCEPTION 'Credit card field cannot be empty, chosen payment method: Credit card';
+			END IF;
 			SELECT TRUE INTO validCc
 			FROM CreditCards C
 			WHERE C.customerId = NEW.customerId
 			AND C.cardNo = NEW.cardNo
 			;
-		ELSE 
-			RAISE EXCEPTION 'Invalid Credit card no % for customer %', NEW.cardNo, NEW.customerId;
+			IF validCc IS NULL THEN 
+				RAISE EXCEPTION 'Invalid Credit card no % for customer %', NEW.cardNo, NEW.customerId;
+			ELSIF validCc = FALSE THEN 
+				RAISE EXCEPTION 'Invalid Credit card no % for customer %', NEW.cardNo, NEW.customerId;
+			END IF;
 		END IF;
 
 		IF NEW.promoId IS NOT NULL THEN
 			SELECT P.type INTO promoType
 			FROM Promotions P
 			WHERE P.promoId = NEW.promoId
-			AND P.endDate >= NOW()::DATE
+			AND (P.endDate >= NOW()::DATE OR P.endDate IS NULL)
 			;
 
 			IF promoType = 1 THEN
@@ -479,7 +577,9 @@ AS $$
 				AND RP.restaurantId = NEW.restaurantId
 				;
 
-				IF validPromoRest = FALSE THEN
+				IF validPromoRest IS NULL THEN
+					RAISE EXCEPTION 'The promo id % does not apply for restaurant %', NEW.promoId, NEW.restaurantId;
+				ELSIF validPromoRest = FALSE THEN
 					RAISE EXCEPTION 'The promo id % does not apply for restaurant %', NEW.promoId, NEW.restaurantId;
 				END IF;
 
