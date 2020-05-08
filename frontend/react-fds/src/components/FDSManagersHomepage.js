@@ -82,10 +82,6 @@ class FDSManagersHomepage extends React.Component {
       })
   }
 
-  componentDidMount() {
-    this.getUserData()
-  }
-
   render() {
     return (
       <div className='managers-page-container'>

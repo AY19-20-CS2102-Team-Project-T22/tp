@@ -28,9 +28,9 @@ class App extends React.Component {
     this.state = {
       // States for application login status.
       isLoggedIn: true,
-      userId: 2,
-      userType: 4,
-      userTypeStr: 'fdsmanagers',
+      userId: 4,
+      userType: 1,
+      userTypeStr: 'customers',
 
       // State for full list of items on the Menu table.
       items: [],
@@ -147,7 +147,7 @@ class App extends React.Component {
       return this.state.foodCategoriesFilter[i]
     })
     let fcList = ''
-    fcid.forEach(item => fcList += item.fcid + ',')
+    fcid.forEach(item => fcList += '\'' + item.fcname + '\',')
     fcList = fcList.substring(0, fcList.length - 1)
 
     // Retrieve food items from menu from the database
@@ -155,7 +155,7 @@ class App extends React.Component {
     axios.get(
       startUrlString
       + '?rid=' + rList
-      + '&fcid=' + fcList
+      + '&fcname=' + fcList
     )
       .then(res => {
         this.setState({ itemsOnDisplay: res.data })
