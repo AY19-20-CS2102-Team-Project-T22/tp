@@ -70,7 +70,7 @@ class FilterPanel extends React.Component {
             style={{ width: '100%', marginTop: '40px', marginBottom: '20px' }}
             type='submit'>
             Apply filters
-            </Button>
+          </Button>
         </Form>
 
       </div>
