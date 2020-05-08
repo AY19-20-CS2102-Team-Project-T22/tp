@@ -267,34 +267,110 @@ $$ LANGUAGE plpgsql;
 
 
 /*Transaction to create a successful order*/
-CREATE OR REPLACE FUNCTION create_new_order_success ( cId INTEGER, rId INTEGER, 
-													  restId INTEGER, pay INTEGER, cardNo BIGINT, foodFee INTEGER, 
-													  delFee INTEGER, delLoc INTEGER, promoId INTEGER, orderArr int[])
+CREATE OR REPLACE FUNCTION create_new_order_success ( cId INTEGER, 
+													  restId INTEGER, pay INTEGER, cardNo BIGINT, foodFee DECIMAL, 
+													  delFee DECIMAL, delLoc INTEGER, promoId INTEGER, orderArr int[])
 RETURNS VOID
 AS $$
     DECLARE
-        availableRider INTEGER;
+        rId INTEGER;
         currTime TIME := NOW()::time;
         ord INTEGER[];
         fId INTEGER;
         qty INTEGER;
+        ordId INTEGER;
     BEGIN
 
+        WITH active_ws AS( 
+            SELECT W.workId, W.riderId
+            FROM WWS W
+            WHERE W.startDate <= NOW()::DATE
+            AND (W.endDate >= NOW()::DATE OR W.endDate IS NULL)
+        ),
+        active_ws_now AS (
+            SELECT A.riderId
+            FROM active_ws A JOIN WWS_Schedules WS
+            ON A.workid = WS.workid
+            WHERE WS.weekday = TRIM(to_char(NOW(), 'DAY'))
+            AND WS.startTime <= EXTRACT(HOUR FROM NOW())
+            AND WS.endTime > EXTRACT(HOUR FROM NOW())
+        )
+        SELECT DISTINCT A.riderId INTO rId
+        FROM active_ws_now A
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM Orderlogs O
+            WHERE O.riderId = A.riderId
+            AND O.ordertime[5] IS NULL
+        )
+        LIMIT 1
+        ;
+
+        IF rId IS NULL THEN
+            RAISE EXCEPTION 'There are currently no riders available at the moment, please try again later';
+        END IF;
+
         INSERT INTO Orderlogs(customerId, riderId, restaurantId, orderDate, orderTime, paymentMethod, cardNo, foodFee, deliveryFee, deliveryLocation, promoId)
-        VALUES (cId, rId, restId, NOW()::date , ARRAY[currTime,null,null,null,null], pay, cardNo, foodFee, delFee, delLoc, promoId);
+        VALUES (cId, rId, restId, NOW()::date , ARRAY[currTime,null,null,null,null], pay, cardNo, foodFee, delFee, delLoc, promoId)
+        RETURNING orderId INTO ordId;
 
         FOREACH ord SLICE 1 IN ARRAY orderArr 
         LOOP
-            INSERT INTO Orders(foodId, quantity) VALUES (ord[1], ord[2]);
+            INSERT INTO Orders(orderId, foodId, quantity) VALUES (ordId, ord[1], ord[2]);
         END LOOP;
-        
+
+        INSERT INTO RecentLocations(customerid,location, lastUsingTime) VALUES (cId,delLoc, NOW());
         RAISE NOTICE 'Succesfully created new order';
+        
     END;
 $$ LANGUAGE plpgsql;
 
+/*finds active riders at the current time
+WITH active_ws AS( 
+    SELECT W.workId, W.riderId
+    FROM WWS W
+    WHERE W.startDate <= NOW()::DATE
+    AND (W.endDate >= NOW()::DATE OR W.endDate IS NULL)
+),
+active_ws_now AS (
+    SELECT A.riderId
+    FROM active_ws A JOIN WWS_Schedules WS
+    ON A.workid = WS.workid
+    WHERE WS.weekday = TRIM(to_char(NOW(), 'DAY'))
+    AND WS.startTime <= EXTRACT(HOUR FROM NOW())
+    AND (WS.endTime > EXTRACT(HOUR FROM NOW()) OR WS.endTime IS NULL)
+)
+SELECT DISTINCT A.riderId
+FROM active_ws_now A
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Orderlogs O
+    WHERE O.riderId = A.riderId
+    AND O.ordertime[5] IS NULL
+)
+LIMIT 1
+;
+*/
 
 
 
+
+/*number of riders in an hour
+WITH active_ws AS( 
+    SELECT W.workId, W.riderId
+    FROM WWS W
+    WHERE W.startDate <= NOW()::DATE
+    AND (W.endDate >= NOW()::DATE OR W.endDate IS NULL)
+)
+SELECT COUNT(DISTINCT A.riderId)
+FROM active_ws A JOIN WWS_Schedules WS
+ON A.workid = WS.workid
+WHERE WS.weekday = TRIM(to_char(NOW(), 'DAY'))
+AND WS.startTime <= EXTRACT(HOUR FROM NOW())
+AND WS.endTime > EXTRACT(HOUR FROM NOW())
+;
+
+*/
 
 /*Helper Function to retrieve top 5 favourite food items for a given restaurant, mth,yr*/
 /*
@@ -312,3 +388,42 @@ AS $BODY$
     END;
 $BODY$ LANGUAGE plpgsql;
 */
+
+/*CREATE OR REPLACE FUNCTION totalMthWorkingHour (rid INTEGER, mth INTEGER, yr INTEGER) RETURNS INTEGER
+AS $$
+DECLARE
+
+BEGIN
+    WITH WWS_HOUR (startdate)
+    SELECT startdate, COALESCE(NOW()::DATE, endDate), 
+    CASE weekday
+    WHEN 'monday' THEN 1
+    WHEN 'tuesday'THEN 2
+    WHEN 'wednesday' THEN 3
+    WHEN 'thursday' THEN 4
+    WHEN 'friday' THEN 5
+    WHEN 'saturday' THEN 6
+    ELSE 7
+    END,
+    COALESCE(0, SUM(endTime - startTime))
+    FROM WWS W NATURAL JOIN WWS_Schedules S
+    WHERE W.riderid = rid
+    AND (startDate, COALESCE(current_date, endDate)) OVERLAPS
+        (mth_start, mth_end)
+    GROUP BY startDate, endDate, weekday;*/
+    
+    /*WITH MWS_HOUR ()
+    SELECT startDate, endDate, workweekid, 8
+    FROM MWS M
+    WHERE M.riderid = rid
+    AND (startDate, COALESCE(current_date, endDate)) OVERLAPS
+        (mth_start, mth_end)*/
+
+    /*WITH ALL_DAYS (daytime) AS (
+    SELECT * FROM GENERATE_SERIES(mth_start::DATE, mth_end, '1 DAY'));
+
+    SELECT *
+    FROM WWS_HOUR H JOIN ALL_DAYS A 
+    ON startDate <= daytime::DATE
+    AND endDate >= daytime::DATE
+    AND EXTRACT(isdow FROM daytime::DATE) = H.weekday;*/
