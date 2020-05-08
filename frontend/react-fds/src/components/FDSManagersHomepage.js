@@ -58,8 +58,9 @@ class FDSManagersHomepage extends React.Component {
           <div className='managers-page-body-sidepanel'>
             <ListGroup>
               <ListGroupItem value={0} onClick={this.handleListItem} color='danger' tag='button' action>Account Info</ListGroupItem>
-              <ListGroupItem value={1} onClick={this.handleListItem} color='danger' tag='button' action>Promotions</ListGroupItem>
-              <ListGroupItem value={2} onClick={this.handleListItem} color='danger' tag='button' action>Statistics</ListGroupItem>
+              <ListGroupItem value={1} onClick={this.handleListItem} color='danger' tag='button' action>My Promotions</ListGroupItem>
+              <ListGroupItem value={2} onClick={this.handleListItem} color='danger' tag='button' action>All FDS Promotions</ListGroupItem>
+              <ListGroupItem value={3} onClick={this.handleListItem} color='danger' tag='button' action>Statistics</ListGroupItem>
             </ListGroup>
           </div>
           <div className='managers-page-body-mainbody'>
