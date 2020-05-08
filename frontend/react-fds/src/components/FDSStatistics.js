@@ -18,7 +18,11 @@ class FDSStatistics extends React.Component {
     super(props)
     this.state = {
       total: null,
-      from: new Date().toISOString(),
+      from: new Date(
+        (new Date()).getFullYear(),
+        (new Date()).getMonth() - 1,
+        (new Date()).getDate())
+        .toISOString(),
       to: new Date().toISOString()
     }
 
@@ -29,15 +33,19 @@ class FDSStatistics extends React.Component {
 
 
   handleFromDateChange(e) {
-    let fromDate = new Date(e.target.value).toISOString()
-    console.log(fromDate)
-    this.setState({ from: fromDate })
+    if (e.target.value !== '') {
+      let fromDate = new Date(e.target.value).toISOString()
+      console.log(fromDate)
+      this.setState({ from: fromDate })
+    }
   }
 
   handleToDateChange(e) {
-    let toDate = new Date(e.target.value).toISOString()
-    console.log(toDate)
-    this.setState({ to: toDate })
+    if (e.target.value !== '') {
+      let toDate = new Date(e.target.value).toISOString()
+      console.log(toDate)
+      this.setState({ to: toDate })
+    }
   }
 
   handleSubmit(e) {
@@ -72,6 +80,7 @@ class FDSStatistics extends React.Component {
             <Label>From</Label>
             <Input
               type="date"
+              defaultValue={new Date(this.state.from)}
               onChange={this.handleFromDateChange}
             />
           </FormGroup>
@@ -79,6 +88,7 @@ class FDSStatistics extends React.Component {
             <Label>To</Label>
             <Input
               type="date"
+              defaultValue={new Date(this.state.to)}
               onChange={this.handleToDateChange}
             />
           </FormGroup>
@@ -87,7 +97,7 @@ class FDSStatistics extends React.Component {
           </Button>
         </Form>
         <div>
-          TOTAL NO OF CUSTOMERS FROM {this.state.from} TO {this.state.to} = {this.state.total}
+          TOTAL NO OF CUSTOMERS FROM {new Date(this.state.from).toLocaleDateString()} TO {new Date(this.state.to).toLocaleDateString()} = {this.state.total}
         </div>
 
       </div>
