@@ -156,22 +156,26 @@ BEGIN
 	FROM Foods
 	WHERE NEW.foodId = Foods.foodId;
 
-	IF availability < NEW.quantity THEN
-		RAISE exception 'There are only % available', availability;
-	END IF;
-
 	IF availability = 0 THEN
 		UPDATE Foods SET issold = FALSE WHERE foodid = NEW.foodId;
+		RAISE exception 'Food item % is currently sold out', NEW.foodId;
+	ELSIF availability < NEW.quantity THEN
+		RAISE exception 'There are only % available for foodId %', availability, NEW.foodId;
+	ELSE
+		UPDATE Foods SET quantity = availability - NEW.quantity;
+		RAISE NOTICE 'Updated Food ID % qty from % to %', availability, availability - NEW.quantity;
 	END IF;
+
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS check_food_availability_trigger ON Carts CASCADE;
+DROP TRIGGER IF EXISTS check_food_availability_trigger ON Orders CASCADE;
 CREATE TRIGGER check_food_availability_trigger
 	BEFORE UPDATE OF foodId, quantity OR INSERT
-	ON Carts
+	ON Orders
 	FOR EACH ROW
 	EXECUTE FUNCTION check_food_availability ();
+
 
 
 /*ensures each customer only has 5 location records*/
@@ -203,7 +207,7 @@ CREATE CONSTRAINT TRIGGER check_customer_locations
 	EXECUTE FUNCTION check_customer_locations ();
 
 /* checks whether there are atleast 5 riders for every hour on the current day*/
-DROP FUNCTION IF EXISTS check_num_of_riders();
+DROP FUNCTION IF EXISTS check_num_of_riders() CASCADE;
 CREATE OR REPLACE FUNCTION check_num_of_riders()
 RETURNS TRIGGER
 AS $$
@@ -294,12 +298,13 @@ AS $$
 		SELECT TRUE INTO invalidSchedule
 		FROM WWS_Schedules WS
 		WHERE WS.workId = NEW.workId
-		AND (WS.weekday = NEW.weekday AND NEW.startTime >= WS.startTime AND NEW.startTime < WS.endTime)
-		OR (WS.weekday = NEW.weekday AND NEW.endTime > WS.startTime AND NEW.endTime <= WS.endTime)
+		AND WS.weekday = NEW.weekday
+		AND ((NEW.startTime > WS.startTime AND NEW.startTime <= WS.endTime)
+		OR (NEW.endTime >= WS.startTime AND NEW.endTime < WS.endTime))
 		;
 
 		IF invalidSchedule THEN
-			RAISE EXCEPTION 'SCHEDULE OVERLAP DETECTED';
+			RAISE EXCEPTION 'SCHEDULE OVERLAP DETECTED | DAY: % : %-%', NEW.weekday, NEW.startTime, NEW.endTime;
 		ELSE
 			RETURN NEW;
 		END IF;
@@ -369,3 +374,167 @@ CREATE TRIGGER valid_wws_addition
 	AFTER INSERT ON WWS
 	FOR EACH ROW
 	EXECUTE FUNCTION valid_wws_addition();
+
+
+/*Adds an end date to the last entry in WWS*/
+CREATE OR REPLACE FUNCTION valid_mws_addition()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		pId INTEGER;
+		sDate DATE;
+	BEGIN
+		SELECT M.riderId, M.startDate INTO pId, sDate
+		FROM MWS M
+		WHERE m.startDate <> NEW.startDate
+		AND M.riderId = NEW.riderId
+		AND M.endDate IS NULL
+		;
+
+		IF pid IS NOT NULL THEN
+			UPDATE MWS SET endDate = NEW.startDate - 1 WHERE riderId = pId AND startDate = sDate;
+			
+		END IF;
+
+		RETURN NEW;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS valid_mws_addition ON WWS;
+CREATE TRIGGER valid_wws_addition
+	AFTER INSERT ON MWS
+	FOR EACH ROW
+	EXECUTE FUNCTION valid_mws_addition();
+
+
+/* Ensures that when adding to WWS, adding schedule to FUTURE(no schedule yet) not PAST */
+CREATE OR REPLACE FUNCTION check_mws_future_1()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		invalidSchedule BOOLEAN := FALSE;
+	BEGIN
+		SELECT TRUE INTO invalidSchedule
+		FROM MWS M
+		WHERE M.startDate <> NEW.startDate
+		AND M.riderId = NEW.riderId
+		AND (NEW.startDate < NOW() OR NEW.startDate < M.endDate)
+		;
+
+		IF invalidSchedule THEN
+			RAISE EXCEPTION 'StartDate invalid due to an already existing schedule';
+		ELSE
+			RETURN NEW;
+		END IF;
+	END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS check_mws_future_1 ON MWS;
+CREATE TRIGGER check_mws_future_1
+	BEFORE INSERT OR UPDATE OF startDate ON MWS
+	FOR EACH ROW
+	EXECUTE FUNCTION check_mws_future_1();
+
+CREATE OR REPLACE FUNCTION check_order_validity()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		validCc BOOLEAN := FALSE;
+		promoType INTEGER;
+		validPromoRest BOOLEAN;
+	BEGIN
+		IF NEW.paymentMethod = 1 THEN
+			SELECT TRUE INTO validCc
+			FROM CreditCards C
+			WHERE C.customerId = NEW.customerId
+			AND C.cardNo = NEW.cardNo
+			;
+		ELSE 
+			RAISE EXCEPTION 'Invalid Credit card no % for customer %', NEW.cardNo, NEW.customerId;
+		END IF;
+
+		IF promoId IS NOT NULL THEN
+			SELECT P.type INTO promoType
+			FROM Promotions P
+			WHERE P.promoId = NEW.promoId
+			AND P.endDate >= NOW()::DATE
+			;
+
+			IF promoType = 1 THEN
+				SELECT TRUE into validPromoRest
+				FROM RestaurantPromotions RP
+				WHERE RP.promoId = NEW.promoId
+				AND RP.restaurantId = NEW.restaurantId
+				;
+
+				IF validPromoRest = FALSE THEN
+					RAISE EXCEPTION 'The promo id % does not apply for restaurant %', NEW.promoId, NEW.restaurantId;
+				END IF;
+
+			ELSIF promoType IS NULL THEN
+				RAISE EXCEPTION 'Promo % is invalid', NEW.promoId;
+			END IF;
+
+		END IF;
+	
+	END;
+$$ LANGUAGE plpgsql;
+
+
+/*
+CREATE OR REPLACE FUNCTION create_mws()
+RETURNS TRIGGER
+AS $$
+	DECLARE
+		wwsId INTEGER;
+		iterateDate VARCHAR(10);
+		iterateTimeStart1 SMALLINT;
+		iterateTimeStart2 SMALLINT;
+		iterateTimeEnd1 SMALLINT;
+		iterateTimeEnd2 SMALLINT;
+
+	BEGIN
+		INSERT INTO WWS(riderId,startDate,baseSalary) VALUES (NEW.riderId, NEW.startDate, 0);
+
+		SELECT W.workId INTO wwsId
+		FROM WWS W
+		WHERE W.riderId = NEW.riderId
+		AND W.startDate = NEW.startDate
+		; 
+
+		FOR n IN 1..5 LOOP
+			SELECT MSD.workDays[n] INTO iterateDate
+			FROM MWS_Schedules_Days MSD
+			WHERE MSD.workWeekId = NEW.workWeekId
+			;
+
+			SELECT MWT.startTime[1], MWT.startTime[2], MWT.endTime[1], MWT.endTime[2]
+			INTO iterateTimeStart1, iterateTimeStart2, iterateTimeEnd1, iterateTimeEnd2
+			FROM MWS_Schedules_Times MWT
+			WHERE MWT.shiftId = NEW.shifts[n]
+			;
+
+			INSERT INTO WWS_Schedules(workId,weekday,startTime,endTime) VALUES (wwsId, iterateDate, iterateTimeStart1, iterateTimeEnd1);
+			INSERT INTO WWS_Schedules(workId,weekday,startTime,endTime) VALUES (wwsId, iterateDate, iterateTimeStart2, iterateTimeEnd2);
+
+		END LOOP;
+
+		NEW.workId = wwsId;
+		RETURN NEW;
+
+	END;
+$$ LANGUAGE plpgsql;
+
+
+DROP TRIGGER IF EXISTS create_mws ON MWS;
+CREATE TRIGGER CREATE_MWS
+	AFTER INSERT ON MWS
+	FOR EACH ROW
+	EXECUTE FUNCTION CREATE_MWS();
+
+*/
+
+
+
+
+

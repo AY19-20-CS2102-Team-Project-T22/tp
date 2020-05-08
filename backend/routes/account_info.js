@@ -10,8 +10,8 @@ router.route('/').get((req, res) => {
       console.log(error)
       res.status(400).json('Error: ' + error)
     } else {
-      console.log(result.rows)
       // The query should return only one row of data -> array length = 1.
+      console.log(result.rows)
       res.status(200).json(result.rows[0])
     }
     // db.end()

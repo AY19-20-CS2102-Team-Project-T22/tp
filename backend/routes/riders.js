@@ -68,6 +68,19 @@ router.route('/totalSalary').get((req, res) => {
     });
 })
 
+router.route('/monthSalary').get((req, res) =>{
+  const query = 'select totalMthSalary($1, $2, $3)';
+  const values = [req.query.rid, req.query.month, req.query.year];
+  db.query(query, values, (error, result) => {
+    if (error) {
+      console.log(error)
+      res.status(400).json('Error: ' + error)
+    }else{
+      res.status(200).json(result.rows)
+    }
+  });
+})
+
 router.route('/monthOrder').get((req, res) => {
   const query = 
   `

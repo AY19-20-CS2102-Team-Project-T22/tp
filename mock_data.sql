@@ -2518,3 +2518,132 @@ insert into WWS_Schedules (workId, weekDay, startTime, endTime) values (39, 'SAT
 insert into WWS_Schedules (workId, weekDay, startTime, endTime) values (4, 'THURSDAY', 14, 17);
 insert into WWS_Schedules (workId, weekDay, startTime, endTime) values (36, 'FRIDAY', 16, 22);
 insert into WWS_Schedules (workId, weekDay, startTime, endTime) values (27, 'THURSDAY', 13, 20);
+
+
+
+/*MWS DATAS*/
+
+INSERT INTO MWS_Schedules_days(workWeekId, workDays) VALUES (1, ARRAY['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
+INSERT INTO MWS_Schedules_days(workWeekId, workDays) VALUES (2, ARRAY['TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY']);
+INSERT INTO MWS_Schedules_days(workWeekId, workDays) VALUES (3, ARRAY['WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY']);
+INSERT INTO MWS_Schedules_days(workWeekId, workDays) VALUES (4, ARRAY['MONDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY']);
+INSERT INTO MWS_Schedules_days(workWeekId, workDays) VALUES (5, ARRAY['MONDAY','TUESDAY','FRIDAY','SATURDAY','SUNDAY']);
+INSERT INTO MWS_Schedules_days(workWeekId, workDays) VALUES (6, ARRAY['MONDAY','TUESDAY','WEDNESDAY','SATURDAY','SUNDAY']);
+INSERT INTO MWS_Schedules_days(workWeekId, workDays) VALUES (7, ARRAY['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','SUNDAY']);
+
+INSERT INTO MWS_Schedules_times(shiftId, startTime,endTime) VALUES (1,'{10,15}','{14,19}');
+INSERT INTO MWS_Schedules_times(shiftId, startTime,endTime) VALUES (2,'{11,16}','{15,20}');
+INSERT INTO MWS_Schedules_times(shiftId, startTime,endTime) VALUES (3,'{12,17}','{16,21}');
+INSERT INTO MWS_Schedules_times(shiftId, startTime,endTime) VALUES (4,'{13,18}','{17,22}');
+
+SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 847.0,2 , ARRAY[1,3,2,2,2]);
+ SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 721.0,1 , ARRAY[2,2,3,2,3]);
+ SELECT * FROM new_mws(91, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 781.0,3 , ARRAY[2,3,3,2,1]);
+ SELECT * FROM new_mws(91, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 816.0,3 , ARRAY[1,2,3,2,1]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 796.0,1 , ARRAY[2,2,2,2,1]);
+ SELECT * FROM new_mws(31, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 873.0,4 , ARRAY[2,3,2,1,1]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 742.0,1 , ARRAY[2,1,1,1,1]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 812.0,2 , ARRAY[3,2,2,3,2]);
+ SELECT * FROM new_mws(91, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 772.0,3 , ARRAY[2,3,3,3,2]);
+ SELECT * FROM new_mws(87, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 797.0,4 , ARRAY[1,3,3,2,3]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 869.0,1 , ARRAY[3,2,1,1,1]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 762.0,4 , ARRAY[1,1,2,2,3]);
+ SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 878.0,2 , ARRAY[3,2,2,1,1]);
+ SELECT * FROM new_mws(44, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 758.0,1 , ARRAY[1,2,2,1,2]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 843.0,4 , ARRAY[2,3,2,2,1]);
+ SELECT * FROM new_mws(95, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 749.0,1 , ARRAY[2,1,2,1,1]);
+ SELECT * FROM new_mws(42, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 754.0,1 , ARRAY[2,1,1,1,2]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 893.0,1 , ARRAY[2,1,3,2,2]);
+ SELECT * FROM new_mws(42, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 813.0,4 , ARRAY[1,1,1,2,3]);
+ SELECT * FROM new_mws(91, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 709.0,1 , ARRAY[2,3,1,3,1]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 855.0,4 , ARRAY[1,3,1,2,3]);
+ SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 742.0,3 , ARRAY[3,2,2,1,1]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 714.0,1 , ARRAY[2,2,1,3,3]);
+ SELECT * FROM new_mws(31, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 838.0,2 , ARRAY[3,3,3,3,1]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 874.0,4 , ARRAY[1,2,2,1,2]);
+ SELECT * FROM new_mws(44, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 809.0,1 , ARRAY[3,1,1,3,2]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 713.0,2 , ARRAY[2,2,2,1,3]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 795.0,2 , ARRAY[1,2,2,3,1]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 848.0,2 , ARRAY[3,1,3,3,2]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 854.0,4 , ARRAY[3,1,3,3,3]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 851.0,1 , ARRAY[3,3,1,2,2]);
+ SELECT * FROM new_mws(26, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 850.0,2 , ARRAY[2,2,3,2,1]);
+ SELECT * FROM new_mws(5, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 870.0,4 , ARRAY[2,2,3,3,2]);
+ SELECT * FROM new_mws(87, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 798.0,1 , ARRAY[2,2,1,2,3]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 730.0,2 , ARRAY[2,3,1,1,2]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 894.0,4 , ARRAY[2,3,1,1,2]);
+ SELECT * FROM new_mws(3, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 852.0,4 , ARRAY[2,3,2,2,1]);
+ SELECT * FROM new_mws(31, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 886.0,4 , ARRAY[1,3,2,1,2]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 819.0,4 , ARRAY[3,3,2,2,2]);
+ SELECT * FROM new_mws(26, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 873.0,1 , ARRAY[2,2,1,1,2]);
+ SELECT * FROM new_mws(26, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 750.0,1 , ARRAY[2,3,3,3,2]);
+ SELECT * FROM new_mws(31, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 780.0,3 , ARRAY[1,3,1,2,3]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 717.0,4 , ARRAY[1,2,1,1,1]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 881.0,3 , ARRAY[3,3,3,2,3]);
+ SELECT * FROM new_mws(95, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 769.0,3 , ARRAY[1,3,2,1,1]);
+ SELECT * FROM new_mws(5, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 896.0,4 , ARRAY[3,3,1,2,3]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 814.0,1 , ARRAY[1,2,3,2,3]);
+ SELECT * FROM new_mws(44, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 796.0,2 , ARRAY[1,1,3,3,2]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 725.0,2 , ARRAY[2,1,2,2,3]);
+ SELECT * FROM new_mws(91, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 800.0,1 , ARRAY[2,1,3,1,2]);
+ SELECT * FROM new_mws(44, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 869.0,4 , ARRAY[2,3,1,3,1]);
+ SELECT * FROM new_mws(26, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 773.0,4 , ARRAY[2,1,3,2,3]);
+ SELECT * FROM new_mws(3, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 768.0,2 , ARRAY[3,2,3,3,2]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 769.0,2 , ARRAY[1,1,3,1,1]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 803.0,1 , ARRAY[3,1,2,3,2]);
+ SELECT * FROM new_mws(44, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 802.0,2 , ARRAY[1,1,3,2,3]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 869.0,2 , ARRAY[1,2,1,3,2]);
+ SELECT * FROM new_mws(3, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 755.0,2 , ARRAY[2,2,3,3,2]);
+ SELECT * FROM new_mws(44, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 703.0,3 , ARRAY[2,1,3,1,3]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 845.0,2 , ARRAY[1,1,1,2,2]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 831.0,3 , ARRAY[1,2,1,1,2]);
+ SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 846.0,4 , ARRAY[1,3,3,2,3]);
+ SELECT * FROM new_mws(26, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 707.0,4 , ARRAY[3,3,2,3,2]);
+ SELECT * FROM new_mws(5, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 839.0,4 , ARRAY[1,3,3,3,3]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 872.0,3 , ARRAY[2,3,2,1,3]);
+ SELECT * FROM new_mws(42, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 790.0,1 , ARRAY[1,2,3,1,3]);
+ SELECT * FROM new_mws(95, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 708.0,1 , ARRAY[2,1,2,3,1]);
+ SELECT * FROM new_mws(5, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 776.0,2 , ARRAY[2,1,1,1,1]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 858.0,1 , ARRAY[3,1,2,2,1]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 823.0,3 , ARRAY[2,1,3,2,1]);
+ SELECT * FROM new_mws(3, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 769.0,4 , ARRAY[1,2,3,3,2]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 755.0,1 , ARRAY[3,1,1,2,1]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 891.0,3 , ARRAY[1,3,2,2,1]);
+ SELECT * FROM new_mws(95, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 754.0,3 , ARRAY[1,1,1,2,2]);
+ SELECT * FROM new_mws(87, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 709.0,2 , ARRAY[3,3,1,3,3]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 884.0,2 , ARRAY[1,2,1,3,1]);
+ SELECT * FROM new_mws(95, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 798.0,3 , ARRAY[3,3,3,2,2]);
+ SELECT * FROM new_mws(97, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 745.0,1 , ARRAY[3,3,2,2,1]);
+ SELECT * FROM new_mws(3, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 787.0,4 , ARRAY[2,1,1,2,1]);
+ SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 784.0,4 , ARRAY[2,3,1,2,1]);
+ SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 749.0,2 , ARRAY[1,2,2,3,2]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 851.0,2 , ARRAY[1,2,1,3,3]);
+ SELECT * FROM new_mws(26, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 891.0,2 , ARRAY[2,2,1,1,3]);
+ SELECT * FROM new_mws(44, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 746.0,3 , ARRAY[1,1,1,1,3]);
+ SELECT * FROM new_mws(69, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 844.0,1 , ARRAY[1,3,3,3,2]);
+ SELECT * FROM new_mws(17, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 766.0,1 , ARRAY[3,2,3,2,2]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 861.0,1 , ARRAY[2,1,3,2,1]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 831.0,1 , ARRAY[2,2,3,2,2]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 774.0,3 , ARRAY[3,3,3,2,1]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 782.0,2 , ARRAY[3,2,2,3,2]);
+ SELECT * FROM new_mws(79, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 724.0,3 , ARRAY[3,2,3,2,2]);
+ SELECT * FROM new_mws(87, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 849.0,1 , ARRAY[2,3,1,3,2]);
+ SELECT * FROM new_mws(5, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 777.0,2 , ARRAY[2,1,3,2,3]);
+ SELECT * FROM new_mws(31, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 832.0,2 , ARRAY[3,1,3,2,3]);
+ SELECT * FROM new_mws(26, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 759.0,4 , ARRAY[1,3,1,2,2]);
+ SELECT * FROM new_mws(20, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 853.0,2 , ARRAY[2,2,2,2,1]);
+ SELECT * FROM new_mws(3, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 759.0,3 , ARRAY[3,1,1,1,3]);
+ SELECT * FROM new_mws(31, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 763.0,2 , ARRAY[1,2,2,1,2]);
+ SELECT * FROM new_mws(87, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 771.0,1 , ARRAY[1,2,3,2,2]);
+ SELECT * FROM new_mws(67, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, 896.0,3 , ARRAY[2,1,1,1,3]);
+ 
+
+
+
+/******** THIS SHOULD BE LAST. RESETS SERIAL POINTERS TO CORRECT POS **********/
+SELECT SETVAL('public.foods_foodid_seq', COALESCE(MAX(foodid), 1) ) FROM public.foods;
+SELECT SETVAL('public.orderlogs_orderid_seq', COALESCE(MAX(orderid), 1) ) FROM public.orderlogs;
+SELECT SETVAL('public.promotions_promoid_seq', COALESCE(MAX(promoid), 1) ) FROM public.promotions;
+SELECT SETVAL('public.restaurants_restaurantid_seq', COALESCE(MAX(restaurantid), 1) ) FROM public.restaurants;
+SELECT SETVAL('public.users_userid_seq', COALESCE(MAX(userid), 1) ) FROM public.users;
+SELECT SETVAL('public.wws_workid_seq', COALESCE(MAX(workid), 1) ) FROM public.wws;

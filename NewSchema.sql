@@ -20,6 +20,9 @@ DROP TABLE IF EXISTS RestaurantPromotions CASCADE;
 DROP TABLE IF EXISTS Orderlogs CASCADE;
 DROP TABLE IF EXISTS Orders CASCADE;
 DROP TABLE IF EXISTS Reviews CASCADE;
+DROP TABLE IF EXISTS MWS_Schedules_Times CASCADE;
+DROP TABLE IF EXISTS MWS_Schedules_Days CASCADE;
+
 
 
 /*SET TIMEZONE = +8;*/
@@ -120,13 +123,13 @@ CREATE TABLE WWS (
 	workId				SERIAL,
 	riderId				INTEGER NOT NULL,
 	startDate			DATE NOT NULL,
-	endDate				DATE,
-	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
+	endDate				DATE DEFAULT NULL, 
+	baseSalary			DECIMAL NOT NULL CHECK (baseSalary >= 0),
 
 	UNIQUE (riderId, startDate),
 	PRIMARY KEY (workId),
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
-	CHECK (endDate >= startDate)
+	CHECK (endDate > startDate AND (endDate - startDate) % 7 = 0)
 );
 
 CREATE TABLE WWS_Schedules (
@@ -140,19 +143,36 @@ CREATE TABLE WWS_Schedules (
 	CHECK (endTime > startTime AND endTime - startTime <= 4)
 );
 
+CREATE TABLE MWS_Schedules_times (
+	shiftId				INTEGER CHECK(1 <= shiftId and 4>= shiftId),
+	startTime			SMALLINT[2] CHECK (10 <= ALL(startTime) AND 22 > ALL(startTime)),
+	endTime				SMALLINT[2] CHECK (10 < ALL(endTime) AND 22>= ALL(endTime)),
+
+	PRIMARY KEY(shiftId)
+);
+
+CREATE TABLE MWS_Schedules_days (
+	workWeekId	INTEGER CHECK( workWeekId >= 1 AND workWeekId <= 7),
+	workDays VARCHAR(10)[5] NOT NULL,
+
+	PRIMARY KEY(workWeekId)
+
+);
+
+
+
 CREATE TABLE MWS (
-	workId				SERIAL,
 	riderId				INTEGER NOT NULL,
-	startDate			DATE NOT NULL,
-	endDate				DATE,
-	baseSalary			DECIMAL NOT NULL CHECK (baseSalary > 0),
-	workDays			INTEGER NOT NULL CHECK (workDays >= 1 and workDays <= 7), /*use 1-7 to represents 7 options of work days*/
+	startDate 			DATE NOT NULL,
+	endDate 			DATE DEFAULT NULL,
+	baseSalary 			DECIMAL NOT NULL CHECK (baseSalary >= 0) ,
+	workWeekId			SMALLINT CHECK (workWeekId >= 1 AND workWeekId <= 7),
 	shifts				INTEGER[5] CHECK (1 <= ALL(shifts) and 4 >= ALL(shifts)), /*use 1-4 to represents 4 shifts*/
 
-	UNIQUE (riderId, startDate),
-	PRIMARY KEY (workId),
+	PRIMARY KEY (riderId, startDate),
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE,
-	CHECK (endDate >= startDate)
+	FOREIGN KEY (workWeekId) REFERENCES MWS_Schedules_Days(workWeekId),
+	CHECK (endDate > startDate AND (endDate - startDate) % 28 = 0)
 
 );
 
@@ -192,7 +212,7 @@ CREATE TABLE FDSManagers (
 CREATE TABLE Promotions (
 	promoId 			SERIAL,
 	type				INTEGER NOT NULL CHECK (type = 1 or type = 2), /*use integer(1, 2) to represent type*/
-	discountValue		INTEGER, /*what does this mean?*/
+	discountValue		NUMERIC, /*what does this mean?*/
 	startDate			DATE,
 	endDate				DATE,
 	condition			TEXT, /*how to use this condition?*/
@@ -225,7 +245,11 @@ CREATE TABLE Orderlogs (
 	riderId				INTEGER,
 	restaurantId		INTEGER,
 	orderDate			DATE NOT NULL,
+<<<<<<< HEAD
 	orderTime			TIME[5] CHECK (orderTime[1] IS NOT NULL), /*five types of time*/
+=======
+	orderTime			TIME[5], /*order placed, time rider depart, arrive at restaurant, departs from rest, delivered*/
+>>>>>>> 36bc8bf467bad2bd5f5c6c93d145468b27aa21ff
 	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 or paymentMethod = 2),
 	cardNo				BIGINT,
 	foodFee 			DECIMAL NOT NULL,
@@ -238,7 +262,8 @@ CREATE TABLE Orderlogs (
 	FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE SET NULL,
 	FOREIGN KEY (restaurantId) REFERENCES Restaurants(restaurantId) ON DELETE SET NULL,
 	FOREIGN KEY (promoId) REFERENCES Promotions(promoId),
-	CHECK (paymentMethod = 1 AND cardNo IS NOT NULL)
+	CHECK (paymentMethod = 1 AND cardNo IS NOT NULL),
+	CHECK (orderTime[1] < orderTime[2] AND orderTime[2] < orderTime[3] AND orderTime[3] < orderTime[4] AND orderTime[4] < orderTime[5])
 
 );
 
@@ -246,7 +271,6 @@ CREATE TABLE Orders (
 	orderId				INTEGER,
 	foodId				INTEGER,
 	quantity			INTEGER NOT NULL CHECK (quantity > 0),
-	uni_price			DECIMAL NOT NULL,
 
 	PRIMARY KEY (orderId, foodId),
 	FOREIGN KEY (orderId) REFERENCES Orderlogs (orderId),
