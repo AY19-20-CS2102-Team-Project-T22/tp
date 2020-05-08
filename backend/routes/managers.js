@@ -23,13 +23,14 @@ router.route('/promotions/get_promoId').get((req, res) => {
 })
 
 router.route('/promotions').get((req, res) => {
-    const query = 'select *, rp.restaurantId from Promotions NATURAL JOIN RestaurantPromotions rp NATURAL JOIN FDSPromotions where managerId=$1';
+    const query = 'select * from Promotions NATURAL JOIN FDSPromotions where managerId=$1';
     const values = [req.query.mid];
     db.query(query, values, (error, result) => {
         if (error) {
           console.log(error)
           res.status(400).json('Error: ' + error)
         } else {
+          console.log(result.rows)
           res.status(200).json(result.rows)
         }
         // db.end()
