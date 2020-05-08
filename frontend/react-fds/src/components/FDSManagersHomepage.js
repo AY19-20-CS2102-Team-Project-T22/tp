@@ -8,6 +8,7 @@ import {
 import { ListGroup, ListGroupItem } from 'reactstrap'
 import FDSManagersAccountInfo from './FDSManagersAccountInfo'
 import FDSPromotions from './FDSPromotions'
+import FDSStatistics from './FDSStatistics'
 
 class FDSManagersHomepage extends React.Component {
   constructor(props) {
@@ -33,11 +34,15 @@ class FDSManagersHomepage extends React.Component {
             userId = {this.state.mid}
           />
         )
-      case 2: // statistics
+      case 2: // all fds promotions
+          return (
+            <div>
+              all promotions
+            </div>
+          )
+      case 3: // statistics
         return (
-          <div>
-            Statistics
-          </div>
+          <FDSStatistics />
         )
     }
   }

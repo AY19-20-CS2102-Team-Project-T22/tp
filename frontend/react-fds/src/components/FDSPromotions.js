@@ -44,7 +44,6 @@ class FDSPromotions extends React.Component {
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.addPromotions = this.addPromotions.bind(this);
     this.updatePromotions = this.updatePromotions.bind(this);
-    this.deletePromotions = this.deletePromotions.bind(this);
     this.displayPromotions = this.displayPromotions.bind(this);
     this.handleToggleBtnClick = this.handleToggleBtnClick.bind(this);
     this.handleAddNewPromo = this.handleAddNewPromo.bind(this);
@@ -146,12 +145,6 @@ class FDSPromotions extends React.Component {
 
     // })
     // .catch(err => alert(err))
-  }
-
-  deletePromotions(e) {
-    //TODO
-    // 1. visit /promotions/get_promoId with old promotion information (req.query.type, req.query.value, req.query.startDate, req.query.endDate, req.query.condition, req.query.description)
-    // 2. visit /promotions/delete with promoId
   }
 
   displayPromotions() {
