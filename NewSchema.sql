@@ -245,11 +245,7 @@ CREATE TABLE Orderlogs (
 	riderId				INTEGER,
 	restaurantId		INTEGER,
 	orderDate			DATE NOT NULL,
-<<<<<<< HEAD
-	orderTime			TIME[5] CHECK (orderTime[1] IS NOT NULL), /*five types of time*/
-=======
-	orderTime			TIME[5], /*order placed, time rider depart, arrive at restaurant, departs from rest, delivered*/
->>>>>>> 36bc8bf467bad2bd5f5c6c93d145468b27aa21ff
+	orderTime			TIME[5] CHECK (orderTime[1] IS NOT NULL), /*order placed, time rider depart, arrive at restaurant, departs from rest, delivered*/
 	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 or paymentMethod = 2),
 	cardNo				BIGINT,
 	foodFee 			DECIMAL NOT NULL,
