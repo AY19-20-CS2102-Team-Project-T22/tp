@@ -340,7 +340,6 @@ class App extends React.Component {
             />
           </Route>
           <Route path='/riders' exact>
-            {console.log(this.state)}
             {/* <Riders /> */}
             <RiderHomePage
               isLoggedIn={this.state.isLoggedIn}
