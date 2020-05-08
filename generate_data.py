@@ -63,7 +63,7 @@ for i in range(50):
     f.write(s)
 
 for i in range(100):
-    s = "SELECT * FROM new_mws({}, {}, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, {},{} , ARRAY[{},{},{},{},{}]);\n ".format(52 + i, str(random.choice(fulltimers)), float(random.randrange(70000,90000)/100), random.randrange(1,5), random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4))
+    s = "SELECT * FROM new_mws({}, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, {},{} , ARRAY[{},{},{},{},{}]);\n ".format(str(random.choice(fulltimers)), float(random.randrange(70000,90000)/100), random.randrange(1,5), random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4))
     f.write(s)
 
 f.close()

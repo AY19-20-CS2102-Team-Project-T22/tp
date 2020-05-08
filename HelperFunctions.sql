@@ -235,12 +235,21 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE FUNCTION new_mws(wId INTEGER , rId INTEGER, sDate DATE, bSal DECIMAL, wwId INTEGER, shifts INTEGER[5])
+CREATE OR REPLACE FUNCTION new_mws(rId INTEGER, sDate DATE, bSal DECIMAL, wwId INTEGER, shifts INTEGER[5])
 RETURNS VOID
 AS $$
+    DECLARE
+        wId INTEGER;
     BEGIN
-        INSERT INTO WWS(workid, riderId, startDate, baseSalary) VALUES (wId, rId, sDate, 0);
+        INSERT INTO WWS(riderId, startDate, baseSalary) VALUES (rId, sDate, 0);
         INSERT INTO MWS(riderId, startDate, baseSalary, workweekid, shifts) VALUES (rId, sDate, bSal, wwId, shifts);
+        
+        SELECT workId INTO wId
+        FROM WWS 
+        WHERE riderId = rId 
+        AND startDate = sDate
+        ;
+        
         PERFORM create_mws_schedule(wId);
     END;
 $$ LANGUAGE plpgsql;
