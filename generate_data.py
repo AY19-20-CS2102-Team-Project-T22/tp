@@ -34,6 +34,8 @@ insert into Reviews (orderId, reviewDate, rating, feedback) values
 """
 
 f=open("data.sql", "aw")
+    
+fulltimers = [3,5,17,20,26,31,42,44,67,69,79,87,91,95,97]
 
 def ran_letters(digit):
     ran_str = ''.join(random.sample(string.ascii_letters, digit))
@@ -60,4 +62,9 @@ for i in range(50):
     s = "insert into FoodCategories values ({}, {}, '{}');\n".format(i, 49-i, str(i)+ran_letters(5))
     f.write(s)
 
+for i in range(100):
+    s = "SELECT * FROM new_mws({}, {}, (NOW() + (random() * interval '2 years') + (random() * interval '23 hours') + (random() * interval '59 minutes') + (random() * interval '59 seconds'))::date, {},{} , ARRAY[{},{},{},{},{}]);\n ".format(52 + i, str(random.choice(fulltimers)), float(random.randrange(70000,90000)/100), random.randrange(1,5), random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4),random.randrange(1,4))
+    f.write(s)
+
 f.close()
+##SELECT * FROM new_mws(56, 20, '2020-06-02 00:00:00', '700.28',3 , ARRAY[3,2,4,1,2]);
