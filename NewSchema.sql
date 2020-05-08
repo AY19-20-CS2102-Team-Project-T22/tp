@@ -223,7 +223,7 @@ CREATE TABLE FDSManagers (
 CREATE TABLE Promotions (
 	promoId 			SERIAL,
 	type				INTEGER NOT NULL CHECK (type = 1 or type = 2), /*use integer(1, 2) to represent type*/
-	discountValue		INTEGER, /*what does this mean?*/
+	discountValue		NUMERIC, /*what does this mean?*/
 	startDate			DATE,
 	endDate				DATE,
 	condition			TEXT, /*how to use this condition?*/
