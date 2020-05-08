@@ -191,17 +191,6 @@ CREATE TABLE PartTimers (
     FOREIGN KEY (riderId) REFERENCES DeliveryRiders (riderId) ON DELETE CASCADE
 );
 
-
-/*salary will be calculated at the end of every month (no matter type of riders)*/
-/*CREATE TABLE Salaries (
-riderId				INTEGER,
-day					DATE,
-amount				DECIMAL DEFAULT 0,
-
-PRIMARY KEY (riderId, day),
-FOREIGN KEY (riderId) REFERENCES DeliveryRiders(riderId) ON DELETE CASCADE
-);
- */
 CREATE TABLE RestaurantStaffs (
     staffId 			INTEGER,
     restaurantId 		INTEGER NOT NULL,
@@ -256,7 +245,11 @@ CREATE TABLE Orderlogs (
 	riderId				INTEGER,
 	restaurantId		INTEGER,
 	orderDate			DATE NOT NULL,
+<<<<<<< HEAD
+	orderTime			TIME[5] CHECK (orderTime[1] IS NOT NULL), /*five types of time*/
+=======
 	orderTime			TIME[5], /*order placed, time rider depart, arrive at restaurant, departs from rest, delivered*/
+>>>>>>> 36bc8bf467bad2bd5f5c6c93d145468b27aa21ff
 	paymentMethod		INTEGER NOT NULL CHECK (paymentMethod = 1 or paymentMethod = 2),
 	cardNo				BIGINT,
 	foodFee 			DECIMAL NOT NULL,
