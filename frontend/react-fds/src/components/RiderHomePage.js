@@ -19,6 +19,7 @@ class RiderHomePage extends React.Component {
     this.handleYearChange = this.handleYearChange.bind(this);
     this.handleMonthChange = this.handleMonthChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.getMonthSalary = this.getMonthSalary.bind(this);
     this.getRiderInfo();
   }
 
@@ -57,15 +58,27 @@ class RiderHomePage extends React.Component {
     }).catch(err => {alert(err)});
   }
 
+  getMonthSalary(e){
+    e.preventDefault();
+    
+  }
+
   handleSubmit(e) {
     e.preventDefault()
     let url = 'http://localhost:5000/riders/monthOrder?riderId='+ this.state.uid +'&year='+this.state.year+'&month='+this.state.month;
     axios.get(url).then(res => {
         console.log(res);
-        alert('num of orders: ' + res.data[0].count + '\n'
-              +'salary: 11111\n'
-        );
+        alert('num of orders: ' + res.data[0].count + '\n');
       }).catch(err => { alert(err) });
+
+    url = 'http://localhost:5000/riders/monthSalary?rid='+this.state.uid+ '&year='+this.state.year+'&month='+this.state.month;
+    axios.get(url).then(res => {
+        alert('mthSalary:'+res.data[0].totalmthsalary);
+     });
+
+    url = 'http://localhost:5000/riders/monthWorkingHours?rid='+this.state.uid+ '&year='+this.state.year+'&month='+this.state.month;
+    axios.get(url).then(res => {
+    })
   }
 
   render() {
@@ -138,7 +151,7 @@ class RiderHomePage extends React.Component {
             type='submit'
             color='primary'
           >
-            Modify
+            Search
           </Button>
           <Link to='/'>
             <Button
