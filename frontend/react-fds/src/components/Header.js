@@ -25,6 +25,7 @@ class Header extends React.Component {
         >
           <MenuIcon style={{ color: 'white' }} />
         </IconButton>
+        
         <Link
           to='/'
           style={{
@@ -41,87 +42,42 @@ class Header extends React.Component {
             }}
           />
         </Link>
-            <SearchBar 
-              itemsOnDisplay = {this.props.itemsOnDisplay}
-              updateItemsDisplayed={this.props.updateItemsDisplayed}
-              handleFqueryChange = {this.props.handleFqueryChange}
-              fquery = {this.fquery}
-            />
 
-        {(this.props.isLoggedIn) ?
-          <div>
-          <Link
-            to='/accountinfo'
-            style={{
-              fontSize: '18px',
-              textAlign: 'center',
-              marginRight: '10px',
-              marginLeft: '20px',
-              color: 'white',
-              fontWeight: 'bold'
-            }}
-          >
-            Account
-          </Link>
-          <Link
-            to={'/'+this.props.userTypeStr}
-            style={{
-              fontSize: '18px',
-              textAlign: 'center',
-              marginRight: '10px',
-              marginLeft: '20px',
-              color: 'white',
-              fontWeight: 'bold'
-            }}
-          >
-            {this.props.userTypeStr + " Center"}
-          </Link>
-          </div>
-          :
-          <Link
-            to='/login'
-            style={{
-              fontSize: '18px',
-              textAlign: 'center',
-              marginRight: '10px',
-              marginLeft: '20px',
-              color: 'white',
-              fontWeight: 'bold'
-            }}
-          >
-            Login
-          </Link>
-        }
-        {(!this.props.isLoggedIn) ?
-          <Link
-            to='/register'
-            style={{
-              fontSize: '18px',
-              textAlign: 'center',
-              marginRight: '20px',
-              marginLeft: '10px',
-              color: 'white',
-              fontWeight: 'bold'
-            }}
-          >
-            Register
-          </Link>
-          :
-          <Link
-            to='/'
-            onClick={this.props.handleLogout}
-            style={{
-              fontSize: '18px',
-              textAlign: 'center',
-              marginRight: '20px',
-              marginLeft: '10px',
-              color: 'white',
-              fontWeight: 'bold'
-            }}
-          >
-            Log Out
-          </Link>
-        }
+        <SearchBar
+          itemsOnDisplay={this.props.itemsOnDisplay}
+          updateItemsDisplayed={this.props.updateItemsDisplayed}
+          handleFqueryChange={this.props.handleFqueryChange}
+          fquery={this.fquery}
+        />
+
+        <Link
+          to='/accountinfo'
+          style={{
+            fontSize: '18px',
+            textAlign: 'center',
+            marginRight: '10px',
+            marginLeft: '20px',
+            color: 'white',
+            fontWeight: 'bold'
+          }}
+        >
+          Account
+        </Link>
+
+        <Link
+          to='/'
+          onClick={this.props.handleLogout}
+          style={{
+            fontSize: '18px',
+            textAlign: 'center',
+            marginRight: '20px',
+            marginLeft: '10px',
+            color: 'white',
+            fontWeight: 'bold'
+          }}
+        >
+          Log Out
+        </Link>
       </div>
     )
   }
