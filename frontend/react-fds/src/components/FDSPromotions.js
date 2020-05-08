@@ -176,7 +176,8 @@ class FDSPromotions extends React.Component {
           style={{
             flex: '1',
             display: 'flex',
-            flexFlow: 'column nowrap'
+            flexFlow: 'column nowrap',
+            overflowY: 'auto'
           }}
         >
           <h2 style={{ marginTop: '10px', marginBottom: '35px' }}>
